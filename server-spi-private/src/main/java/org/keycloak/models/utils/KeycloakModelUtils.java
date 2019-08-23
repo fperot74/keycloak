@@ -190,9 +190,7 @@ public final class KeycloakModelUtils {
         Set<RoleModel> compositeRoles = composite.getComposites();
         return compositeRoles.contains(role) ||
                         compositeRoles.stream()
-                                .filter(x -> x.isComposite() && searchFor(role, x, visited))
-                                .findFirst()
-                                .isPresent();
+                                .anyMatch(x -> x.isComposite() && searchFor(role, x, visited));
     }
 
     /**
@@ -254,28 +252,24 @@ public final class KeycloakModelUtils {
     public static void runJobInTransactionWithTimeout(KeycloakSessionFactory factory, KeycloakSessionTask task, int timeoutInSeconds) {
         JtaTransactionManagerLookup lookup = (JtaTransactionManagerLookup)factory.getProviderFactory(JtaTransactionManagerLookup.class);
         try {
-            if (lookup != null) {
-                if (lookup.getTransactionManager() != null) {
-                    try {
-                        lookup.getTransactionManager().setTransactionTimeout(timeoutInSeconds);
-                    } catch (SystemException e) {
-                        throw new RuntimeException(e);
-                    }
+            if (lookup != null && lookup.getTransactionManager() != null) {
+                try {
+                    lookup.getTransactionManager().setTransactionTimeout(timeoutInSeconds);
+                } catch (SystemException e) {
+                    throw new RuntimeException(e);
                 }
             }
 
             runJobInTransaction(factory, task);
 
         } finally {
-            if (lookup != null) {
-                if (lookup.getTransactionManager() != null) {
-                    try {
-                        // Reset to default transaction timeout
-                        lookup.getTransactionManager().setTransactionTimeout(0);
-                    } catch (SystemException e) {
-                        // Shouldn't happen for Wildfly transaction manager
-                        throw new RuntimeException(e);
-                    }
+            if (lookup != null && lookup.getTransactionManager() != null) {
+                try {
+                    // Reset to default transaction timeout
+                    lookup.getTransactionManager().setTransactionTimeout(0);
+                } catch (SystemException e) {
+                    // Shouldn't happen for Wildfly transaction manager
+                    throw new RuntimeException(e);
                 }
             }
         }
@@ -411,7 +405,7 @@ public final class KeycloakModelUtils {
 
     public static Collection<String> resolveAttribute(UserModel user, String name, boolean aggregateAttrs) {
         List<String> values = user.getAttribute(name);
-        Set<String> aggrValues = new HashSet<String>();
+        Set<String> aggrValues = new HashSet<>();
         if (!values.isEmpty()) {
             if (!aggregateAttrs) {
                 return values;
@@ -440,15 +434,10 @@ public final class KeycloakModelUtils {
                 if (pathSegments.length == index + 1) {
                     return group;
                 }
-                else {
-                    if (index + 1 < pathSegments.length) {
-                        GroupModel found = findSubGroup(pathSegments, index + 1, group);
-                        if (found != null) return found;
-                    } else {
-                        return null;
-                    }
+                if (index>=pathSegments.length) {
+                    return null;
                 }
-
+                return findSubGroup(pathSegments, index + 1, group);
             }
         }
         return null;
@@ -511,16 +500,14 @@ public final class KeycloakModelUtils {
 
             if (groupName.equals(pathSegments[0])) {
                 if (pathSegments.length == 1) {
-                    found = group;
-                    break;
+                    return group;
                 }
-                else {
-                    if (pathSegments.length > 1) {
-                        found = findSubGroup(pathSegments, 1, group);
-                        if (found != null) break;
+                if (pathSegments.length > 1) {
+                    found = findSubGroup(pathSegments, 1, group);
+                    if (found != null) {
+                        return found;
                     }
                 }
-
             }
         }
         return found;
@@ -531,11 +518,8 @@ public final class KeycloakModelUtils {
         Set<RoleModel> result = new HashSet<>();
         for (RoleModel role : mappings) {
             RoleContainerModel roleContainer = role.getContainer();
-            if (roleContainer instanceof ClientModel) {
-                if (client.getId().equals(((ClientModel)roleContainer).getId())) {
-                    result.add(role);
-                }
-
+            if (roleContainer instanceof ClientModel && client.getId().equals(((ClientModel)roleContainer).getId())) {
+                result.add(role);
             }
         }
         return result;
@@ -566,13 +550,9 @@ public final class KeycloakModelUtils {
         if (scopeIndex > -1) {
             String appName = role.substring(0, scopeIndex);
             role = role.substring(scopeIndex + 1);
-            String[] rtn = {appName, role};
-            return rtn;
-        } else {
-            String[] rtn = {null, role};
-            return rtn;
-
+            return new String[] {appName, role};
         }
+        return new String[] {null, role};
     }
 
     /**
@@ -583,14 +563,15 @@ public final class KeycloakModelUtils {
      * @return
      */
     public static boolean isFlowUsed(RealmModel realm, AuthenticationFlowModel model) {
-        AuthenticationFlowModel realmFlow = null;
-
-        if ((realmFlow = realm.getBrowserFlow()) != null && realmFlow.getId().equals(model.getId())) return true;
-        if ((realmFlow = realm.getRegistrationFlow()) != null && realmFlow.getId().equals(model.getId())) return true;
-        if ((realmFlow = realm.getClientAuthenticationFlow()) != null && realmFlow.getId().equals(model.getId())) return true;
-        if ((realmFlow = realm.getDirectGrantFlow()) != null && realmFlow.getId().equals(model.getId())) return true;
-        if ((realmFlow = realm.getResetCredentialsFlow()) != null && realmFlow.getId().equals(model.getId())) return true;
-        if ((realmFlow = realm.getDockerAuthenticationFlow()) != null && realmFlow.getId().equals(model.getId())) return true;
+        AuthenticationFlowModel[] flows = new AuthenticationFlowModel[] { realm.getBrowserFlow(),
+                realm.getRegistrationFlow(), realm.getClientAuthenticationFlow(), realm.getDirectGrantFlow(),
+                realm.getResetCredentialsFlow(), realm.getDockerAuthenticationFlow()
+        };
+        for (AuthenticationFlowModel realmFlow : flows) {
+            if (realmFlow!=null && realmFlow.getId().equals(model.getId())) {
+                return true;
+            }
+        }
 
         for (IdentityProviderModel idp : realm.getIdentityProviders()) {
             if (model.getId().equals(idp.getFirstBrokerLoginFlowId())) return true;
@@ -598,7 +579,6 @@ public final class KeycloakModelUtils {
         }
 
         return false;
-
     }
 
     public static boolean isClientScopeUsed(RealmModel realm, ClientScopeModel clientScope) {
@@ -699,7 +679,7 @@ public final class KeycloakModelUtils {
             return displayName;
         }
 
-        SocialIdentityProviderFactory providerFactory = (SocialIdentityProviderFactory) session.getKeycloakSessionFactory()
+        SocialIdentityProviderFactory<?> providerFactory = (SocialIdentityProviderFactory<?>) session.getKeycloakSessionFactory()
                 .getProviderFactory(SocialIdentityProvider.class, provider.getProviderId());
         if (providerFactory != null) {
             return providerFactory.getName();

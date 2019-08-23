@@ -33,7 +33,6 @@ import org.keycloak.util.JsonSerialization;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -86,16 +85,10 @@ public class DirImportProvider implements ImportProvider {
         return realmNames.contains(Config.getAdminRealm());
     }
 
-    private List<String> getRealmsToImport() throws IOException {
-        File[] realmFiles = this.rootDirectory.listFiles(new FilenameFilter() {
+    private List<String> getRealmsToImport() {
+        File[] realmFiles = this.rootDirectory.listFiles((dir, name) -> name.endsWith("-realm.json"));
 
-            @Override
-            public boolean accept(File dir, String name) {
-                return (name.endsWith("-realm.json"));
-            }
-        });
-
-        List<String> realmNames = new ArrayList<String>();
+        List<String> realmNames = new ArrayList<>();
         for (File file : realmFiles) {
             String fileName = file.getName();
             // Parse "foo" from "foo-realm.json"
@@ -114,20 +107,8 @@ public class DirImportProvider implements ImportProvider {
     @Override
     public void importRealm(KeycloakSessionFactory factory, final String realmName, final Strategy strategy) throws IOException {
         File realmFile = new File(this.rootDirectory + File.separator + realmName + "-realm.json");
-        File[] userFiles = this.rootDirectory.listFiles(new FilenameFilter() {
-
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.matches(realmName + "-users-[0-9]+\\.json");
-            }
-        });
-        File[] federatedUserFiles = this.rootDirectory.listFiles(new FilenameFilter() {
-
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.matches(realmName + "-federated-users-[0-9]+\\.json");
-            }
-        });
+        File[] userFiles = this.rootDirectory.listFiles((dir, name) -> name.matches(realmName + "-users-[0-9]+\\.json"));
+        File[] federatedUserFiles = this.rootDirectory.listFiles((dir, name) -> name.matches(realmName + "-federated-users-[0-9]+\\.json"));
 
         // Import realm first
         FileInputStream is = new FileInputStream(realmFile);

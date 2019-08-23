@@ -54,7 +54,7 @@ public abstract class GenericPrincipalFactory {
         }
         
         Principal userPrincipal = getPrincipal(subject);
-        List<String> rolesAsStringList = new ArrayList<String>();
+        List<String> rolesAsStringList = new ArrayList<>();
         rolesAsStringList.addAll(roleSet);
         GenericPrincipal principal = createPrincipal(userPrincipal, rolesAsStringList);
         return principal;

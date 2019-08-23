@@ -131,11 +131,11 @@ public class RealmManager {
     }
 
     protected void setupAuthenticationFlows(RealmModel realm) {
-        if (realm.getAuthenticationFlows().size() == 0) DefaultAuthenticationFlows.addFlows(realm);
+        if (realm.getAuthenticationFlows().isEmpty()) DefaultAuthenticationFlows.addFlows(realm);
     }
 
     protected void setupRequiredActions(RealmModel realm) {
-        if (realm.getRequiredActionProviders().size() == 0) DefaultRequiredActions.addActions(realm);
+        if (realm.getRequiredActionProviders().isEmpty()) DefaultRequiredActions.addActions(realm);
     }
 
     private void setupOfflineTokens(RealmModel realm, RealmRepresentation realmRep) {

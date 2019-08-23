@@ -50,7 +50,7 @@ public class RealmConfigData {
 
     private String initialToken;
 
-    private Map<String, String> clients = new LinkedHashMap<String, String>();
+    private Map<String, String> clients = new LinkedHashMap<>();
 
 
     public String serverUrl() {

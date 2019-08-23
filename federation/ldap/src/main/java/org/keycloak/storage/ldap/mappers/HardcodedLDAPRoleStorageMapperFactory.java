@@ -35,7 +35,7 @@ import java.util.List;
 public class HardcodedLDAPRoleStorageMapperFactory extends AbstractLDAPStorageMapperFactory {
 
     public static final String PROVIDER_ID = "hardcoded-ldap-role-mapper";
-    protected static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
+    protected static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
     static {
         ProviderConfigProperty roleAttr = createConfigProperty(HardcodedLDAPRoleStorageMapper.ROLE, "Role",

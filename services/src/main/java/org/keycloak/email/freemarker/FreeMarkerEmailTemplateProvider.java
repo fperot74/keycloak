@@ -43,7 +43,6 @@ import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.theme.FreeMarkerException;
 import org.keycloak.theme.FreeMarkerUtil;
 import org.keycloak.theme.Theme;
-import org.keycloak.theme.ThemeProvider;
 import org.keycloak.theme.beans.LinkExpirationFormatterMethod;
 import org.keycloak.theme.beans.MessageFormatterMethod;
 
@@ -102,22 +101,22 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
 
     @Override
     public void sendEvent(Event event) throws EmailException {
-        Map<String, Object> attributes = new HashMap<String, Object>();
-        attributes.put("user", new ProfileBean(user));
-        attributes.put("event", new EventBean(event));
+        Map<String, Object> attrb = new HashMap<>();
+        attrb.put("user", new ProfileBean(user));
+        attrb.put("event", new EventBean(event));
 
-        send(toCamelCase(event.getType()) + "Subject", "event-" + event.getType().toString().toLowerCase() + ".ftl", attributes);
+        send(toCamelCase(event.getType()) + "Subject", "event-" + event.getType().toString().toLowerCase() + ".ftl", attrb);
     }
 
     @Override
     public void sendPasswordReset(String link, long expirationInMinutes) throws EmailException {
-        Map<String, Object> attributes = new HashMap<String, Object>(this.attributes);
-        attributes.put("user", new ProfileBean(user));
-        addLinkInfoIntoAttributes(link, expirationInMinutes, attributes);
+        Map<String, Object> attrb = new HashMap<>(this.attributes);
+        attrb.put("user", new ProfileBean(user));
+        addLinkInfoIntoAttributes(link, expirationInMinutes, attrb);
 
-        attributes.put("realmName", getRealmName());
+        attrb.put("realmName", getRealmName());
 
-        send("passwordResetSubject", "password-reset.ftl", attributes);
+        send("passwordResetSubject", "password-reset.ftl", attrb);
     }
 
     @Override
@@ -125,53 +124,53 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
         setRealm(session.getContext().getRealm());
         setUser(user);
 
-        Map<String, Object> attributes = new HashMap<String, Object>(this.attributes);
-        attributes.put("user", new ProfileBean(user));
-        attributes.put("realmName", realm.getName());
+        Map<String, Object> attrb = new HashMap<>(this.attributes);
+        attrb.put("user", new ProfileBean(user));
+        attrb.put("realmName", realm.getName());
 
-        EmailTemplate email = processTemplate("emailTestSubject", Collections.emptyList(), "email-test.ftl", attributes);
+        EmailTemplate email = processTemplate("emailTestSubject", Collections.emptyList(), "email-test.ftl", attrb);
         send(config, email.getSubject(), email.getTextBody(), email.getHtmlBody());
     }
 
     @Override
     public void sendConfirmIdentityBrokerLink(String link, long expirationInMinutes) throws EmailException {
-        Map<String, Object> attributes = new HashMap<String, Object>(this.attributes);
-        attributes.put("user", new ProfileBean(user));
-        addLinkInfoIntoAttributes(link, expirationInMinutes, attributes);
+        Map<String, Object> attrb = new HashMap<>(this.attributes);
+        attrb.put("user", new ProfileBean(user));
+        addLinkInfoIntoAttributes(link, expirationInMinutes, attrb);
 
-        attributes.put("realmName", getRealmName());
+        attrb.put("realmName", getRealmName());
 
         BrokeredIdentityContext brokerContext = (BrokeredIdentityContext) this.attributes.get(IDENTITY_PROVIDER_BROKER_CONTEXT);
         String idpAlias = brokerContext.getIdpConfig().getAlias();
         idpAlias = ObjectUtil.capitalize(idpAlias);
 
-        attributes.put("identityProviderContext", brokerContext);
-        attributes.put("identityProviderAlias", idpAlias);
+        attrb.put("identityProviderContext", brokerContext);
+        attrb.put("identityProviderAlias", idpAlias);
 
         List<Object> subjectAttrs = Arrays.<Object> asList(idpAlias);
-        send("identityProviderLinkSubject", subjectAttrs, "identity-provider-link.ftl", attributes);
+        send("identityProviderLinkSubject", subjectAttrs, "identity-provider-link.ftl", attrb);
     }
 
     @Override
     public void sendExecuteActions(String link, long expirationInMinutes) throws EmailException {
-        Map<String, Object> attributes = new HashMap<String, Object>(this.attributes);
-        attributes.put("user", new ProfileBean(user));
-        addLinkInfoIntoAttributes(link, expirationInMinutes, attributes);
+        Map<String, Object> attrb = new HashMap<>(this.attributes);
+        attrb.put("user", new ProfileBean(user));
+        addLinkInfoIntoAttributes(link, expirationInMinutes, attrb);
 
-        attributes.put("realmName", getRealmName());
+        attrb.put("realmName", getRealmName());
 
-        send("executeActionsSubject", "executeActions.ftl", attributes);
+        send("executeActionsSubject", "executeActions.ftl", attrb);
     }
 
     @Override
     public void sendVerifyEmail(String link, long expirationInMinutes) throws EmailException {
-        Map<String, Object> attributes = new HashMap<String, Object>(this.attributes);
-        attributes.put("user", new ProfileBean(user));
-        addLinkInfoIntoAttributes(link, expirationInMinutes, attributes);
+        Map<String, Object> attrb = new HashMap<>(this.attributes);
+        attrb.put("user", new ProfileBean(user));
+        addLinkInfoIntoAttributes(link, expirationInMinutes, attrb);
 
-        attributes.put("realmName", getRealmName());
+        attrb.put("realmName", getRealmName());
 
-        send("emailVerificationSubject", "email-verification.ftl", attributes);
+        send("emailVerificationSubject", "email-verification.ftl", attrb);
     }
 
     /**
@@ -207,23 +206,22 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
             attributes.put("properties", theme.getProperties());
             String subject = new MessageFormat(rb.getProperty(subjectKey, subjectKey), locale).format(subjectAttributes.toArray());
             String textTemplate = String.format("text/%s", template);
-            String textBody;
-            try {
-                textBody = freeMarker.processTemplate(attributes, textTemplate, theme);
-            } catch (final FreeMarkerException e) {
-                textBody = null;
-            }
+            String textBody = processTemplate(attributes, textTemplate, theme);
+
             String htmlTemplate = String.format("html/%s", template);
-            String htmlBody;
-            try {
-                htmlBody = freeMarker.processTemplate(attributes, htmlTemplate, theme);
-            } catch (final FreeMarkerException e) {
-                htmlBody = null;
-            }
+            String htmlBody = processTemplate(attributes, htmlTemplate, theme);
 
             return new EmailTemplate(subject, textBody, htmlBody);
         } catch (Exception e) {
             throw new EmailException("Failed to template email", e);
+        }
+    }
+
+    private String processTemplate(Map<String, Object> attributes, String htmlTemplate, Theme theme) {
+        try {
+            return freeMarker.processTemplate(attributes, htmlTemplate, theme);
+        } catch (final FreeMarkerException e) {
+            return null;
         }
     }
 

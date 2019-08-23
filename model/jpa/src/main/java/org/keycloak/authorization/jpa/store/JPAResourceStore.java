@@ -206,7 +206,7 @@ public class JPAResourceStore implements ResourceStore {
         CriteriaQuery<ResourceEntity> querybuilder = builder.createQuery(ResourceEntity.class);
         Root<ResourceEntity> root = querybuilder.from(ResourceEntity.class);
         querybuilder.select(root.get("id"));
-        List<Predicate> predicates = new ArrayList();
+        List<Predicate> predicates = new ArrayList<>();
 
         if (resourceServerId != null) {
             predicates.add(builder.equal(root.get("resourceServer").get("id"), resourceServerId));
@@ -244,6 +244,7 @@ public class JPAResourceStore implements ResourceStore {
             query.setMaxResults(maxResult);
         }
 
+        @SuppressWarnings("unchecked")
         List<String> result = query.getResultList();
         List<Resource> list = new LinkedList<>();
         ResourceStore resourceStore = provider.getStoreFactory().getResourceStore();

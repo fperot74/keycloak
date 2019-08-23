@@ -26,7 +26,7 @@ import java.util.Map;
  */
 public class MessagesPerFieldBean {
 
-    private Map<String, MessageBean> messagesPerField = new HashMap<String, MessageBean>();
+    private Map<String, MessageBean> messagesPerField = new HashMap<>();
 
     public void addMessage(String field, String messageText, MessageType messageType) {
         if (messageText == null || messageText.trim().isEmpty())

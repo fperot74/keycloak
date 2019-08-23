@@ -18,7 +18,6 @@ package org.keycloak.services.resources.admin;
 
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import org.jboss.resteasy.spi.NotFoundException;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.models.AdminRoles;
@@ -26,7 +25,6 @@ import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ModelDuplicateException;
 import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleModel;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.policy.PasswordPolicyNotMetException;
 import org.keycloak.protocol.oidc.TokenManager;
@@ -40,6 +38,7 @@ import org.keycloak.services.resources.admin.permissions.AdminPermissions;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -51,6 +50,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -96,11 +96,9 @@ public class RealmsAdminResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public List<RealmRepresentation> getRealms() {
-        List<RealmRepresentation> reps = new ArrayList<RealmRepresentation>();
+        List<RealmRepresentation> reps = new ArrayList<>();
         List<RealmModel> realms = session.realms().getRealms();
-        for (RealmModel realm : realms) {
-            addRealmRep(reps, realm);
-        }
+        realms.forEach(realm -> addRealmRep(reps, realm));
         if (reps.isEmpty()) {
             throw new ForbiddenException();
         }
@@ -159,12 +157,8 @@ public class RealmsAdminResource {
             return;
         }
 
-        RealmModel adminRealm = new RealmManager(session).getKeycloakAdminstrationRealm();
         ClientModel realmAdminApp = realm.getMasterAdminClient();
-        for (String r : AdminRoles.ALL_REALM_ROLES) {
-            RoleModel role = realmAdminApp.getRole(r);
-            auth.getUser().grantRole(role);
-        }
+        Arrays.stream(AdminRoles.ALL_REALM_ROLES).map(realmAdminApp::getRole).forEach(role -> auth.getUser().grantRole(role));
     }
 
     /**

@@ -17,7 +17,6 @@
 
 package org.keycloak.services.resources.admin;
 
-import org.jboss.resteasy.spi.NotFoundException;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.ClientModel;
@@ -28,11 +27,13 @@ import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.NotFoundException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @resource Roles
@@ -94,35 +95,21 @@ public abstract class RoleResource {
     }
 
     protected Set<RoleRepresentation> getRoleComposites(RoleModel role) {
-        if (!role.isComposite() || role.getComposites().size() == 0) return Collections.emptySet();
+        if (!role.isComposite() || role.getComposites().isEmpty()) return Collections.emptySet();
 
-        Set<RoleRepresentation> composites = new HashSet<RoleRepresentation>(role.getComposites().size());
-        for (RoleModel composite : role.getComposites()) {
-            composites.add(ModelToRepresentation.toBriefRepresentation(composite));
-        }
-        return composites;
+        return role.getComposites().stream().map(ModelToRepresentation::toBriefRepresentation).collect(Collectors.toSet());
     }
 
     protected Set<RoleRepresentation> getRealmRoleComposites(RoleModel role) {
-        if (!role.isComposite() || role.getComposites().size() == 0) return Collections.emptySet();
+        if (!role.isComposite() || role.getComposites().isEmpty()) return Collections.emptySet();
 
-        Set<RoleRepresentation> composites = new HashSet<RoleRepresentation>(role.getComposites().size());
-        for (RoleModel composite : role.getComposites()) {
-            if (composite.getContainer() instanceof RealmModel)
-                composites.add(ModelToRepresentation.toBriefRepresentation(composite));
-        }
-        return composites;
+        return role.getComposites().stream().filter(c -> c.getContainer() instanceof RealmModel).map(ModelToRepresentation::toBriefRepresentation).collect(Collectors.toSet());
     }
 
     protected Set<RoleRepresentation> getClientRoleComposites(ClientModel app, RoleModel role) {
-        if (!role.isComposite() || role.getComposites().size() == 0) return Collections.emptySet();
+        if (!role.isComposite() || role.getComposites().isEmpty()) return Collections.emptySet();
 
-        Set<RoleRepresentation> composites = new HashSet<RoleRepresentation>(role.getComposites().size());
-        for (RoleModel composite : role.getComposites()) {
-            if (composite.getContainer().equals(app))
-                composites.add(ModelToRepresentation.toBriefRepresentation(composite));
-        }
-        return composites;
+        return role.getComposites().stream().filter(c -> c.getContainer().equals(app)).map(ModelToRepresentation::toBriefRepresentation).collect(Collectors.toSet());
     }
 
     protected void deleteComposites(AdminEventBuilder adminEvent, UriInfo uriInfo, List<RoleRepresentation> roles, RoleModel role) {

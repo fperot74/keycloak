@@ -85,7 +85,8 @@ abstract class AbstractUserRoleMappingMapper extends AbstractOIDCProtocolMapper 
     private static final Pattern DOT_PATTERN = Pattern.compile("\\.");
     private static final String DOT_REPLACEMENT = "\\\\\\\\.";
 
-    private static void mapClaim(IDToken token, ProtocolMapperModel mappingModel, Object attributeValue, String clientId) {
+    @SuppressWarnings("unchecked")
+	private static void mapClaim(IDToken token, ProtocolMapperModel mappingModel, Object attributeValue, String clientId) {
         attributeValue = OIDCAttributeMapperHelper.mapAttributeValue(mappingModel, attributeValue);
         if (attributeValue == null) return;
 
@@ -115,7 +116,7 @@ abstract class AbstractUserRoleMappingMapper extends AbstractOIDCProtocolMapper 
             if (i == length) {
                 // Case when we want to add to existing set of roles
                 Object last = jsonObject.get(component);
-                if (last != null && last instanceof Collection && attributeValue instanceof Collection) {
+                if (last instanceof Collection && attributeValue instanceof Collection) {
                     ((Collection) last).addAll((Collection) attributeValue);
                 } else {
                     jsonObject.put(component, attributeValue);
@@ -136,7 +137,8 @@ abstract class AbstractUserRoleMappingMapper extends AbstractOIDCProtocolMapper 
 
 
     // Special case when roles are put to the access token via "realmAcces, resourceAccess" properties
-    private static boolean checkAccessToken(IDToken idToken, List<String> path, Object attributeValue) {
+    @SuppressWarnings("unchecked")
+	private static boolean checkAccessToken(IDToken idToken, List<String> path, Object attributeValue) {
         if (!(idToken instanceof AccessToken)) {
             return false;
         }

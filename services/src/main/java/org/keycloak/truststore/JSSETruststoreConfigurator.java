@@ -24,7 +24,6 @@ import org.keycloak.models.KeycloakSessionFactory;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
@@ -102,12 +101,7 @@ public class JSSETruststoreConfigurator {
         HostnameVerificationPolicy policy = provider.getPolicy();
         switch (policy) {
             case ANY:
-                return new HostnameVerifier() {
-                    @Override
-                    public boolean verify(String s, SSLSession sslSession) {
-                        return true;
-                    }
-                };
+                return (s, sslSession) -> true;
             case WILDCARD:
                 return new BrowserCompatHostnameVerifier();
             case STRICT:

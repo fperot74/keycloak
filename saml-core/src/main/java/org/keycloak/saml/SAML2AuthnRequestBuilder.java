@@ -108,7 +108,7 @@ public class SAML2AuthnRequestBuilder implements SamlProtocolExtensionsAwareBuil
                 authnRequestType.setExtensions(extensionsType);
             }
 
-            return new SAML2Request().convert(authnRequestType);
+            return SAML2Request.convert(authnRequestType);
         } catch (Exception e) {
             throw new RuntimeException("Could not convert " + authnRequestType + " to a document.", e);
         }

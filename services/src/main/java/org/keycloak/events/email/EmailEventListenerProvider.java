@@ -52,16 +52,14 @@ public class EmailEventListenerProvider implements EventListenerProvider {
 
     @Override
     public void onEvent(Event event) {
-        if (includedEvents.contains(event.getType())) {
-            if (event.getRealmId() != null && event.getUserId() != null) {
-                RealmModel realm = model.getRealm(event.getRealmId());
-                UserModel user = session.users().getUserById(event.getUserId(), realm);
-                if (user != null && user.getEmail() != null && user.isEmailVerified()) {
-                    try {
-                        emailTemplateProvider.setRealm(realm).setUser(user).sendEvent(event);
-                    } catch (EmailException e) {
-                        log.error("Failed to send type mail", e);
-                    }
+        if (includedEvents.contains(event.getType()) && event.getRealmId() != null && event.getUserId() != null) {
+            RealmModel realm = model.getRealm(event.getRealmId());
+            UserModel user = session.users().getUserById(event.getUserId(), realm);
+            if (user != null && user.getEmail() != null && user.isEmailVerified()) {
+                try {
+                    emailTemplateProvider.setRealm(realm).setUser(user).sendEvent(event);
+                } catch (EmailException e) {
+                    log.error("Failed to send type mail", e);
                 }
             }
         }

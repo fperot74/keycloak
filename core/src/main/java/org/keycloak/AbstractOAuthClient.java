@@ -128,8 +128,8 @@ public class AbstractOAuthClient {
 
     protected String stripOauthParametersFromRedirect(String uri) {
         KeycloakUriBuilder builder = KeycloakUriBuilder.fromUri(uri)
-                .replaceQueryParam(OAuth2Constants.CODE, null)
-                .replaceQueryParam(OAuth2Constants.STATE, null);
+                .replaceQueryParam(OAuth2Constants.CODE)
+                .replaceQueryParam(OAuth2Constants.STATE);
         return builder.build().toString();
     }
 

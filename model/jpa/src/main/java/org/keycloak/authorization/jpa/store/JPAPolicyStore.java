@@ -73,8 +73,7 @@ public class JPAPolicyStore implements PolicyStore {
 
         this.entityManager.persist(entity);
         this.entityManager.flush();
-        Policy model = new PolicyAdapter(entity, entityManager, provider.getStoreFactory());
-        return model;
+        return new PolicyAdapter(entity, entityManager, provider.getStoreFactory());
     }
 
     @Override
@@ -138,7 +137,7 @@ public class JPAPolicyStore implements PolicyStore {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<PolicyEntity> querybuilder = builder.createQuery(PolicyEntity.class);
         Root<PolicyEntity> root = querybuilder.from(PolicyEntity.class);
-        List<Predicate> predicates = new ArrayList();
+        List<Predicate> predicates = new ArrayList<>();
         querybuilder.select(root.get("id"));
 
         if (resourceServerId != null) {

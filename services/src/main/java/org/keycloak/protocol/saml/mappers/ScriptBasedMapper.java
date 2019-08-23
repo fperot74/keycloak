@@ -122,7 +122,7 @@ public class ScriptBasedMapper extends AbstractSAMLProtocolMapper implements SAM
         EvaluatableScriptAdapter script = scripting.prepareEvaluatableScript(scriptModel);
         Object attributeValue;
         try {
-            attributeValue = script.eval((bindings) -> {
+            attributeValue = script.eval(bindings -> {
                 bindings.put("user", user);
                 bindings.put("realm", realm);
                 bindings.put("clientSession", clientSession);

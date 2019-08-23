@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class PathBasedKeycloakConfigResolver implements KeycloakConfigResolver {
 
-    private final Map<String, KeycloakDeployment> cache = new ConcurrentHashMap<String, KeycloakDeployment>();
+    private final Map<String, KeycloakDeployment> cache = new ConcurrentHashMap<>();
 
     @Override
     public KeycloakDeployment resolve(OIDCHttpFacade.Request request) {

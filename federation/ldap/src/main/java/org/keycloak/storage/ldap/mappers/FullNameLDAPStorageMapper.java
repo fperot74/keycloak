@@ -134,7 +134,7 @@ public class FullNameLDAPStorageMapper extends AbstractLDAPStorageMapper {
         // Change conditions and compute condition for fullName from the conditions for firstName and lastName. Right now just "equal" condition is supported
         EqualCondition firstNameCondition = null;
         EqualCondition lastNameCondition = null;
-        Set<Condition> conditionsCopy = new HashSet<Condition>(query.getConditions());
+        Set<Condition> conditionsCopy = new HashSet<>(query.getConditions());
         for (Condition condition : conditionsCopy) {
             String paramName = condition.getParameterName();
             if (paramName != null) {

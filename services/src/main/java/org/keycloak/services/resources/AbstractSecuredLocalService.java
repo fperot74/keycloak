@@ -17,7 +17,6 @@
 package org.keycloak.services.resources;
 
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.spi.BadRequestException;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.AbstractOAuthClient;
 import org.keycloak.OAuth2Constants;
@@ -34,6 +33,7 @@ import org.keycloak.services.managers.Auth;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.util.TokenUtil;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
@@ -82,47 +82,44 @@ public abstract class AbstractSecuredLocalService {
                                   @QueryParam("path") String path,
                                   @QueryParam("referrer") String referrer,
                                   @Context HttpHeaders headers) {
-        try {
-            if (error != null) {
-                if (OAuthErrorException.ACCESS_DENIED.equals(error)) {
-                    // cased by CANCELLED_BY_USER or CONSENT_DENIED
-                    session.getContext().setClient(client);
-                    return session.getProvider(LoginFormsProvider.class).setError(Messages.NO_ACCESS).createErrorPage(Response.Status.FORBIDDEN);
-                } else {
-                    logger.debug("error from oauth");
-                    throw new ForbiddenException("error");
-                }
+        if (error != null) {
+            if (OAuthErrorException.ACCESS_DENIED.equals(error)) {
+                // cased by CANCELLED_BY_USER or CONSENT_DENIED
+                session.getContext().setClient(client);
+                return session.getProvider(LoginFormsProvider.class).setError(Messages.NO_ACCESS).createErrorPage(Response.Status.FORBIDDEN);
+            } else {
+                logger.debug("error from oauth");
+                throw new ForbiddenException("error");
             }
-            if (path != null && !getValidPaths().contains(path)) {
-                throw new BadRequestException("Invalid path");
-            }
-            if (!realm.isEnabled()) {
-                logger.debug("realm not enabled");
-                throw new ForbiddenException();
-            }
-            if (!client.isEnabled()) {
-                logger.debug("account management app not enabled");
-                throw new ForbiddenException();
-            }
-            if (code == null) {
-                logger.debug("code not specified");
-                throw new BadRequestException("code not specified");
-            }
-            if (state == null) {
-                logger.debug("state not specified");
-                throw new BadRequestException("state not specified");
-            }
-            KeycloakUriBuilder redirect = KeycloakUriBuilder.fromUri(getBaseRedirectUri());
-            if (path != null) {
-                redirect.path(path);
-            }
-            if (referrer != null) {
-                redirect.queryParam("referrer", referrer);
-            }
-
-            return Response.status(302).location(redirect.build()).build();
-        } finally {
         }
+        if (path != null && !getValidPaths().contains(path)) {
+            throw new BadRequestException("Invalid path");
+        }
+        if (!realm.isEnabled()) {
+            logger.debug("realm not enabled");
+            throw new ForbiddenException();
+        }
+        if (!client.isEnabled()) {
+            logger.debug("account management app not enabled");
+            throw new ForbiddenException();
+        }
+        if (code == null) {
+            logger.debug("code not specified");
+            throw new BadRequestException("code not specified");
+        }
+        if (state == null) {
+            logger.debug("state not specified");
+            throw new BadRequestException("state not specified");
+        }
+        KeycloakUriBuilder redirect = KeycloakUriBuilder.fromUri(getBaseRedirectUri());
+        if (path != null) {
+            redirect.path(path);
+        }
+        if (referrer != null) {
+            redirect.queryParam("referrer", referrer);
+        }
+
+        return Response.status(302).location(redirect.build()).build();
     }
 
     protected abstract Set<String> getValidPaths();

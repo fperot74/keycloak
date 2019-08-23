@@ -25,6 +25,8 @@ import org.keycloak.jose.jws.JWSInput;
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+
+import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -80,22 +82,14 @@ public class HMACProvider implements SignatureProvider {
     }
 
     public static boolean verify(JWSInput input, SecretKey key) {
-        try {
-            byte[] signature = sign(input.getEncodedSignatureInput().getBytes("UTF-8"), input.getHeader().getAlgorithm(), key);
-            return MessageDigest.isEqual(signature, Base64Url.decode(input.getEncodedSignature()));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        byte[] signature = sign(input.getEncodedSignatureInput().getBytes(Charset.defaultCharset()), input.getHeader().getAlgorithm(), key);
+        return MessageDigest.isEqual(signature, Base64Url.decode(input.getEncodedSignature()));
     }
 
 
     public static boolean verify(JWSInput input, byte[] sharedSecret) {
-        try {
-            byte[] signature = sign(input.getEncodedSignatureInput().getBytes("UTF-8"), input.getHeader().getAlgorithm(), sharedSecret);
-            return MessageDigest.isEqual(signature, Base64Url.decode(input.getEncodedSignature()));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        byte[] signature = sign(input.getEncodedSignatureInput().getBytes(Charset.defaultCharset()), input.getHeader().getAlgorithm(), sharedSecret);
+        return MessageDigest.isEqual(signature, Base64Url.decode(input.getEncodedSignature()));
     }
 
     @Override

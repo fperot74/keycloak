@@ -30,7 +30,7 @@ public class PairwiseSubMapperUtils {
             return Collections.emptySet();
         }
 
-        Set<String> validRedirects = new HashSet<String>();
+        Set<String> validRedirects = new HashSet<>();
         for (String redirectUri : clientRedirectUris) {
             if (redirectUri.startsWith("/")) {
                 redirectUri = relativeToAbsoluteURI(clientRootUrl, redirectUri);
@@ -126,7 +126,7 @@ public class PairwiseSubMapperUtils {
         for (String validRedirect : validRedirects) {
             if (validRedirect.endsWith("*") && !validRedirect.contains("?")) {
                 // strip off the query component - we don't check them when wildcards are effective
-                String r = redirect.contains("?") ? redirect.substring(0, redirect.indexOf("?")) : redirect;
+                String r = redirect.contains("?") ? redirect.substring(0, redirect.indexOf('?')) : redirect;
                 // strip off *
                 int length = validRedirect.length() - 1;
                 validRedirect = validRedirect.substring(0, length);
@@ -153,11 +153,8 @@ public class PairwiseSubMapperUtils {
         List<ProtocolMapperRepresentation> mappers = client.getProtocolMappers();
 
         if (mappers != null) {
-            client.getProtocolMappers().stream().filter((ProtocolMapperRepresentation mapping) -> {
-                return mapping.getProtocolMapper().endsWith(AbstractPairwiseSubMapper.PROVIDER_ID_SUFFIX);
-            }).forEach((ProtocolMapperRepresentation mapping) -> {
-                pairwiseMappers.add(mapping);
-            });
+            client.getProtocolMappers().stream().filter(mapping -> mapping.getProtocolMapper().endsWith(AbstractPairwiseSubMapper.PROVIDER_ID_SUFFIX))
+                .forEach(pairwiseMappers::add);
         }
 
         return pairwiseMappers;

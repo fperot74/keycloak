@@ -191,7 +191,7 @@ public class DBusConnection extends AbstractConnection {
 
     private List<String> busnames;
 
-    private static final Map<Object, DBusConnection> conn = new HashMap<Object, DBusConnection>();
+    private static final Map<Object, DBusConnection> conn = new HashMap<>();
     private int _refcount = 0;
     private Object _reflock = new Object();
     private DBus _dbus;
@@ -337,13 +337,13 @@ public class DBusConnection extends AbstractConnection {
             String data = intro.Introspect();
             if (Debug.debug) Debug.print(Debug.VERBOSE, "Got introspection data: " + data);
             String[] tags = data.split("[<>]");
-            Vector<String> ifaces = new Vector<String>();
+            Vector<String> ifaces = new Vector<>();
             for (String tag : tags) {
                 if (tag.startsWith("interface")) {
                     ifaces.add(tag.replaceAll("^interface *name *= *['\"]([^'\"]*)['\"].*$", "$1"));
                 }
             }
-            Vector<Class<? extends Object>> ifcs = new Vector<Class<? extends Object>>();
+            Vector<Class<? extends Object>> ifcs = new Vector<>();
             for (String iface : ifaces) {
                 if (Debug.debug) Debug.print(Debug.DEBUG, "Trying interface " + iface);
                 int j = 0;
@@ -463,7 +463,7 @@ public class DBusConnection extends AbstractConnection {
      * Returns all the names owned by this connection.
      */
     public String[] getNames() {
-        Set<String> names = new TreeSet<String>();
+        Set<String> names = new TreeSet<>();
         names.addAll(busnames);
         return names.toArray(new String[0]);
     }

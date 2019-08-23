@@ -18,7 +18,6 @@ package org.keycloak.services.resources.admin;
 
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import org.jboss.resteasy.spi.NotFoundException;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
@@ -35,6 +34,7 @@ import org.keycloak.services.ErrorResponseException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -95,7 +95,7 @@ public class ClientRoleMappingsResource {
         viewPermission.require();
 
         Set<RoleModel> mappings = user.getClientRoleMappings(client);
-        List<RoleRepresentation> mapRep = new ArrayList<RoleRepresentation>();
+        List<RoleRepresentation> mapRep = new ArrayList<>();
         for (RoleModel roleModel : mappings) {
             mapRep.add(ModelToRepresentation.toBriefRepresentation(roleModel));
         }
@@ -118,7 +118,7 @@ public class ClientRoleMappingsResource {
 
 
         Set<RoleModel> roles = client.getRoles();
-        List<RoleRepresentation> mapRep = new ArrayList<RoleRepresentation>();
+        List<RoleRepresentation> mapRep = new ArrayList<>();
         for (RoleModel roleModel : roles) {
             if (user.hasRole(roleModel)) mapRep.add(ModelToRepresentation.toBriefRepresentation(roleModel));
         }
@@ -145,13 +145,13 @@ public class ClientRoleMappingsResource {
     }
 
     public static List<RoleRepresentation> getAvailableRoles(RoleMapperModel mapper, Set<RoleModel> available) {
-        Set<RoleModel> roles = new HashSet<RoleModel>();
+        Set<RoleModel> roles = new HashSet<>();
         for (RoleModel roleModel : available) {
             if (mapper.hasRole(roleModel)) continue;
             roles.add(roleModel);
         }
 
-        List<RoleRepresentation> mappings = new ArrayList<RoleRepresentation>();
+        List<RoleRepresentation> mappings = new ArrayList<>();
         for (RoleModel roleModel : roles) {
             mappings.add(ModelToRepresentation.toBriefRepresentation(roleModel));
         }

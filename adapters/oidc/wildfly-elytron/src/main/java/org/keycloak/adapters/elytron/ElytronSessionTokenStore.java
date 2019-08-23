@@ -166,7 +166,7 @@ public class ElytronSessionTokenStore implements ElytronTokeStore, UserSessionMa
 
     @Override
     public void refreshCallback(RefreshableKeycloakSecurityContext securityContext) {
-        KeycloakPrincipal<RefreshableKeycloakSecurityContext> principal = new KeycloakPrincipal<RefreshableKeycloakSecurityContext>(AdapterUtils.getPrincipalName(this.httpFacade.getDeployment(), securityContext.getToken()), securityContext);
+        KeycloakPrincipal<RefreshableKeycloakSecurityContext> principal = new KeycloakPrincipal<>(AdapterUtils.getPrincipalName(this.httpFacade.getDeployment(), securityContext.getToken()), securityContext);
         saveAccountInfo(new ElytronAccount(principal));
     }
 

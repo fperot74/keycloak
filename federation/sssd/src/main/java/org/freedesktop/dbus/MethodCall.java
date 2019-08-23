@@ -35,7 +35,7 @@ public class MethodCall extends Message {
         headers.put(Message.HeaderField.PATH, path);
         headers.put(Message.HeaderField.MEMBER, member);
 
-        Vector<Object> hargs = new Vector<Object>();
+        Vector<Object> hargs = new Vector<>();
 
         hargs.add(new Object[]{Message.HeaderField.PATH, new Object[]{ArgumentType.OBJECT_PATH_STRING, path}});
 

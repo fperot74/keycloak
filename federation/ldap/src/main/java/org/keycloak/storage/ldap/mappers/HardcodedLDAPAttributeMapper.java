@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
@@ -34,9 +33,6 @@ import org.keycloak.storage.ldap.idm.query.internal.LDAPQuery;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class HardcodedLDAPAttributeMapper extends AbstractLDAPStorageMapper {
-
-    private static final Logger logger = Logger.getLogger(HardcodedLDAPAttributeMapper.class);
-
     public static final String LDAP_ATTRIBUTE_NAME = "ldap.attribute.name";
 
     public static final String LDAP_ATTRIBUTE_VALUE = "ldap.attribute.value";

@@ -129,9 +129,9 @@ public class ClientManager {
 
         int currentTime = Time.currentTime();
 
-        Set<String> validatedNodes = new TreeSet<String>();
+        Set<String> validatedNodes = new TreeSet<>();
         if (client.getNodeReRegistrationTimeout() > 0) {
-            List<String> toRemove = new LinkedList<String>();
+            List<String> toRemove = new LinkedList<>();
             for (Map.Entry<String, Integer> entry : registeredNodes.entrySet()) {
                 Integer lastReRegistration = entry.getValue();
                 if (lastReRegistration + client.getNodeReRegistrationTimeout() < currentTime) {
@@ -294,7 +294,7 @@ public class ClientManager {
 
         if (clientModel.isPublicClient() && !clientModel.isBearerOnly()) rep.setPublicClient(true);
         if (clientModel.isBearerOnly()) rep.setBearerOnly(true);
-        if (clientModel.getRoles().size() > 0) rep.setUseResourceRoleMappings(true);
+        if (!clientModel.getRoles().isEmpty()) rep.setUseResourceRoleMappings(true);
 
         rep.setResource(clientModel.getClientId());
 
@@ -307,42 +307,43 @@ public class ClientManager {
     }
 
     public String toJBossSubsystemConfig(RealmModel realmModel, ClientModel clientModel, URI baseUri) {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("<secure-deployment name=\"WAR MODULE NAME.war\">\n");
-        buffer.append("    <realm>").append(realmModel.getName()).append("</realm>\n");
-        buffer.append("    <auth-server-url>").append(baseUri.toString()).append("</auth-server-url>\n");
+        StringBuilder builder = new StringBuilder();
+        builder.append("<secure-deployment name=\"WAR MODULE NAME.war\">\n");
+        builder.append("    <realm>").append(realmModel.getName()).append("</realm>\n");
+        builder.append("    <auth-server-url>").append(baseUri.toString()).append("</auth-server-url>\n");
         if (clientModel.isBearerOnly()){
-            buffer.append("    <bearer-only>true</bearer-only>\n");
+            builder.append("    <bearer-only>true</bearer-only>\n");
 
         } else if (clientModel.isPublicClient()) {
-            buffer.append("    <public-client>true</public-client>\n");
+            builder.append("    <public-client>true</public-client>\n");
         }
-        buffer.append("    <ssl-required>").append(realmModel.getSslRequired().name()).append("</ssl-required>\n");
-        buffer.append("    <resource>").append(clientModel.getClientId()).append("</resource>\n");
+        builder.append("    <ssl-required>").append(realmModel.getSslRequired().name()).append("</ssl-required>\n");
+        builder.append("    <resource>").append(clientModel.getClientId()).append("</resource>\n");
         String cred = clientModel.getSecret();
         if (showClientCredentialsAdapterConfig(clientModel)) {
             Map<String, Object> adapterConfig = getClientCredentialsAdapterConfig(clientModel);
             for (Map.Entry<String, Object> entry : adapterConfig.entrySet()) {
-                buffer.append("    <credential name=\"" + entry.getKey() + "\">");
+                builder.append("    <credential name=\"" + entry.getKey() + "\">");
 
                 Object value = entry.getValue();
                 if (value instanceof Map) {
-                    buffer.append("\n");
+                    builder.append("\n");
+                    @SuppressWarnings("unchecked")
                     Map<String, Object> asMap = (Map<String, Object>) value;
                     for (Map.Entry<String, Object> credEntry : asMap.entrySet()) {
-                        buffer.append("        <" + credEntry.getKey() + ">" + credEntry.getValue().toString() + "</" + credEntry.getKey() + ">\n");
+                        builder.append("        <").append(credEntry.getKey()).append('>').append(credEntry.getValue()).append("</").append(credEntry.getKey()).append(">\n");
                     }
-                    buffer.append("    </credential>\n");
+                    builder.append("    </credential>\n");
                 } else {
-                    buffer.append(value.toString()).append("</credential>\n");
+                    builder.append(value).append("</credential>\n");
                 }
             }
         }
-        if (clientModel.getRoles().size() > 0) {
-            buffer.append("    <use-resource-role-mappings>true</use-resource-role-mappings>\n");
+        if (!clientModel.getRoles().isEmpty()) {
+            builder.append("    <use-resource-role-mappings>true</use-resource-role-mappings>\n");
         }
-        buffer.append("</secure-deployment>\n");
-        return buffer.toString();
+        builder.append("</secure-deployment>\n");
+        return builder.toString();
     }
 
     private boolean showClientCredentialsAdapterConfig(ClientModel client) {
@@ -350,11 +351,7 @@ public class ClientManager {
             return false;
         }
 
-        if (client.isBearerOnly() && client.getNodeReRegistrationTimeout() <= 0) {
-            return false;
-        }
-
-        return true;
+        return !client.isBearerOnly() || client.getNodeReRegistrationTimeout() > 0;
     }
 
     private Map<String, Object> getClientCredentialsAdapterConfig(ClientModel client) {

@@ -38,7 +38,7 @@ public class NodesRegistrationManagement {
 
     private static final Logger log = Logger.getLogger(NodesRegistrationManagement.class);
 
-    private final Map<String, NodeRegistrationContext> nodeRegistrations = new ConcurrentHashMap<String, NodeRegistrationContext>();
+    private final Map<String, NodeRegistrationContext> nodeRegistrations = new ConcurrentHashMap<>();
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     // Sending registration event during first request to application or if re-registration is needed

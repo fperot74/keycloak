@@ -132,7 +132,7 @@ public class CatalinaHttpFacade implements HttpFacade {
         public List<String> getHeaders(String name) {
             Enumeration<String> headers = request.getHeaders(name);
             if (headers == null) return null;
-            List<String> list = new ArrayList<String>();
+            List<String> list = new ArrayList<>();
             while (headers.hasMoreElements()) {
                 list.add(headers.nextElement());
             }

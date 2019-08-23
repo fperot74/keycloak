@@ -37,7 +37,7 @@ import java.util.Map;
  */
 public class AddressMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper, UserInfoTokenMapper {
 
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
     public static final String STREET = "street";
 
@@ -78,7 +78,7 @@ public class AddressMapper extends AbstractOIDCProtocolMapper implements OIDCAcc
         address.setName("address");
         address.setProtocolMapper(PROVIDER_ID);
         address.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
-        config = new HashMap<String, String>();
+        config = new HashMap<>();
         config.put(OIDCAttributeMapperHelper.INCLUDE_IN_ACCESS_TOKEN, Boolean.toString(accessToken));
         config.put(OIDCAttributeMapperHelper.INCLUDE_IN_ID_TOKEN, Boolean.toString(idToken));
         config.put(OIDCAttributeMapperHelper.INCLUDE_IN_USERINFO, Boolean.toString(userInfo));

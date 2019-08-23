@@ -23,7 +23,6 @@ import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.ComponentExportRepresentation;
 import org.keycloak.representations.idm.ComponentRepresentation;
-import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.IdentityProviderRepresentation;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -78,38 +77,26 @@ public class StripSecretsUtils {
 
         List<ClientRepresentation> clients = rep.getClients();
         if (clients != null) {
-            for (ClientRepresentation c : clients) {
-                strip(c);
-            }
+            clients.forEach(StripSecretsUtils::strip);
         }
         List<IdentityProviderRepresentation> providers = rep.getIdentityProviders();
         if (providers != null) {
-            for (IdentityProviderRepresentation r : providers) {
-                strip(r);
-            }
+            providers.forEach(StripSecretsUtils::strip);
         }
 
         MultivaluedHashMap<String, ComponentExportRepresentation> components = rep.getComponents();
         if (components != null) {
-            for (Map.Entry<String, List<ComponentExportRepresentation>> ent : components.entrySet()) {
-                for (ComponentExportRepresentation c : ent.getValue()) {
-                    strip(session, ent.getKey(), c);
-                }
-            }
+            components.forEach((k,v) -> v.forEach(c -> strip(session, k, c)));
         }
 
         List<UserRepresentation> users = rep.getUsers();
         if (users != null) {
-            for (UserRepresentation u: users) {
-                strip(u);
-            }
+            users.forEach(StripSecretsUtils::strip);
         }
 
         users = rep.getFederatedUsers();
         if (users != null) {
-            for (UserRepresentation u: users) {
-                strip(u);
-            }
+            users.forEach(StripSecretsUtils::strip);
         }
 
         return rep;
@@ -147,12 +134,8 @@ public class StripSecretsUtils {
         }
 
         MultivaluedHashMap<String, ComponentExportRepresentation> sub = rep.getSubComponents();
-        for (Map.Entry<String, List<ComponentExportRepresentation>> ent: sub.entrySet()) {
-            for (ComponentExportRepresentation c: ent.getValue()) {
-                strip(session, ent.getKey(), c);
-            }
-        }
+        sub.forEach((k,v) -> v.forEach(c -> strip(session, k, c)));
+
         return rep;
     }
-
 }

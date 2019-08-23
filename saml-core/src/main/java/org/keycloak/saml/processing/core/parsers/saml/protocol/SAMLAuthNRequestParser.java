@@ -28,7 +28,6 @@ import org.keycloak.saml.processing.core.parsers.saml.assertion.SAMLSubjectParse
 import org.keycloak.saml.processing.core.parsers.util.SAMLParserUtil;
 import org.keycloak.saml.processing.core.saml.v2.util.XMLTimeUtil;
 import javax.xml.datatype.XMLGregorianCalendar;
-import static org.keycloak.saml.processing.core.parsers.saml.protocol.SAMLRequestAbstractParser.VERSION_2_0;
 
 /**
  * Parse the SAML2 AuthnRequest

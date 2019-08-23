@@ -96,7 +96,7 @@ public class JBossWebPrincipalFactory extends GenericPrincipalFactory {
         SecurityContext sc = SecurityContextAssociation.getSecurityContext();
         Principal userPrincipal = getPrincipal(subject);
         sc.getUtil().createSubjectInfo(userPrincipal, account, subject);
-        List<String> rolesAsStringList = new ArrayList<String>();
+        List<String> rolesAsStringList = new ArrayList<>();
         rolesAsStringList.addAll(roleSet);
 
         try {

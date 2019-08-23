@@ -77,13 +77,11 @@ public class GroupAdapter implements GroupModel {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || !(o instanceof GroupModel)) return false;
+        if (!(o instanceof GroupModel)) return false;
 
         GroupModel that = (GroupModel) o;
 
-        if (!cached.getId().equals(that.getId())) return false;
-
-        return true;
+        return cached.getId().equals(that.getId());
     }
 
     @Override
@@ -137,9 +135,7 @@ public class GroupAdapter implements GroupModel {
 
     @Override
     public List<String> getAttribute(String name) {
-        List<String> values = cached.getAttributes(modelSupplier).get(name);
-        if (values == null) return null;
-        return values;
+        return cached.getAttributes(modelSupplier).get(name);
     }
 
     @Override
@@ -151,13 +147,11 @@ public class GroupAdapter implements GroupModel {
     public Set<RoleModel> getRealmRoleMappings() {
         if (isUpdated()) return updated.getRealmRoleMappings();
         Set<RoleModel> roleMappings = getRoleMappings();
-        Set<RoleModel> realmMappings = new HashSet<RoleModel>();
+        Set<RoleModel> realmMappings = new HashSet<>();
         for (RoleModel role : roleMappings) {
             RoleContainerModel container = role.getContainer();
-            if (container instanceof RealmModel) {
-                if (((RealmModel) container).getId().equals(realm.getId())) {
-                    realmMappings.add(role);
-                }
+            if (container instanceof RealmModel && ((RealmModel) container).getId().equals(realm.getId())) {
+                realmMappings.add(role);
             }
         }
         return realmMappings;
@@ -167,13 +161,11 @@ public class GroupAdapter implements GroupModel {
     public Set<RoleModel> getClientRoleMappings(ClientModel app) {
         if (isUpdated()) return updated.getClientRoleMappings(app);
         Set<RoleModel> roleMappings = getRoleMappings();
-        Set<RoleModel> appMappings = new HashSet<RoleModel>();
+        Set<RoleModel> appMappings = new HashSet<>();
         for (RoleModel role : roleMappings) {
             RoleContainerModel container = role.getContainer();
-            if (container instanceof ClientModel) {
-                if (((ClientModel) container).getId().equals(app.getId())) {
-                    appMappings.add(role);
-                }
+            if (container instanceof ClientModel && ((ClientModel) container).getId().equals(app.getId())) {
+                appMappings.add(role);
             }
         }
         return appMappings;
@@ -200,7 +192,7 @@ public class GroupAdapter implements GroupModel {
     @Override
     public Set<RoleModel> getRoleMappings() {
         if (isUpdated()) return updated.getRoleMappings();
-        Set<RoleModel> roles = new HashSet<RoleModel>();
+        Set<RoleModel> roles = new HashSet<>();
         for (String id : cached.getRoleMappings(modelSupplier)) {
             RoleModel roleById = keycloakSession.realms().getRoleById(id, realm);
             if (roleById == null) {

@@ -24,7 +24,6 @@ import org.keycloak.timer.TimerProvider;
 import org.keycloak.timer.TimerProviderFactory;
 
 import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 

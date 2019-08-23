@@ -56,7 +56,7 @@ public class ProtectedResource {
      * @return a {@link RegistrationResponse}
      */
     public ResourceRepresentation create(final ResourceRepresentation resource) {
-        Callable<ResourceRepresentation> callable = new Callable<ResourceRepresentation>() {
+        Callable<ResourceRepresentation> callable = new Callable<>() {
             @Override
             public ResourceRepresentation call() throws Exception {
                 return http.<ResourceRepresentation>post(serverConfiguration.getResourceRegistrationEndpoint())
@@ -106,7 +106,7 @@ public class ProtectedResource {
      * @return a {@link ResourceRepresentation}
      */
     public ResourceRepresentation findById(final String id) {
-        Callable<ResourceRepresentation> callable = new Callable<ResourceRepresentation>() {
+        Callable<ResourceRepresentation> callable = new Callable<>() {
             @Override
             public ResourceRepresentation call() throws Exception {
                 return http.<ResourceRepresentation>get(serverConfiguration.getResourceRegistrationEndpoint() + "/" + id)
@@ -169,7 +169,7 @@ public class ProtectedResource {
      * @return an array of strings with the resource ids
      */
     public String[] find(final String id, final String name, final String uri, final String owner, final String type, final String scope, final boolean matchingUri, final Integer firstResult, final Integer maxResult) {
-        Callable<String[]> callable = new Callable<String[]>() {
+        Callable<String[]> callable = new Callable<>() {
             @Override
             public String[] call() throws Exception {
                 return (String[]) createFindRequest(id, name, uri, owner, type, scope, matchingUri, false, firstResult, maxResult).response().json(String[].class).execute();
@@ -199,7 +199,7 @@ public class ProtectedResource {
      */
     public <R> R find(final String id, final String name, final String uri, final String owner, final String type, final String scope, final boolean matchingUri, final boolean deep, final Integer firstResult, final Integer maxResult) {
         if (deep) {
-            Callable<List<ResourceRepresentation>> callable = new Callable<List<ResourceRepresentation>>() {
+            Callable<List<ResourceRepresentation>> callable = new Callable<>() {
                 @Override
                 public List<ResourceRepresentation> call() {
                     return (List<ResourceRepresentation>) createFindRequest(id, name, uri, owner, type, scope, matchingUri, deep, firstResult, maxResult).response().json(new TypeReference<List<ResourceRepresentation>>() {

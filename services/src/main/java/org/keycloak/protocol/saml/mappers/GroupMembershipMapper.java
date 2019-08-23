@@ -41,7 +41,7 @@ public class GroupMembershipMapper extends AbstractSAMLProtocolMapper implements
     public static final String PROVIDER_ID = "saml-group-membership-mapper";
     public static final String SINGLE_GROUP_ATTRIBUTE = "single";
 
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
     static {
         ProviderConfigProperty property;
@@ -60,7 +60,7 @@ public class GroupMembershipMapper extends AbstractSAMLProtocolMapper implements
         property.setName(AttributeStatementHelper.SAML_ATTRIBUTE_NAMEFORMAT);
         property.setLabel("SAML Attribute NameFormat");
         property.setHelpText("SAML Attribute NameFormat.  Can be basic, URI reference, or unspecified.");
-        List<String> types = new ArrayList(3);
+        List<String> types = new ArrayList<>(3);
         types.add(AttributeStatementHelper.BASIC);
         types.add(AttributeStatementHelper.URI_REFERENCE);
         types.add(AttributeStatementHelper.UNSPECIFIED);
@@ -150,7 +150,7 @@ public class GroupMembershipMapper extends AbstractSAMLProtocolMapper implements
         mapper.setName(name);
         mapper.setProtocolMapper(PROVIDER_ID);
         mapper.setProtocol(SamlProtocol.LOGIN_PROTOCOL);
-        Map<String, String> config = new HashMap<String, String>();
+        Map<String, String> config = new HashMap<>();
         config.put(AttributeStatementHelper.SAML_ATTRIBUTE_NAME, samlAttributeName);
         if (friendlyName != null) {
             config.put(AttributeStatementHelper.FRIENDLY_NAME, friendlyName);

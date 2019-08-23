@@ -239,7 +239,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
     @Override
     public Map<String, String> getAttributes() {
         // should always return a copy
-        Map<String, String> result = new HashMap<String, String>();
+        Map<String, String> result = new HashMap<>();
         for (RealmAttributeEntity attr : realm.getAttributes()) {
             result.put(attr.getName(), attr.getValue());
         }
@@ -626,10 +626,10 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
     @Override
     public void updateRequiredCredentials(Set<String> creds) {
         Collection<RequiredCredentialEntity> relationships = realm.getRequiredCredentials();
-        if (relationships == null) relationships = new ArrayList<RequiredCredentialEntity>();
+        if (relationships == null) relationships = new ArrayList<>();
 
-        Set<String> already = new HashSet<String>();
-        List<RequiredCredentialEntity> remove = new ArrayList<RequiredCredentialEntity>();
+        Set<String> already = new HashSet<>();
+        List<RequiredCredentialEntity> remove = new ArrayList<>();
         for (RequiredCredentialEntity rel : relationships) {
             if (!creds.contains(rel.getType())) {
                 remove.add(rel);
@@ -653,7 +653,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
     @Override
     public List<RequiredCredentialModel> getRequiredCredentials() {
         Collection<RequiredCredentialEntity> entities = realm.getRequiredCredentials();
-        if (entities == null) return Collections.EMPTY_LIST;
+        if (entities == null) return Collections.emptyList();
         List<RequiredCredentialModel> requiredCredentialModels = new LinkedList<>();
         for (RequiredCredentialEntity entity : entities) {
             RequiredCredentialModel model = new RequiredCredentialModel();
@@ -705,8 +705,8 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
     @Override
     public void updateDefaultRoles(String[] defaultRoles) {
         Collection<RoleEntity> entities = realm.getDefaultRoles();
-        Set<String> already = new HashSet<String>();
-        List<RoleEntity> remove = new ArrayList<RoleEntity>();
+        Set<String> already = new HashSet<>();
+        List<RoleEntity> remove = new ArrayList<>();
         for (RoleEntity rel : entities) {
             if (!contains(rel.getName(), defaultRoles)) {
                 remove.add(rel);
@@ -729,7 +729,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
     @Override
     public void removeDefaultRoles(String... defaultRoles) {
         Collection<RoleEntity> entities = realm.getDefaultRoles();
-        List<RoleEntity> remove = new ArrayList<RoleEntity>();
+        List<RoleEntity> remove = new ArrayList<>();
         for (RoleEntity rel : entities) {
             if (contains(rel.getName(), defaultRoles)) {
                 remove.add(rel);
@@ -744,7 +744,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
     @Override
     public List<GroupModel> getDefaultGroups() {
         Collection<GroupEntity> entities = realm.getDefaultGroups();
-        if (entities == null || entities.isEmpty()) return Collections.EMPTY_LIST;
+        if (entities == null || entities.isEmpty()) return Collections.emptyList();
         List<GroupModel> defaultGroups = new LinkedList<>();
         for (GroupEntity entity : entities) {
             defaultGroups.add(session.realms().getGroupById(entity.getId(), this));
@@ -818,8 +818,8 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
     @Override
     public Map<String, String> getBrowserSecurityHeaders() {
         Map<String, String> attributes = getAttributes();
-        if (attributes.isEmpty()) return Collections.EMPTY_MAP;
-        Map<String, String> headers = new HashMap<String, String>();
+        if (attributes.isEmpty()) return Collections.emptyMap();
+        Map<String, String> headers = new HashMap<>();
         for (Map.Entry<String, String> entry : attributes.entrySet()) {
             if (entry.getKey().startsWith(BROWSER_HEADER_PREFIX)) {
                 headers.put(entry.getKey().substring(BROWSER_HEADER_PREFIX.length()), entry.getValue());
@@ -837,7 +837,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public Map<String, String> getSmtpConfig() {
-        Map<String, String> config = new HashMap<String, String>();
+        Map<String, String> config = new HashMap<>();
         config.putAll(realm.getSmtpConfig());
         return Collections.unmodifiableMap(config);
     }
@@ -1019,7 +1019,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || !(o instanceof RealmModel)) return false;
+        if (!(o instanceof RealmModel)) return false;
 
         RealmModel that = (RealmModel) o;
         return that.getId().equals(getId());
@@ -1099,7 +1099,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
     @Override
     public Set<String> getEventsListeners() {
         Set<String> eventsListeners = realm.getEventsListeners();
-        if (eventsListeners.isEmpty()) return Collections.EMPTY_SET;
+        if (eventsListeners.isEmpty()) return Collections.emptySet();
         Set<String> copy = new HashSet<>();
         copy.addAll(eventsListeners);
         return Collections.unmodifiableSet(copy);
@@ -1114,7 +1114,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
     @Override
     public Set<String> getEnabledEventTypes() {
         Set<String> enabledEventTypes = realm.getEnabledEventTypes();
-        if (enabledEventTypes.isEmpty()) return Collections.EMPTY_SET;
+        if (enabledEventTypes.isEmpty()) return Collections.emptySet();
         Set<String> copy = new HashSet<>();
         copy.addAll(enabledEventTypes);
         return Collections.unmodifiableSet(copy);
@@ -1174,14 +1174,8 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
     @Override
     public List<IdentityProviderModel> getIdentityProviders() {
         List<IdentityProviderEntity> entities = realm.getIdentityProviders();
-        if (entities.isEmpty()) return Collections.EMPTY_LIST;
-        List<IdentityProviderModel> identityProviders = new ArrayList<IdentityProviderModel>();
-
-        for (IdentityProviderEntity entity: entities) {
-            IdentityProviderModel identityProviderModel = entityToModel(entity);
-
-            identityProviders.add(identityProviderModel);
-        }
+        if (entities.isEmpty()) return Collections.emptyList();
+        List<IdentityProviderModel> identityProviders = entities.stream().map(this::entityToModel).collect(Collectors.toList());
 
         return Collections.unmodifiableList(identityProviders);
     }
@@ -1338,7 +1332,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
     @Override
     public Set<String> getSupportedLocales() {
         Set<String> supportedLocales = realm.getSupportedLocales();
-        if (supportedLocales == null || supportedLocales.isEmpty()) return Collections.EMPTY_SET;
+        if (supportedLocales == null || supportedLocales.isEmpty()) return Collections.emptySet();
         Set<String> copy = new HashSet<>();
         copy.addAll(supportedLocales);
         return Collections.unmodifiableSet(copy);
@@ -1364,8 +1358,8 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
     @Override
     public Set<IdentityProviderMapperModel> getIdentityProviderMappers() {
         Collection<IdentityProviderMapperEntity> entities = this.realm.getIdentityProviderMappers();
-        if (entities.isEmpty()) return Collections.EMPTY_SET;
-        Set<IdentityProviderMapperModel> mappings = new HashSet<IdentityProviderMapperModel>();
+        if (entities.isEmpty()) return Collections.emptySet();
+        Set<IdentityProviderMapperModel> mappings = new HashSet<>();
         for (IdentityProviderMapperEntity entity : entities) {
             IdentityProviderMapperModel mapping = entityToModel(entity);
             mappings.add(mapping);
@@ -1375,7 +1369,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public Set<IdentityProviderMapperModel> getIdentityProviderMappersByAlias(String brokerAlias) {
-        Set<IdentityProviderMapperModel> mappings = new HashSet<IdentityProviderMapperModel>();
+        Set<IdentityProviderMapperModel> mappings = new HashSet<>();
         for (IdentityProviderMapperEntity entity : this.realm.getIdentityProviderMappers()) {
             if (!entity.getIdentityProviderAlias().equals(brokerAlias)) {
                 continue;
@@ -1472,7 +1466,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
         mapping.setName(entity.getName());
         mapping.setIdentityProviderAlias(entity.getIdentityProviderAlias());
         mapping.setIdentityProviderMapper(entity.getIdentityProviderMapper());
-        Map<String, String> config = new HashMap<String, String>();
+        Map<String, String> config = new HashMap<>();
         if (entity.getConfig() != null) config.putAll(entity.getConfig());
         mapping.setConfig(config);
         return mapping;
@@ -1772,7 +1766,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
     @Override
     public List<AuthenticatorConfigModel> getAuthenticatorConfigs() {
         Collection<AuthenticatorConfigEntity> entities = realm.getAuthenticatorConfigs();
-        if (entities.isEmpty()) return Collections.EMPTY_LIST;
+        if (entities.isEmpty()) return Collections.emptyList();
         List<AuthenticatorConfigModel> authenticators = new LinkedList<>();
         for (AuthenticatorConfigEntity entity : entities) {
             authenticators.add(entityToModel(entity));
@@ -1856,7 +1850,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
     @Override
     public List<RequiredActionProviderModel> getRequiredActionProviders() {
         Collection<RequiredActionProviderEntity> entities = realm.getRequiredActionProviders();
-        if (entities.isEmpty()) return Collections.EMPTY_LIST;
+        if (entities.isEmpty()) return Collections.emptyList();
         List<RequiredActionProviderModel> actions = new LinkedList<>();
         for (RequiredActionProviderEntity entity : entities) {
             actions.add(entityToModel(entity));
@@ -1931,7 +1925,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
     @Override
     public List<ClientScopeModel> getClientScopes() {
         Collection<ClientScopeEntity> entities = realm.getClientScopes();
-        if (entities == null || entities.isEmpty()) return Collections.EMPTY_LIST;
+        if (entities == null || entities.isEmpty()) return Collections.emptyList();
         List<ClientScopeModel> list = new LinkedList<>();
         for (ClientScopeEntity entity : entities) {
             list.add(session.realms().getClientScopeById(entity.getId(), this));
@@ -1978,9 +1972,6 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
                 break;
             }
         }
-        if (clientScope == null) {
-            return false;
-        }
 
         session.users().preRemove(clientScope);
 
@@ -1988,7 +1979,6 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
         em.flush();
         em.remove(clientScopeEntity);
         em.flush();
-
 
         return true;
     }
@@ -2011,7 +2001,7 @@ public class RealmAdapter implements RealmModel, JpaModel<RealmEntity> {
 
     @Override
     public void removeDefaultClientScope(ClientScopeModel clientScope) {
-        int numRemoved = em.createNamedQuery("deleteDefaultClientScopeRealmMapping")
+        em.createNamedQuery("deleteDefaultClientScopeRealmMapping")
                 .setParameter("clientScope", ClientScopeAdapter.toClientScopeEntity(clientScope, em))
                 .setParameter("realm", getEntity())
                 .executeUpdate();

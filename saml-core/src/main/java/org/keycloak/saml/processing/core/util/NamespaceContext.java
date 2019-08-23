@@ -20,6 +20,7 @@ package org.keycloak.saml.processing.core.util;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Helper class in process of parsing signature out of SAML token.
@@ -36,7 +37,7 @@ import java.util.Map;
 
 public class NamespaceContext implements javax.xml.namespace.NamespaceContext {
 
-    private Map<String, String> nsMap = new HashMap<String, String>();
+    private Map<String, String> nsMap = new HashMap<>();
 
     public NamespaceContext() {
     }
@@ -61,10 +62,9 @@ public class NamespaceContext implements javax.xml.namespace.NamespaceContext {
      * @see javax.xml.namespace.NamespaceContext#getPrefix(java.lang.String)
      */
     public String getPrefix(String namespaceURI) {
-        for (String key : nsMap.keySet()) {
-            String value = nsMap.get(key);
-            if (value.equals(namespaceURI)) {
-                return key;
+        for (Entry<String, String> entry : nsMap.entrySet()) {
+            if (entry.getValue().equals(namespaceURI)) {
+                return entry.getKey();
             }
         }
         return null;

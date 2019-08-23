@@ -52,7 +52,7 @@ public class HardcodedLDAPGroupStorageMapper extends AbstractLDAPStorageMapper {
 
             @Override
             public Set<GroupModel> getGroups() {
-                Set<GroupModel> groups = new HashSet<GroupModel>(super.getGroups());
+                Set<GroupModel> groups = new HashSet<>(super.getGroups());
 
                 GroupModel group = getGroup(realm);
                 if (group != null) {

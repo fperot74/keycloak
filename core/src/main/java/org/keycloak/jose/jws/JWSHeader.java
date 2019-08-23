@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.function.Supplier;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -68,21 +69,20 @@ public class JWSHeader implements Serializable {
         return keyId;
     }
 
-    private static final ObjectMapper mapper = new ObjectMapper();
-
-    static {
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-
-    }
+    private static final ThreadLocal<ObjectMapper> mapperProvider = ThreadLocal.withInitial(new Supplier<ObjectMapper>() {
+        @Override
+        public ObjectMapper get() {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            return mapper;
+        }
+    });
 
     public String toString() {
         try {
-            return mapper.writeValueAsString(this);
+            return mapperProvider.get().writeValueAsString(this);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-
     }
-
 }

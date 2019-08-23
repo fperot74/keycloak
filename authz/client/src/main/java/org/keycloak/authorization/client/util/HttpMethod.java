@@ -50,7 +50,7 @@ public class HttpMethod<R> {
     private HttpMethodResponse<R> response;
 
     public HttpMethod(Configuration configuration, ClientAuthenticator authenticator, RequestBuilder builder) {
-        this(configuration, authenticator, builder, new HashMap<String, List<String>>(), new HashMap<String, String>());
+        this(configuration, authenticator, builder, new HashMap<>(), new HashMap<>());
     }
 
     public HttpMethod(Configuration configuration, ClientAuthenticator authenticator, RequestBuilder builder, Map<String, List<String>> params, Map<String, String> headers) {

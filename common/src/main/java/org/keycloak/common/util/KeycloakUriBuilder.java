@@ -202,11 +202,9 @@ public class KeycloakUriBuilder {
         }
 
         if (uri.getScheme() == null) {
-            if (ssp != null) {
-                if (uri.getRawSchemeSpecificPart() != null) {
-                    ssp = uri.getRawSchemeSpecificPart();
-                    return this;
-                }
+            if (ssp != null && uri.getRawSchemeSpecificPart() != null) {
+                ssp = uri.getRawSchemeSpecificPart();
+                return this;
             }
         } else {
             scheme = uri.getScheme();
@@ -253,8 +251,7 @@ public class KeycloakUriBuilder {
 
         StringBuilder sb = new StringBuilder();
         if (scheme != null) sb.append(scheme).append(':');
-        if (ssp != null)
-            sb.append(ssp);
+        sb.append(ssp);
         if (fragment != null && fragment.length() > 0) sb.append('#').append(fragment);
         URI uri = URI.create(sb.toString());
 
@@ -542,8 +539,8 @@ public class KeycloakUriBuilder {
      * @return
      */
     public List<String> getPathParamNamesInDeclarationOrder() {
-        List<String> params = new ArrayList<String>();
-        HashSet<String> set = new HashSet<String>();
+        List<String> params = new ArrayList<>();
+        HashSet<String> set = new HashSet<>();
         if (scheme != null) addToPathParamList(params, set, scheme);
         if (userInfo != null) addToPathParamList(params, set, userInfo);
         if (host != null) addToPathParamList(params, set, host);
@@ -576,8 +573,7 @@ public class KeycloakUriBuilder {
         if (values.length < params.size())
             throw new IllegalArgumentException("You did not supply enough values to fill path parameters");
 
-        Map<String, Object> pathParams = new HashMap<String, Object>();
-
+        Map<String, Object> pathParams = new HashMap<>();
 
         for (int i = 0; i < params.size(); i++) {
             String pathParam = params.get(i);
@@ -709,7 +705,7 @@ public class KeycloakUriBuilder {
     public KeycloakUriBuilder resolveTemplate(String name, Object value) throws IllegalArgumentException {
         if (name == null) throw new IllegalArgumentException("name param is null");
         if (value == null) throw new IllegalArgumentException("value param is null");
-        HashMap<String, Object> vals = new HashMap<String, Object>();
+        HashMap<String, Object> vals = new HashMap<>();
         vals.put(name, value);
         return resolveTemplates(vals);
     }
@@ -723,7 +719,7 @@ public class KeycloakUriBuilder {
     public KeycloakUriBuilder resolveTemplate(String name, Object value, boolean encodeSlashInPath) throws IllegalArgumentException {
         if (name == null) throw new IllegalArgumentException("name param is null");
         if (value == null) throw new IllegalArgumentException("value param is null");
-        HashMap<String, Object> vals = new HashMap<String, Object>();
+        HashMap<String, Object> vals = new HashMap<>();
         vals.put(name, value);
         String str = buildString(vals, false, true, encodeSlashInPath);
         return fromTemplate(str);

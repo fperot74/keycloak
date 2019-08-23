@@ -36,7 +36,6 @@ import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.Characters;
 import javax.xml.stream.events.Comment;
-import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
@@ -79,9 +78,7 @@ public class TransformerUtil {
         Transformer transformer;
         try {
             transformer = getTransformerFactory().newTransformer();
-        } catch (TransformerConfigurationException e) {
-            throw logger.configurationError(e);
-        } catch (TransformerFactoryConfigurationError e) {
+        } catch (TransformerConfigurationException | TransformerFactoryConfigurationError e) {
             throw logger.configurationError(e);
         }
 
@@ -139,10 +136,8 @@ public class TransformerUtil {
      * (JDK6) as well as the issue of Xalan installing its Transformer (which does not support stax).
      *
      * @return
-     *
-     * @throws ConfigurationException
      */
-    public static Transformer getStaxSourceToDomResultTransformer() throws ConfigurationException {
+    public static Transformer getStaxSourceToDomResultTransformer() {
         return new PicketLinkStaxToDOMTransformer();
     }
 
@@ -217,7 +212,7 @@ public class TransformerUtil {
             DOMResult domResult = (DOMResult) outputTarget;
             Document doc = (Document) domResult.getNode();
 
-            Stack<Node> stack = new Stack<Node>();
+            Stack<Node> stack = new Stack<>();
 
             try {
                 XMLEvent xmlEvent = StaxParserUtil.getNextEvent(xmlEventReader);

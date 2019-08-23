@@ -685,7 +685,7 @@ public class Message {
                             diff = appendone(sigb, i, o);
                         if (i == diff) {
                             // advance the type parser even on 0-size arrays.
-                            Vector<Type> temp = new Vector<Type>();
+                            Vector<Type> temp = new Vector<>();
                             byte[] temp2 = new byte[sigb.length - diff];
                             System.arraycopy(sigb, diff, temp2, 0, temp2.length);
                             String temp3 = new String(temp2);
@@ -965,7 +965,7 @@ public class Message {
                     case ArgumentType.DICT_ENTRY1:
                         if (0 == size) {
                             // advance the type parser even on 0-size arrays.
-                            Vector<Type> temp = new Vector<Type>();
+                            Vector<Type> temp = new Vector<>();
                             byte[] temp2 = new byte[sigb.length - ofs[0]];
                             System.arraycopy(sigb, ofs[0], temp2, 0, temp2.length);
                             String temp3 = new String(temp2);
@@ -977,7 +977,7 @@ public class Message {
                         }
                         int ofssave = ofs[0];
                         long end = ofs[1] + size;
-                        Vector<Object[]> entries = new Vector<Object[]>();
+                        Vector<Object[]> entries = new Vector<>();
                         while (ofs[1] < end) {
                             ofs[0] = ofssave;
                             entries.add((Object[]) extractone(sigb, buf, ofs, true));
@@ -987,7 +987,7 @@ public class Message {
                     default:
                         if (0 == size) {
                             // advance the type parser even on 0-size arrays.
-                            Vector<Type> temp = new Vector<Type>();
+                            Vector<Type> temp = new Vector<>();
                             byte[] temp2 = new byte[sigb.length - ofs[0]];
                             System.arraycopy(sigb, ofs[0], temp2, 0, temp2.length);
                             String temp3 = new String(temp2);
@@ -999,7 +999,7 @@ public class Message {
                         }
                         ofssave = ofs[0];
                         end = ofs[1] + size;
-                        Vector<Object> contents = new Vector<Object>();
+                        Vector<Object> contents = new Vector<>();
                         while (ofs[1] < end) {
                             ofs[0] = ofssave;
                             contents.add(extractone(sigb, buf, ofs, true));
@@ -1010,7 +1010,7 @@ public class Message {
                     rv = ArrayFrob.listify(rv);
                 break;
             case ArgumentType.STRUCT1:
-                Vector<Object> contents = new Vector<Object>();
+                Vector<Object> contents = new Vector<>();
                 while (sigb[++ofs[0]] != ArgumentType.STRUCT2)
                     contents.add(extractone(sigb, buf, ofs, true));
                 rv = contents.toArray();
@@ -1090,7 +1090,7 @@ public class Message {
     public Object[] extract(String sig, byte[] buf, int[] ofs) throws DBusException {
         if (Debug.debug)
             Debug.print(Debug.VERBOSE, "extract(" + sig + ",#" + buf.length + ", {" + ofs[0] + "," + ofs[1] + "}");
-        Vector<Object> rv = new Vector<Object>();
+        Vector<Object> rv = new Vector<>();
         byte[] sigb = sig.getBytes();
         for (int[] i = ofs; i[0] < sigb.length; i[0]++) {
             rv.add(extractone(sigb, buf, i, false));

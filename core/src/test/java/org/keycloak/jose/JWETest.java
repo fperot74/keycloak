@@ -21,7 +21,6 @@ import java.io.UnsupportedEncodingException;
 import java.security.Key;
 import java.security.KeyPair;
 
-import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -32,11 +31,8 @@ import org.keycloak.common.util.Base64Url;
 import org.keycloak.common.util.KeyUtils;
 import org.keycloak.jose.jwe.*;
 import org.keycloak.jose.jwe.alg.JWEAlgorithmProvider;
-import org.keycloak.jose.jwe.alg.KeyEncryptionJWEAlgorithmProvider;
 import org.keycloak.jose.jwe.alg.RsaKeyEncryptionJWEAlgorithmProvider;
-import org.keycloak.jose.jwe.enc.AesCbcHmacShaEncryptionProvider;
 import org.keycloak.jose.jwe.enc.AesCbcHmacShaJWEEncryptionProvider;
-import org.keycloak.jose.jwe.enc.AesGcmEncryptionProvider;
 import org.keycloak.jose.jwe.enc.AesGcmJWEEncryptionProvider;
 import org.keycloak.jose.jwe.enc.JWEEncryptionProvider;
 

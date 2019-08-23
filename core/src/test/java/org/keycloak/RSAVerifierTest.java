@@ -17,10 +17,10 @@
 
 package org.keycloak;
 
-import junit.framework.Assert;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.openssl.PEMWriter;
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.bouncycastle.x509.X509V1CertificateGenerator;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -101,7 +101,7 @@ public class RSAVerifierTest {
     public void testPemWriter() throws Exception {
         PublicKey realmPublicKey = idpPair.getPublic();
         StringWriter sw = new StringWriter();
-        PEMWriter writer = new PEMWriter(sw);
+        JcaPEMWriter writer = new JcaPEMWriter(sw);
         try {
             writer.writeObject(realmPublicKey);
             writer.flush();

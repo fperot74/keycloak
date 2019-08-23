@@ -166,7 +166,7 @@ public class PolicyEnforcer {
     }
 
     private Map<String, PathConfig> configureDefinedPaths(ProtectedResource protectedResource, PolicyEnforcerConfig enforcerConfig) {
-        Map<String, PathConfig> paths = Collections.synchronizedMap(new LinkedHashMap<String, PathConfig>());
+        Map<String, PathConfig> paths = Collections.synchronizedMap(new LinkedHashMap<>());
 
         for (PathConfig pathConfig : enforcerConfig.getPaths()) {
             ResourceRepresentation resource;
@@ -219,7 +219,7 @@ public class PolicyEnforcer {
 
     private Map<String, PathConfig> configureAllPathsForResourceServer(ProtectedResource protectedResource) {
         LOGGER.info("Querying the server for all resources associated with this application.");
-        Map<String, PathConfig> paths = Collections.synchronizedMap(new HashMap<String, PathConfig>());
+        Map<String, PathConfig> paths = Collections.synchronizedMap(new HashMap<>());
 
         if (!enforcerConfig.getLazyLoadPaths()) {
             for (String id : protectedResource.findAll()) {

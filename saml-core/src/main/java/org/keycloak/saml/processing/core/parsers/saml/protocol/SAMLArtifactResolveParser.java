@@ -25,7 +25,6 @@ import org.keycloak.saml.processing.core.saml.v2.util.XMLTimeUtil;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.events.StartElement;
-import static org.keycloak.saml.processing.core.parsers.saml.protocol.SAMLRequestAbstractParser.VERSION_2_0;
 
 /**
  * Parse the {@link ArtifactResolveType}

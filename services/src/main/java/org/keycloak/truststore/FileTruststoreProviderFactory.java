@@ -38,7 +38,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 
 import javax.security.auth.x500.X500Principal;
@@ -151,7 +150,7 @@ public class FileTruststoreProviderFactory implements TruststoreProviderFactory 
         private void readTruststore(KeyStore truststore) {
 
             //Reading truststore aliases & certificates
-            Enumeration enumeration;
+            Enumeration<?> enumeration;
 
             try {
 
@@ -177,13 +176,7 @@ public class FileTruststoreProviderFactory implements TruststoreProviderFactory 
                         log.info("Skipping certificate with alias ["+ alias + "] from truststore, because it's not an X509Certificate");
 
                 }
-            } catch (KeyStoreException e) {
-                log.error("Error while reading Keycloak truststore "+e.getMessage(),e);
-            } catch (CertificateException e) {
-                log.error("Error while reading Keycloak truststore "+e.getMessage(),e);
-            } catch (NoSuchAlgorithmException e) {
-                log.error("Error while reading Keycloak truststore "+e.getMessage(),e);
-            } catch (NoSuchProviderException e) {
+            } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | NoSuchProviderException e) {
                 log.error("Error while reading Keycloak truststore "+e.getMessage(),e);
             }
         }
@@ -200,11 +193,8 @@ public class FileTruststoreProviderFactory implements TruststoreProviderFactory 
                 cert.verify(key);
                 log.trace("certificate " + cert.getSubjectDN() + " detected as root CA");
                 return true;
-            } catch (SignatureException sigEx) {
-                // Invalid signature --> not self-signed
-                log.trace("certificate " + cert.getSubjectDN() + " detected as intermediate CA");
-            } catch (InvalidKeyException keyEx) {
-                // Invalid key --> not self-signed
+            } catch (SignatureException | InvalidKeyException sigEx) {
+                // Invalid signature/key --> not self-signed
                 log.trace("certificate " + cert.getSubjectDN() + " detected as intermediate CA");
             }
             return false;

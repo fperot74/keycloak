@@ -27,7 +27,7 @@ public class MethodReturn extends Message {
 
         headers.put(Message.HeaderField.REPLY_SERIAL, replyserial);
 
-        Vector<Object> hargs = new Vector<Object>();
+        Vector<Object> hargs = new Vector<>();
         hargs.add(new Object[]{Message.HeaderField.REPLY_SERIAL, new Object[]{ArgumentType.UINT32_STRING, replyserial}});
 
         if (null != source) {

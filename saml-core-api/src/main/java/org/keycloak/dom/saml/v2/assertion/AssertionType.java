@@ -54,7 +54,7 @@ public class AssertionType extends CommonAssertionType {
 
     private ConditionsType conditions;
 
-    private final Set<StatementAbstractType> statements = new LinkedHashSet<StatementAbstractType>();
+    private final Set<StatementAbstractType> statements = new LinkedHashSet<>();
 
     /**
      * Create an assertion
@@ -221,7 +221,7 @@ public class AssertionType extends CommonAssertionType {
     }
 
     public Set<AttributeStatementType> getAttributeStatements() {
-        Set<AttributeStatementType> attributeStatements = new HashSet<AttributeStatementType>();
+        Set<AttributeStatementType> attributeStatements = new HashSet<>();
         Set<StatementAbstractType> statements = getStatements();
 
         if (statements != null) {

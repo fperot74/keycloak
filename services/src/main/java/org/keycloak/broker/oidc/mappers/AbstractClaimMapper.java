@@ -38,7 +38,8 @@ public abstract class AbstractClaimMapper extends AbstractIdentityProviderMapper
     public static final String CLAIM = "claim";
     public static final String CLAIM_VALUE = "claim.value";
 
-    public static Object getClaimValue(JsonWebToken token, String claim) {
+    @SuppressWarnings("unchecked")
+	public static Object getClaimValue(JsonWebToken token, String claim) {
         List<String> split = OIDCAttributeMapperHelper.splitClaimPath(claim);
         Map<String, Object> jsonObject = token.getOtherClaims();
         final int length = split.size();
@@ -62,29 +63,25 @@ public abstract class AbstractClaimMapper extends AbstractIdentityProviderMapper
     }
 
     public static Object getClaimValue(BrokeredIdentityContext context, String claim) {
-        {  // search access token
-            JsonWebToken token = (JsonWebToken)context.getContextData().get(KeycloakOIDCIdentityProvider.VALIDATED_ACCESS_TOKEN);
-            if (token != null) {
-                Object value = getClaimValue(token, claim);
-                if (value != null) return value;
-            }
+        JsonWebToken token;
 
-        }
-        {  // search ID Token
-            JsonWebToken token = (JsonWebToken)context.getContextData().get(KeycloakOIDCIdentityProvider.VALIDATED_ID_TOKEN);
-            if (token != null) {
-                Object value = getClaimValue(token, claim);
-                if (value != null) return value;
-            }
-
-        }
-        {
-            // Search the OIDC UserInfo claim set (if any)
-            JsonNode profileJsonNode = (JsonNode) context.getContextData().get(OIDCIdentityProvider.USER_INFO);
-            Object value = AbstractJsonUserAttributeMapper.getJsonValue(profileJsonNode, claim);
+        // search access token
+        token = (JsonWebToken)context.getContextData().get(KeycloakOIDCIdentityProvider.VALIDATED_ACCESS_TOKEN);
+        if (token != null) {
+            Object value = getClaimValue(token, claim);
             if (value != null) return value;
         }
-        return null;
+
+        // search ID Token
+        token = (JsonWebToken)context.getContextData().get(KeycloakOIDCIdentityProvider.VALIDATED_ID_TOKEN);
+        if (token != null) {
+            Object value = getClaimValue(token, claim);
+            if (value != null) return value;
+        }
+
+        // Search the OIDC UserInfo claim set (if any)
+        JsonNode profileJsonNode = (JsonNode) context.getContextData().get(OIDCIdentityProvider.USER_INFO);
+        return AbstractJsonUserAttributeMapper.getJsonValue(profileJsonNode, claim);
     }
 
 
@@ -116,9 +113,9 @@ public abstract class AbstractClaimMapper extends AbstractIdentityProviderMapper
 
             }
         } else if (value instanceof List) {
-            List list = (List)value;
+            List<?> list = (List<?>)value;
             for (Object val : list) {
-            	if (valueEquals(desiredValue, val)) return true;
+                if (valueEquals(desiredValue, val)) return true;
             }
         } else if (value instanceof JsonNode) {
             try {

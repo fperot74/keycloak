@@ -40,7 +40,7 @@ import org.keycloak.utils.RoleResolveUtil;
  */
 public class AudienceResolveProtocolMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper {
 
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
 
     public static final String PROVIDER_ID = "oidc-audience-resolve-mapper";

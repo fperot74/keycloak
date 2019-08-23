@@ -10,7 +10,7 @@ import javax.xml.namespace.QName;
  */
 abstract public class AbstractStaxSamlMetadataParser<T> extends AbstractStaxParser<T, SAMLMetadataQNames> {
 
-    protected static final QNameEnumLookup<SAMLMetadataQNames> LOOKUP = new QNameEnumLookup(SAMLMetadataQNames.values());
+    protected static final QNameEnumLookup<SAMLMetadataQNames> LOOKUP = new QNameEnumLookup<>(SAMLMetadataQNames.values());
 
 
     public AbstractStaxSamlMetadataParser(SAMLMetadataQNames expectedStartElement) {

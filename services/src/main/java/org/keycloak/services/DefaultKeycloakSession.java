@@ -47,11 +47,11 @@ import org.keycloak.vault.VaultProvider;
 import org.keycloak.vault.VaultTranscriber;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -60,7 +60,7 @@ public class DefaultKeycloakSession implements KeycloakSession {
 
     private final DefaultKeycloakSessionFactory factory;
     private final Map<Integer, Provider> providers = new HashMap<>();
-    private final List<Provider> closable = new LinkedList<Provider>();
+    private final List<Provider> closable = new LinkedList<>();
     private final DefaultKeycloakTransactionManager transactionManager;
     private final Map<String, Object> attributes = new HashMap<>();
     private RealmProvider model;
@@ -113,6 +113,7 @@ public class DefaultKeycloakSession implements KeycloakSession {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T getAttribute(String attribute, Class<T> clazz) {
         Object value = getAttribute(attribute);
         return value != null && clazz.isInstance(value) ? (T) value : null;
@@ -190,33 +191,25 @@ public class DefaultKeycloakSession implements KeycloakSession {
         return userCredentialStorageManager;
     }
 
+    @SuppressWarnings("unchecked")
     public <T extends Provider> T getProvider(Class<T> clazz) {
         Integer hash = clazz.hashCode();
-        T provider = (T) providers.get(hash);
-        if (provider == null) {
+        return (T) providers.computeIfAbsent(hash, k -> {
             ProviderFactory<T> providerFactory = factory.getProviderFactory(clazz);
-            if (providerFactory != null) {
-                provider = providerFactory.create(this);
-                providers.put(hash, provider);
-            }
-        }
-        return provider;
+            return providerFactory != null ? providerFactory.create(this) : null;
+        });
     }
 
+    @SuppressWarnings("unchecked")
     public <T extends Provider> T getProvider(Class<T> clazz, String id) {
         Integer hash = clazz.hashCode() + id.hashCode();
-        T provider = (T) providers.get(hash);
-        if (provider == null) {
+        return (T) providers.computeIfAbsent(hash, k -> {
             ProviderFactory<T> providerFactory = factory.getProviderFactory(clazz, id);
-
-            if (providerFactory != null) {
-                provider = providerFactory.create(this);
-                providers.put(hash, provider);
-            }
-        }
-        return provider;
+            return providerFactory != null ? providerFactory.create(this) : null;
+        });
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T extends Provider> T getProvider(Class<T> clazz, ComponentModel componentModel) {
         String modelId = componentModel.getId();
@@ -245,11 +238,7 @@ public class DefaultKeycloakSession implements KeycloakSession {
 
     @Override
     public <T extends Provider> Set<T> getAllProviders(Class<T> clazz) {
-        Set<T> providers = new HashSet<T>();
-        for (String id : listProviderIds(clazz)) {
-            providers.add(getProvider(clazz, id));
-        }
-        return providers;
+        return listProviderIds(clazz).stream().map(id -> getProvider(clazz, id)).collect(Collectors.toSet());
     }
 
     @Override

@@ -64,7 +64,7 @@ public class JWK {
     @JsonProperty(PUBLIC_KEY_USE)
     private String publicKeyUse;
 
-    protected Map<String, Object> otherClaims = new HashMap<String, Object>();
+    protected Map<String, Object> otherClaims = new HashMap<>();
 
 
     public String getKeyId() {

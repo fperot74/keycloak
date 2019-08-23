@@ -250,7 +250,7 @@ public class JaxrsBearerTokenFilterImpl implements JaxrsBearerTokenFilter {
 
         facade.setSecurityContext(skSession);
         String principalName = AdapterUtils.getPrincipalName(resolvedDeployment, bearer.getToken());
-        final KeycloakPrincipal<RefreshableKeycloakSecurityContext> principal = new KeycloakPrincipal<RefreshableKeycloakSecurityContext>(principalName, skSession);
+        final KeycloakPrincipal<RefreshableKeycloakSecurityContext> principal = new KeycloakPrincipal<>(principalName, skSession);
         SecurityContext anonymousSecurityContext = getRequestSecurityContext(request);
         final boolean isSecure = anonymousSecurityContext.isSecure();
         final Set<String> roles = AdapterUtils.getRolesFromSecurityContext(skSession);

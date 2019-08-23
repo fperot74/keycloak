@@ -36,7 +36,7 @@ public class PathBasedKeycloakConfigResolver implements KeycloakConfigResolver {
 
     protected static final Logger log = Logger.getLogger(PathBasedKeycloakConfigResolver.class);
 
-    private final Map<String, KeycloakDeployment> cache = new ConcurrentHashMap<String, KeycloakDeployment>();
+    private final Map<String, KeycloakDeployment> cache = new ConcurrentHashMap<>();
 
     private File keycloakConfigLocation = null;
 

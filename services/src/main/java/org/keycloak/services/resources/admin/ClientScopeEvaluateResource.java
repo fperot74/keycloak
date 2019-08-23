@@ -34,12 +34,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.common.ClientConnection;
-import org.keycloak.models.AuthenticatedClientSessionModel;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.ClientSessionContext;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ProtocolMapperContainerModel;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RoleContainerModel;
@@ -136,9 +134,8 @@ public class ClientScopeEvaluateResource {
                         rep.setContainerName("");
                         rep.setContainerType("client");
                     } else {
-                        ClientScopeModel clientScope = (ClientScopeModel) mapperContainer;
-                        rep.setContainerId(clientScope.getId());
-                        rep.setContainerName(clientScope.getName());
+                        rep.setContainerId(mapperContainer.getId());
+                        rep.setContainerName(mapperContainer.getName());
                         rep.setContainerType("client-scope");
                     }
 
@@ -175,8 +172,7 @@ public class ClientScopeEvaluateResource {
 
         logger.debugf("generateExampleAccessToken invoked. User: %s, Scope param: %s", user.getUsername(), scopeParam);
 
-        AccessToken token = generateToken(user, scopeParam);
-        return token;
+        return generateToken(user, scopeParam);
     }
 
 

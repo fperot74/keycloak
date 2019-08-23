@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -32,10 +33,8 @@ public class LogBean {
     private List<EventBean> events;
 
     public LogBean(List<Event> events) {
-        this.events = new LinkedList<EventBean>();
-        for (Event e : events) {
-            this.events.add(new EventBean(e));
-        }
+        this.events = new LinkedList<>();
+        this.events.addAll(events.stream().map(EventBean::new).collect(Collectors.toList()));
     }
 
     public List<EventBean> getEvents() {
@@ -67,15 +66,12 @@ public class LogBean {
         }
 
         public List<DetailBean> getDetails() {
-            List<DetailBean> details = new LinkedList<DetailBean>();
+            List<DetailBean> details = new LinkedList<>();
             if (event.getDetails() != null) {
-                for (Map.Entry<String, String> e : event.getDetails().entrySet()) {
-                    details.add(new DetailBean(e));
-                }
+                details.addAll(event.getDetails().entrySet().stream().map(DetailBean::new).collect(Collectors.toList()));
             }
             return details;
         }
-
     }
 
     public static class DetailBean {

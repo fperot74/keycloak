@@ -122,7 +122,7 @@ public class OIDCConfigurationRepresentation {
     @JsonProperty("tls_client_certificate_bound_access_tokens")
     private Boolean tlsClientCertificateBoundAccessTokens;
 
-    protected Map<String, Object> otherClaims = new HashMap<String, Object>();
+    protected Map<String, Object> otherClaims = new HashMap<>();
 
     public String getIssuer() {
         return issuer;

@@ -35,11 +35,11 @@ import java.util.Iterator;
 public final class FormattingXMLStreamWriter implements XMLExtendedStreamWriter, XMLStreamConstants {
     private static final String NO_NAMESPACE = new String();
     private final XMLStreamWriter delegate;
-    private final ArrayDeque<ArgRunnable> attrQueue = new ArrayDeque<ArgRunnable>();
+    private final ArrayDeque<ArgRunnable> attrQueue = new ArrayDeque<>();
     private int level;
     private int state = START_DOCUMENT;
     private boolean indentEndElement = false;
-    private ArrayDeque<String> unspecifiedNamespaces = new ArrayDeque<String>();
+    private ArrayDeque<String> unspecifiedNamespaces = new ArrayDeque<>();
 
 
     public FormattingXMLStreamWriter(final XMLStreamWriter delegate) {

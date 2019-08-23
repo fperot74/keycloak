@@ -177,7 +177,7 @@ public class RealmCacheSession implements CacheRealmProvider {
     private void invalidateClient(String id) {
         invalidations.add(id);
         ClientModel adapter = managedApplications.get(id);
-        if (adapter != null && adapter instanceof ClientAdapter) ((ClientAdapter)adapter).invalidate();
+        if (adapter instanceof ClientAdapter) ((ClientAdapter)adapter).invalidate();
     }
 
     @Override
@@ -208,7 +208,7 @@ public class RealmCacheSession implements CacheRealmProvider {
         // need to make sure that scope and group mapping clients and groups are invalidated
         for (String id : newInvalidations) {
             ClientModel adapter = managedApplications.get(id);
-            if (adapter != null && adapter instanceof ClientAdapter){
+            if (adapter instanceof ClientAdapter) {
                 ((ClientAdapter)adapter).invalidate();
                 continue;
             }
@@ -469,7 +469,7 @@ public class RealmCacheSession implements CacheRealmProvider {
 
     private List<RealmModel> getRealms(List<RealmModel> backendRealms) {
         // Return cache delegates to ensure cache invalidated during write operations
-        List<RealmModel> cachedRealms = new LinkedList<RealmModel>();
+        List<RealmModel> cachedRealms = new LinkedList<>();
         for (RealmModel realm : backendRealms) {
             RealmModel cached = getRealm(realm.getId());
             cachedRealms.add(cached);
@@ -1107,9 +1107,7 @@ public class RealmCacheSession implements CacheRealmProvider {
                 return getClientDelegate().getClientById(cached.getId(), realm);
             }
         }
-        ClientAdapter adapter = new ClientAdapter(realm, cached, this);
-
-        return adapter;
+        return new ClientAdapter(realm, cached, this);
     }
 
 

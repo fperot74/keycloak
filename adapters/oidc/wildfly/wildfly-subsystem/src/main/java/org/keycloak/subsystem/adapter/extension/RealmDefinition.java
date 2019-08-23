@@ -38,17 +38,17 @@ public class RealmDefinition extends SimpleResourceDefinition {
     public static final String TAG_NAME = "realm";
 
 
-    protected static final List<SimpleAttributeDefinition> REALM_ONLY_ATTRIBUTES = new ArrayList<SimpleAttributeDefinition>();
+    protected static final List<SimpleAttributeDefinition> REALM_ONLY_ATTRIBUTES = new ArrayList<>();
     static {
     }
 
-    protected static final List<SimpleAttributeDefinition> ALL_ATTRIBUTES = new ArrayList<SimpleAttributeDefinition>();
+    protected static final List<SimpleAttributeDefinition> ALL_ATTRIBUTES = new ArrayList<>();
     static {
         ALL_ATTRIBUTES.addAll(REALM_ONLY_ATTRIBUTES);
         ALL_ATTRIBUTES.addAll(SharedAttributeDefinitons.ATTRIBUTES);
     }
 
-    private static final Map<String, SimpleAttributeDefinition> DEFINITION_LOOKUP = new HashMap<String, SimpleAttributeDefinition>();
+    private static final Map<String, SimpleAttributeDefinition> DEFINITION_LOOKUP = new HashMap<>();
     static {
         for (SimpleAttributeDefinition def : ALL_ATTRIBUTES) {
             DEFINITION_LOOKUP.put(def.getXmlName(), def);

@@ -51,7 +51,7 @@ public class AttributeFormDataProcessor {
 
             // Need to handle case when attribute has multiple values, but in UI was displayed just first value
             List<String> modelVal = user.getAttribute(attribute);
-            List<String> modelValue = modelVal==null ? new ArrayList<String>() : new ArrayList<>(modelVal);
+            List<String> modelValue = modelVal==null ? new ArrayList<>() : new ArrayList<>(modelVal);
 
             int index = 0;
             for (String value : formData.get(key)) {

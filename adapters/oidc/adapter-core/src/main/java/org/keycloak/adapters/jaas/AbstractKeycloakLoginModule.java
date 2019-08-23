@@ -65,7 +65,7 @@ public abstract class AbstractKeycloakLoginModule implements LoginModule {
     protected String rolePrincipalClass;
 
     // This is to avoid parsing keycloak.json file in each request. Key is file location, Value is parsed keycloak deployment
-    private static ConcurrentMap<String, KeycloakDeployment> deployments = new ConcurrentHashMap<String, KeycloakDeployment>();
+    private static ConcurrentMap<String, KeycloakDeployment> deployments = new ConcurrentHashMap<>();
 
     @Override
     public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
@@ -185,7 +185,7 @@ public abstract class AbstractKeycloakLoginModule implements LoginModule {
 
     @Override
     public boolean logout() throws LoginException {
-        Set<Principal> principals = new HashSet<Principal>(subject.getPrincipals());
+        Set<Principal> principals = new HashSet<>(subject.getPrincipals());
         for (Principal principal : principals) {
             if (principal.getClass().equals(KeycloakPrincipal.class) || principal.getClass().equals(RolePrincipal.class)) {
                 subject.getPrincipals().remove(principal);
@@ -224,7 +224,7 @@ public abstract class AbstractKeycloakLoginModule implements LoginModule {
 
         RefreshableKeycloakSecurityContext skSession = new RefreshableKeycloakSecurityContext(deployment, null, tokenString, token, null, null, null);
         String principalName = AdapterUtils.getPrincipalName(deployment, token);
-        final KeycloakPrincipal<RefreshableKeycloakSecurityContext> principal = new KeycloakPrincipal<RefreshableKeycloakSecurityContext>(principalName, skSession);
+        final KeycloakPrincipal<RefreshableKeycloakSecurityContext> principal = new KeycloakPrincipal<>(principalName, skSession);
         final Set<String> roles = AdapterUtils.getRolesFromSecurityContext(skSession);
         return new Auth(principal, roles, tokenString);
     }

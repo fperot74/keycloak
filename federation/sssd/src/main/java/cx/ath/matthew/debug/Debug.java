@@ -157,7 +157,7 @@ public class Debug {
     private static int balen = 36;
     private static int bawidth = 80;
     private static Class saveclass = null;
-    //TODO: 1.5 private static Map<Class<? extends Object>, FilterCommand> filterMap = new HashMap<Class<? extends Object>, FilterCommand>();
+    //TODO: 1.5 private static Map<Class<? extends Object>, FilterCommand> filterMap = new HashMap<>();
     private static Map filterMap = new HashMap();
 
     /**

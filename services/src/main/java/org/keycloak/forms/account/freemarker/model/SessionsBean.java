@@ -23,24 +23,20 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserSessionModel;
 
 import java.util.Date;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public class SessionsBean {
-
     private List<UserSessionBean> events;
-    private RealmModel realm;
 
     public SessionsBean(RealmModel realm, List<UserSessionModel> sessions) {
-        this.events = new LinkedList<UserSessionBean>();
-        for (UserSessionModel session : sessions) {
-            this.events.add(new UserSessionBean(realm, session));
-        }
+        this.events = new LinkedList<>();
+        this.events.addAll(sessions.stream().map(s -> new UserSessionBean(realm, s)).collect(Collectors.toList()));
     }
 
     public List<UserSessionBean> getSessions() {
@@ -78,13 +74,7 @@ public class SessionsBean {
         }
 
         public Set<String> getClients() {
-            Set<String> clients = new HashSet<String>();
-            for (String clientUUID : session.getAuthenticatedClientSessions().keySet()) {
-                ClientModel client = realm.getClientById(clientUUID);
-                clients.add(client.getClientId());
-            }
-            return clients;
+            return session.getAuthenticatedClientSessions().keySet().stream().map(realm::getClientById).map(ClientModel::getClientId).collect(Collectors.toSet());
         }
     }
-
 }

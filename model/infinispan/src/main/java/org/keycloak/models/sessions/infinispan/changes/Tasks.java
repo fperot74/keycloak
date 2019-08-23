@@ -42,7 +42,7 @@ public class Tasks {
         }
     };
 
-    private static final SessionUpdateTask<? extends SessionEntity> REMOVE_SYNC = new SessionUpdateTask<SessionEntity>() {
+    private static final SessionUpdateTask<SessionEntity> REMOVE_SYNC = new SessionUpdateTask<SessionEntity>() {
         @Override
         public void runUpdate(SessionEntity entity) {
         }
@@ -64,7 +64,8 @@ public class Tasks {
      * @param <S>
      * @return
      */
-    public static <S extends SessionEntity> SessionUpdateTask<S> addIfAbsentSync() {
+    @SuppressWarnings("unchecked")
+	public static <S extends SessionEntity> SessionUpdateTask<S> addIfAbsentSync() {
         return (SessionUpdateTask<S>) ADD_IF_ABSENT_SYNC;
     }
 

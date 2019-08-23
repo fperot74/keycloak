@@ -197,7 +197,7 @@ public class ServerRequest {
     }
 
     public static AccessTokenResponse invokeRefresh(KeycloakDeployment deployment, String refreshToken) throws IOException, HttpFailure {
-        List<NameValuePair> formparams = new ArrayList<NameValuePair>();
+        List<NameValuePair> formparams = new ArrayList<>();
         formparams.add(new BasicNameValuePair(OAuth2Constants.GRANT_TYPE, OAuth2Constants.REFRESH_TOKEN));
         formparams.add(new BasicNameValuePair(OAuth2Constants.REFRESH_TOKEN, refreshToken));
 
@@ -253,7 +253,7 @@ public class ServerRequest {
             throw new IOException("You need to configure URI for register/unregister node for application " + deployment.getResourceName());
         }
 
-        List<NameValuePair> formparams = new ArrayList<NameValuePair>();
+        List<NameValuePair> formparams = new ArrayList<>();
         formparams.add(new BasicNameValuePair(AdapterConstants.CLIENT_CLUSTER_HOST, host));
 
         HttpPost post = new HttpPost(endpointUrl);

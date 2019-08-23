@@ -155,8 +155,7 @@ public class OIDCIdentityProvider extends AbstractOAuth2IdentityProvider<OIDCIde
                     .path(OIDCEndpoint.class, "logoutResponse")
                     .build(realm.getName(), getConfig().getAlias()).toString();
             logoutUri.queryParam("post_logout_redirect_uri", redirect);
-            Response response = Response.status(302).location(logoutUri.build()).build();
-            return response;
+            return Response.status(302).location(logoutUri.build()).build();
         }
     }
 
@@ -638,7 +637,7 @@ public class OIDCIdentityProvider extends AbstractOAuth2IdentityProvider<OIDCIde
         return getJsonProperty(userInfo, "preferred_username");
     }
 
-    final protected BrokeredIdentityContext validateJwt(EventBuilder event, String subjectToken, String subjectTokenType) {
+    protected final BrokeredIdentityContext validateJwt(EventBuilder event, String subjectToken, String subjectTokenType) {
         if (!getConfig().isValidateSignature()) {
             return validateExternalTokenThroughUserInfo(event, subjectToken, subjectTokenType);
         }

@@ -18,16 +18,12 @@ package org.keycloak.services.resources.admin;
 
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import org.jboss.resteasy.spi.NotFoundException;
-import org.keycloak.authorization.model.Resource;
-import org.keycloak.authorization.model.ResourceServer;
 import org.keycloak.broker.provider.IdentityProvider;
 import org.keycloak.broker.provider.IdentityProviderFactory;
 import org.keycloak.broker.provider.IdentityProviderMapper;
 import org.keycloak.broker.social.SocialIdentityProvider;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.ClientModel;
 import org.keycloak.models.FederatedIdentityModel;
 import org.keycloak.models.IdentityProviderMapperModel;
 import org.keycloak.models.IdentityProviderModel;
@@ -55,16 +51,15 @@ import org.keycloak.services.resources.admin.permissions.AdminPermissions;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -232,18 +227,14 @@ public class IdentityProviderResource {
         }
     }
 
-
+    @SuppressWarnings("rawtypes")
     private IdentityProviderFactory getIdentityProviderFactory() {
-        List<ProviderFactory> allProviders = new ArrayList<ProviderFactory>();
+        List<ProviderFactory> allProviders = new ArrayList<>();
 
         allProviders.addAll(this.session.getKeycloakSessionFactory().getProviderFactories(IdentityProvider.class));
         allProviders.addAll(this.session.getKeycloakSessionFactory().getProviderFactories(SocialIdentityProvider.class));
 
-        for (ProviderFactory providerFactory : allProviders) {
-            if (providerFactory.getId().equals(identityProviderModel.getProviderId())) return (IdentityProviderFactory)providerFactory;
-        }
-
-        return null;
+        return (IdentityProviderFactory)allProviders.stream().filter(p -> p.getId().equals(identityProviderModel.getProviderId())).findFirst().orElse(null);
     }
 
     /**

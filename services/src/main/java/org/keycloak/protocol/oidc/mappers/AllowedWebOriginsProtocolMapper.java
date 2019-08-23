@@ -41,10 +41,9 @@ import org.keycloak.representations.AccessToken;
  */
 public class AllowedWebOriginsProtocolMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper {
 
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
-
-    public static final String PROVIDER_ID = "oidc-allowed-origins-mapper";
+    private static final String PROVIDER_ID = "oidc-allowed-origins-mapper";
 
 
     public List<ProviderConfigProperty> getConfigProperties() {

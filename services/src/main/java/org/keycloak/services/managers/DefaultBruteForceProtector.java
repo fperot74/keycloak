@@ -51,7 +51,7 @@ public class DefaultBruteForceProtector implements Runnable, BruteForceProtector
     protected volatile long lastFailure;
     protected volatile long totalTime;
 
-    protected LinkedBlockingQueue<LoginEvent> queue = new LinkedBlockingQueue<LoginEvent>();
+    protected LinkedBlockingQueue<LoginEvent> queue = new LinkedBlockingQueue<>();
     public static final int TRANSACTION_SIZE = 20;
 
     protected abstract class LoginEvent implements Comparable<LoginEvent> {
@@ -115,10 +115,7 @@ public class DefaultBruteForceProtector implements Runnable, BruteForceProtector
         userLoginFailure.setLastIPFailure(event.ip);
         long currentTime = Time.currentTimeMillis();
         long last = userLoginFailure.getLastFailure();
-        long deltaTime = 0;
-        if (last > 0) {
-            deltaTime = currentTime - last;
-        }
+        long deltaTime = last > 0 ? currentTime - last : 0;
         userLoginFailure.setLastFailure(currentTime);
 
         if(realm.isPermanentLockout()) {
@@ -141,11 +138,9 @@ public class DefaultBruteForceProtector implements Runnable, BruteForceProtector
             return;
         }
 
-        if (deltaTime > 0) {
+        if (deltaTime > 0 && deltaTime > (long) realm.getMaxDeltaTimeSeconds() * 1000L) {
             // if last failure was more than MAX_DELTA clear failures
-            if (deltaTime > (long) realm.getMaxDeltaTimeSeconds() * 1000L) {
-                userLoginFailure.clearFailures();
-            }
+            userLoginFailure.clearFailures();
         }
         userLoginFailure.incrementFailures();
         logger.debugv("new num failures: {0}", userLoginFailure.getNumFailures());
@@ -154,11 +149,9 @@ public class DefaultBruteForceProtector implements Runnable, BruteForceProtector
         logger.debugv("waitSeconds: {0}", waitSeconds);
         logger.debugv("deltaTime: {0}", deltaTime);
 
-        if (waitSeconds == 0) {
-            if (last > 0 && deltaTime < realm.getQuickLoginCheckMilliSeconds()) {
-                logger.debugv("quick login, set min wait seconds");
-                waitSeconds = realm.getMinimumQuickLoginWaitSeconds();
-            }
+        if (waitSeconds == 0 && last > 0 && deltaTime < realm.getQuickLoginCheckMilliSeconds()) {
+            logger.debugv("quick login, set min wait seconds");
+            waitSeconds = realm.getMinimumQuickLoginWaitSeconds();
         }
         if (waitSeconds > 0) {
             waitSeconds = Math.min(realm.getMaxFailureWaitSeconds(), waitSeconds);
@@ -172,15 +165,11 @@ public class DefaultBruteForceProtector implements Runnable, BruteForceProtector
     protected UserLoginFailureModel getUserModel(KeycloakSession session, LoginEvent event) {
         RealmModel realm = getRealmModel(session, event);
         if (realm == null) return null;
-        UserLoginFailureModel user = session.sessions().getUserLoginFailure(realm, event.userId);
-        if (user == null) return null;
-        return user;
+        return session.sessions().getUserLoginFailure(realm, event.userId);
     }
 
     protected RealmModel getRealmModel(KeycloakSession session, LoginEvent event) {
-        RealmModel realm = session.realms().getRealm(event.realmId);
-        if (realm == null) return null;
-        return realm;
+        return session.realms().getRealm(event.realmId);
     }
 
     public void start() {
@@ -198,7 +187,7 @@ public class DefaultBruteForceProtector implements Runnable, BruteForceProtector
     }
 
     public void run() {
-        final ArrayList<LoginEvent> events = new ArrayList<LoginEvent>(TRANSACTION_SIZE + 1);
+        final ArrayList<LoginEvent> events = new ArrayList<>(TRANSACTION_SIZE + 1);
         try {
             while (run) {
                 try {

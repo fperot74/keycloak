@@ -89,7 +89,7 @@ public class DirectAccessGrantsLoginModule extends AbstractKeycloakLoginModule {
         URI directGrantUri = KeycloakUriBuilder.fromUri(authServerBaseUrl).path(ServiceUrlConstants.TOKEN_PATH).build(deployment.getRealm());
         HttpPost post = new HttpPost(directGrantUri);
 
-        List<NameValuePair> formparams = new ArrayList<NameValuePair>();
+        List<NameValuePair> formparams = new ArrayList<>();
         formparams.add(new BasicNameValuePair(OAuth2Constants.GRANT_TYPE, OAuth2Constants.PASSWORD));
         formparams.add(new BasicNameValuePair("username", username));
         formparams.add(new BasicNameValuePair("password", password));
@@ -155,7 +155,7 @@ public class DirectAccessGrantsLoginModule extends AbstractKeycloakLoginModule {
                 URI logoutUri = deployment.getLogoutUrl().clone().build();
                 HttpPost post = new HttpPost(logoutUri);
 
-                List<NameValuePair> formparams = new ArrayList<NameValuePair>();
+                List<NameValuePair> formparams = new ArrayList<>();
                 ClientCredentialsProviderUtils.setClientCredentials(deployment, post, formparams);
                 formparams.add(new BasicNameValuePair(OAuth2Constants.REFRESH_TOKEN, refreshToken));
 

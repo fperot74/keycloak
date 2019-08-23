@@ -36,7 +36,7 @@ import java.util.List;
 public class HardcodedAttributeMapper extends AbstractSAMLProtocolMapper implements SAMLAttributeStatementMapper {
     public static final String PROVIDER_ID = "saml-hardcode-attribute-mapper";
     public static final String ATTRIBUTE_VALUE = "attribute.value";
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
     static {
         ProviderConfigProperty property;

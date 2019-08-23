@@ -28,7 +28,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.events.StartElement;
 import org.w3c.dom.Element;
-import static org.keycloak.saml.processing.core.parsers.saml.protocol.SAMLRequestAbstractParser.VERSION_2_0;
 
 /**
  * Parse the Single Log Out requests

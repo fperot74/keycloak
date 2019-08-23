@@ -28,8 +28,7 @@ import java.util.Map;
  * @version $Revision: 1 $
  */
 @SuppressWarnings("serial")
-public class MultivaluedHashMap<K, V> extends HashMap<K, List<V>>
-{
+public class MultivaluedHashMap<K, V> extends HashMap<K, List<V>> {
    public MultivaluedHashMap() {
    }
 
@@ -45,71 +44,49 @@ public class MultivaluedHashMap<K, V> extends HashMap<K, List<V>>
       addAll(config);
    }
 
-   public void putSingle(K key, V value)
-   {
-      List<V> list = new ArrayList<V>();
+   public void putSingle(K key, V value) {
+      List<V> list = new ArrayList<>();
       list.add(value);
       put(key, list);
    }
 
-   public void addAll(K key, V... newValues)
-   {
-      for (V value : newValues)
-      {
+   @SuppressWarnings("unchecked")
+   public void addAll(K key, V... newValues) {
+      for (V value : newValues) {
          add(key, value);
       }
    }
 
-   public void addAll(K key, List<V> valueList)
-   {
-      for (V value : valueList)
-      {
-         add(key, value);
-      }
+   public void addAll(K key, List<V> valueList) {
+      addMultiple(key, valueList);
    }
 
-   public void addFirst(K key, V value)
-   {
-      List<V> list = get(key);
-      if (list == null)
-      {
-         add(key, value);
-      }
-      else
-      {
-         list.add(0, value);
-      }
+   public void addFirst(K key, V value) {
+      getList(key).add(0, value);
    }
-   public final void add(K key, V value)
-   {
+   public final void add(K key, V value) {
       getList(key).add(value);
    }
 
-
-   public final void addMultiple(K key, Collection<V> values)
-   {
+   public final void addMultiple(K key, Collection<V> values) {
       getList(key).addAll(values);
    }
 
-   public V getFirst(K key)
-   {
+   public V getFirst(K key) {
       List<V> list = get(key);
       return list == null ? null : list.get(0);
    }
 
-   public final List<V> getList(K key)
-   {
+   public final List<V> getList(K key) {
       List<V> list = get(key);
       if (list == null)
          put(key, list = new ArrayList<V>());
       return list;
    }
 
-   public void addAll(MultivaluedHashMap<K, V> other)
-   {
-      for (Map.Entry<K, List<V>> entry : other.entrySet())
-      {
-         getList(entry.getKey()).addAll(entry.getValue());
+   public void addAll(MultivaluedHashMap<K, V> other) {
+      for (Map.Entry<K, List<V>> entry : other.entrySet()) {
+          addAll(entry.getKey(), entry.getValue());
       }
    }
 

@@ -18,7 +18,6 @@
 package org.keycloak.services.resources.admin;
 
 import org.jboss.resteasy.annotations.cache.NoCache;
-import org.jboss.resteasy.spi.NotFoundException;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.ClientModel;
@@ -45,6 +44,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -54,7 +54,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -96,11 +95,7 @@ public class RoleContainerResource extends RoleResource {
         auth.roles().requireList(roleContainer);
 
         Set<RoleModel> roleModels = roleContainer.getRoles();
-        List<RoleRepresentation> roles = new ArrayList<RoleRepresentation>();
-        for (RoleModel roleModel : roleModels) {
-            roles.add(ModelToRepresentation.toBriefRepresentation(roleModel));
-        }
-        return roles;
+        return roleModels.stream().map(ModelToRepresentation::toBriefRepresentation).collect(Collectors.toList());
     }
 
     /**
@@ -402,15 +397,9 @@ public class RoleContainerResource extends RoleResource {
             throw new NotFoundException("Could not find role");
         }
         
-        List<UserRepresentation> results = new ArrayList<UserRepresentation>();
         List<UserModel> userModels = session.users().getRoleMembers(realm, role, firstResult, maxResults);
-
-        for (UserModel user : userModels) {
-            results.add(ModelToRepresentation.toRepresentation(session, realm, user));
-        }
-        return results; 
-        
-    }    
+        return userModels.stream().map(u -> ModelToRepresentation.toRepresentation(session, realm, u)).collect(Collectors.toList());
+    }
     
     /**
      * Return List of Groups that have the specified role name 

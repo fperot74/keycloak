@@ -112,7 +112,7 @@ public class LiquibaseJpaUpdaterProvider implements JpaUpdaterProvider {
                     updateChangeSet(liquibase, connection, exportWriter);
                 }
             }
-        } catch (LiquibaseException | IOException | SQLException e) {
+        } catch (LiquibaseException | IOException e) {
             throw new RuntimeException("Failed to update database", e);
         } finally {
             ThreadLocalSessionContext.removeCurrentSession();
@@ -126,7 +126,7 @@ public class LiquibaseJpaUpdaterProvider implements JpaUpdaterProvider {
         }
     }
 
-    protected void updateChangeSet(Liquibase liquibase, Connection connection, Writer exportWriter) throws LiquibaseException, SQLException {
+    protected void updateChangeSet(Liquibase liquibase, Connection connection, Writer exportWriter) throws LiquibaseException {
         String changelog = liquibase.getChangeLogFile();
         Database database = liquibase.getDatabase();
         Table changelogTable = SnapshotGeneratorFactory.getInstance().getDatabaseChangeLogTable(new SnapshotControl(database, false, Table.class, Column.class), database);

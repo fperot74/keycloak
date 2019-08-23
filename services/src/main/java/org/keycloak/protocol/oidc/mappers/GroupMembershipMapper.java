@@ -39,7 +39,7 @@ import java.util.Map;
  */
 public class GroupMembershipMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper, UserInfoTokenMapper {
 
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
     static {
         OIDCAttributeMapperHelper.addTokenClaimNameConfig(configProperties);
@@ -116,12 +116,12 @@ public class GroupMembershipMapper extends AbstractOIDCProtocolMapper implements
         mapper.setName(name);
         mapper.setProtocolMapper(PROVIDER_ID);
         mapper.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
-        Map<String, String> config = new HashMap<String, String>();
+        Map<String, String> config = new HashMap<>();
         config.put(OIDCAttributeMapperHelper.TOKEN_CLAIM_NAME, tokenClaimName);
         if (accessToken) config.put(OIDCAttributeMapperHelper.INCLUDE_IN_ACCESS_TOKEN, "true");
         if (idToken) config.put(OIDCAttributeMapperHelper.INCLUDE_IN_ID_TOKEN, "true");
         mapper.setConfig(config);
-        
+
         return mapper;
     }
 

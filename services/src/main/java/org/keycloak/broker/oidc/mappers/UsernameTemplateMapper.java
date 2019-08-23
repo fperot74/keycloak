@@ -51,7 +51,7 @@ import java.util.regex.Pattern;
  */
 public class UsernameTemplateMapper extends AbstractClaimMapper {
 
-    public static final String[] COMPATIBLE_PROVIDERS = {
+    private static final String[] COMPATIBLE_PROVIDERS = {
             KeycloakOIDCIdentityProviderFactory.PROVIDER_ID,
             OIDCIdentityProviderFactory.PROVIDER_ID,
             BitbucketIdentityProviderFactory.PROVIDER_ID,
@@ -69,7 +69,7 @@ public class UsernameTemplateMapper extends AbstractClaimMapper {
             TwitterIdentityProviderFactory.PROVIDER_ID
     };
 
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
     public static final String TEMPLATE = "template";
 

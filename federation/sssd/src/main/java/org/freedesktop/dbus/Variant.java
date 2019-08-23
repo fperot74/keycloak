@@ -84,7 +84,7 @@ public class Variant<T> {
         if (null == o) throw new IllegalArgumentException(getString("cannotWrapNullInVariant"));
         this.sig = sig;
         try {
-            Vector<Type> ts = new Vector<Type>();
+            Vector<Type> ts = new Vector<>();
             Marshalling.getJavaType(sig, ts, 1);
             if (ts.size() != 1)
                 throw new IllegalArgumentException(getString("cannotWrapNoTypesInVariant") + sig);

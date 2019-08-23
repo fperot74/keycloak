@@ -39,12 +39,13 @@ public class ClientStorageProviderModel extends CacheableStorageProviderModel {
 
     private transient Boolean enabled;
 
-     public void setEnabled(boolean flag) {
+    @Override
+    public void setEnabled(boolean flag) {
         enabled = flag;
         getConfig().putSingle(ENABLED, Boolean.toString(flag));
     }
 
-
+    @Override
     public boolean isEnabled() {
         if (enabled == null) {
             String val = getConfig().getFirst(ENABLED);

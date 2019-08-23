@@ -40,7 +40,7 @@ public class JettyAdapterSessionStore implements AdapterSessionStore {
     }
 
     protected MultiMap<String> extractFormParameters(Request base_request) {
-        MultiMap<String> formParameters = new MultiMap<String>();
+        MultiMap<String> formParameters = new MultiMap<>();
         base_request.extractFormParameters(formParameters);
         return formParameters;
     }
@@ -65,7 +65,7 @@ public class JettyAdapterSessionStore implements AdapterSessionStore {
                     MultivaluedHashMap<String, String> j_post = (MultivaluedHashMap<String, String>) session.getAttribute(CACHED_FORM_PARAMETERS);
                     if (j_post != null) {
                         myRequest.setContentType("application/x-www-form-urlencoded");
-                        MultiMap<String> map = new MultiMap<String>();
+                        MultiMap<String> map = new MultiMap<>();
                         for (String key : j_post.keySet()) {
                             for (String val : j_post.getList(key)) {
                                 map.add(key, val);
@@ -97,7 +97,7 @@ public class JettyAdapterSessionStore implements AdapterSessionStore {
 
                 if ("application/x-www-form-urlencoded".equals(myRequest.getContentType()) && "POST".equalsIgnoreCase(myRequest.getMethod())) {
                     MultiMap<String> formParameters = extractFormParameters(myRequest);
-                    MultivaluedHashMap<String, String> map = new MultivaluedHashMap<String, String>();
+                    MultivaluedHashMap<String, String> map = new MultivaluedHashMap<>();
                     for (String key : formParameters.keySet()) {
                         for (Object value : formParameters.getValues(key)) {
                             map.add(key, (String) value);

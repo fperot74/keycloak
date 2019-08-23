@@ -61,7 +61,7 @@ public class ProfileInfoRepresentation {
     }
 
     private static List<String> names(Set<Profile.Feature> featureSet) {
-        List<String> l = new LinkedList();
+        List<String> l = new LinkedList<>();
         for (Profile.Feature f : featureSet) {
             l.add(f.name());
         }

@@ -23,7 +23,6 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicNameValuePair;
-import org.jboss.logging.Logger;
 import org.keycloak.Config;
 import org.keycloak.authentication.FormAction;
 import org.keycloak.authentication.FormActionFactory;
@@ -63,7 +62,6 @@ public class RegistrationRecaptcha implements FormAction, FormActionFactory, Con
     public static final String RECAPTCHA_REFERENCE_CATEGORY = "recaptcha";
     public static final String SITE_KEY = "site.key";
     public static final String SITE_SECRET = "secret";
-    private static final Logger logger = Logger.getLogger(RegistrationRecaptcha.class);
 
     public static final String PROVIDER_ID = "registration-recaptcha-action";
 
@@ -129,9 +127,6 @@ public class RegistrationRecaptcha implements FormAction, FormActionFactory, Con
             context.error(Errors.INVALID_REGISTRATION);
             context.validationError(formData, errors);
             context.excludeOtherErrors();
-            return;
-
-
         }
     }
 
@@ -148,7 +143,7 @@ public class RegistrationRecaptcha implements FormAction, FormActionFactory, Con
             HttpResponse response = httpClient.execute(post);
             InputStream content = response.getEntity().getContent();
             try {
-                Map json = JsonSerialization.readValue(content, Map.class);
+                Map<?,?> json = JsonSerialization.readValue(content, Map.class);
                 Object val = json.get("success");
                 success = Boolean.TRUE.equals(val);
             } finally {
@@ -216,7 +211,7 @@ public class RegistrationRecaptcha implements FormAction, FormActionFactory, Con
         return "Adds Google Recaptcha button.  Recaptchas verify that the entity that is registering is a human.  This can only be used on the internet and must be configured after you add it.";
     }
 
-    private static final List<ProviderConfigProperty> CONFIG_PROPERTIES = new ArrayList<ProviderConfigProperty>();
+    private static final List<ProviderConfigProperty> CONFIG_PROPERTIES = new ArrayList<>();
 
     static {
         ProviderConfigProperty property;

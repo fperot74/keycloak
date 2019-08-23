@@ -35,7 +35,7 @@ public class ProductService {
     @Produces("application/json")
     @NoCache
     public List<String> getProducts() {
-        ArrayList<String> rtn = new ArrayList<String>();
+        ArrayList<String> rtn = new ArrayList<>();
         rtn.add("iphone");
         rtn.add("ipad");
         rtn.add("ipod");

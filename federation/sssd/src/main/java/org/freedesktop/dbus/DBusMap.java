@@ -80,7 +80,7 @@ class DBusMap<K, V> implements Map<K, V> {
     }
 
     public Set<Map.Entry<K, V>> entrySet() {
-        Set<Map.Entry<K, V>> s = new TreeSet<Map.Entry<K, V>>();
+        Set<Map.Entry<K, V>> s = new TreeSet<>();
         for (int i = 0; i < entries.length; i++)
             s.add(new Entry(i));
         return s;
@@ -100,7 +100,7 @@ class DBusMap<K, V> implements Map<K, V> {
 
     @SuppressWarnings("unchecked")
     public Set<K> keySet() {
-        Set<K> s = new TreeSet<K>();
+        Set<K> s = new TreeSet<>();
         for (Object[] entry : entries)
             s.add((K) entry[0]);
         return s;
@@ -124,7 +124,7 @@ class DBusMap<K, V> implements Map<K, V> {
 
     @SuppressWarnings("unchecked")
     public Collection<V> values() {
-        List<V> l = new Vector<V>();
+        List<V> l = new Vector<>();
         for (Object[] entry : entries)
             l.add((V) entry[1]);
         return l;

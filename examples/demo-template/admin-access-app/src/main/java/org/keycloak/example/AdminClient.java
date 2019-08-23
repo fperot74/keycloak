@@ -92,7 +92,7 @@ public class AdminClient {
         try {
             HttpPost post = new HttpPost(KeycloakUriBuilder.fromUri(getRequestOrigin(request) + "/auth")
                     .path(ServiceUrlConstants.TOKEN_PATH).build("demo"));
-            List <NameValuePair> formparams = new ArrayList <NameValuePair>();
+            List <NameValuePair> formparams = new ArrayList <>();
             formparams.add(new BasicNameValuePair("username", "admin"));
             formparams.add(new BasicNameValuePair("password", "password"));
             formparams.add(new BasicNameValuePair(OAuth2Constants.GRANT_TYPE, "password"));
@@ -126,7 +126,7 @@ public class AdminClient {
             HttpPost post = new HttpPost(KeycloakUriBuilder.fromUri(UriUtils.getOrigin(request.getRequestURL().toString()) + "/auth")
                     .path(ServiceUrlConstants.TOKEN_SERVICE_LOGOUT_PATH)
                     .build("demo"));
-            List<NameValuePair> formparams = new ArrayList<NameValuePair>();
+            List<NameValuePair> formparams = new ArrayList<>();
             formparams.add(new BasicNameValuePair(OAuth2Constants.REFRESH_TOKEN, res.getRefreshToken()));
             formparams.add(new BasicNameValuePair(OAuth2Constants.CLIENT_ID, "admin-client"));
             UrlEncodedFormEntity form = new UrlEncodedFormEntity(formparams, "UTF-8");

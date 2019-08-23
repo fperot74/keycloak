@@ -36,7 +36,7 @@ import java.util.List;
  * @version $Revision: 1 $
  */
 public class UserPropertyMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper, UserInfoTokenMapper {
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
+    protected static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
     static {
         ProviderConfigProperty property;

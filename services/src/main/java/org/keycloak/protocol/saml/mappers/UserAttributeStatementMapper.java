@@ -38,7 +38,7 @@ import java.util.List;
  * @version $Revision: 1 $
  */
 public class UserAttributeStatementMapper extends AbstractSAMLProtocolMapper implements SAMLAttributeStatementMapper {
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
     static {
         ProviderConfigProperty property;
@@ -87,7 +87,7 @@ public class UserAttributeStatementMapper extends AbstractSAMLProtocolMapper imp
     public void transformAttributeStatement(AttributeStatementType attributeStatement, ProtocolMapperModel mappingModel, KeycloakSession session, UserSessionModel userSession, AuthenticatedClientSessionModel clientSession) {
         UserModel user = userSession.getUser();
         String attributeName = mappingModel.getConfig().get(ProtocolMapperUtils.USER_ATTRIBUTE);
-        boolean aggregateAttrs = Boolean.valueOf(mappingModel.getConfig().get(ProtocolMapperUtils.AGGREGATE_ATTRS));
+        boolean aggregateAttrs = Boolean.parseBoolean(mappingModel.getConfig().get(ProtocolMapperUtils.AGGREGATE_ATTRS));
         Collection<String> attributeValues = KeycloakModelUtils.resolveAttribute(user, attributeName, aggregateAttrs);
         if (attributeValues.isEmpty()) return;
         AttributeStatementHelper.addAttributes(attributeStatement, mappingModel, attributeValues);

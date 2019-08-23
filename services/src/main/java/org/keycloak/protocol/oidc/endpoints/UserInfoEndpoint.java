@@ -35,7 +35,6 @@ import org.keycloak.jose.jws.JWSBuilder;
 import org.keycloak.models.AuthenticatedClientSessionModel;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.ClientSessionContext;
-import org.keycloak.models.TokenManager;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
@@ -193,7 +192,7 @@ public class UserInfoEndpoint {
         AccessToken userInfo = new AccessToken();
         tokenManager.transformUserInfoAccessToken(session, userInfo, userSession, clientSessionCtx);
 
-        Map<String, Object> claims = new HashMap<String, Object>();
+        Map<String, Object> claims = new HashMap<>();
         claims.put("sub", userModel.getId());
         claims.putAll(userInfo.getOtherClaims());
 

@@ -87,8 +87,7 @@ public class ComponentUtil {
             throw new IllegalArgumentException("No such provider '" + providerId + "'");
         }
 
-        ComponentFactory cf = (ComponentFactory) f;
-        return cf;
+        return (ComponentFactory) f;
     }
 
     public static void notifyCreated(KeycloakSession session, RealmModel realm, ComponentModel model) {

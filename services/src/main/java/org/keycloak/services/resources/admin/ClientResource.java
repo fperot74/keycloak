@@ -18,11 +18,9 @@ package org.keycloak.services.resources.admin;
 
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import org.jboss.resteasy.spi.BadRequestException;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.authorization.admin.AuthorizationService;
 import org.keycloak.common.ClientConnection;
-import org.keycloak.common.Profile;
 import org.keycloak.common.util.Time;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
@@ -62,8 +60,8 @@ import org.keycloak.services.resources.admin.permissions.AdminPermissions;
 import org.keycloak.services.validation.ClientValidator;
 import org.keycloak.services.validation.PairwiseClientValidator;
 import org.keycloak.services.validation.ValidationMessages;
-import org.keycloak.utils.ProfileHelper;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -331,7 +329,7 @@ public class ClientResource {
 
         ClientScopeModel clientScope = realm.getClientScopeById(clientScopeId);
         if (clientScope == null) {
-            throw new org.jboss.resteasy.spi.NotFoundException("Client scope not found");
+            throw new NotFoundException("Client scope not found");
         }
         client.addClientScope(clientScope, defaultScope);
 
@@ -347,7 +345,7 @@ public class ClientResource {
 
         ClientScopeModel clientScope = realm.getClientScopeById(clientScopeId);
         if (clientScope == null) {
-            throw new org.jboss.resteasy.spi.NotFoundException("Client scope not found");
+            throw new NotFoundException("Client scope not found");
         }
         client.removeClientScope(clientScope);
 
@@ -469,7 +467,7 @@ public class ClientResource {
 
         firstResult = firstResult != null ? firstResult : -1;
         maxResults = maxResults != null ? maxResults : Constants.DEFAULT_MAX_RESULTS;
-        List<UserSessionRepresentation> sessions = new ArrayList<UserSessionRepresentation>();
+        List<UserSessionRepresentation> sessions = new ArrayList<>();
         for (UserSessionModel userSession : session.sessions().getUserSessions(client.getRealm(), client, firstResult, maxResults)) {
             UserSessionRepresentation rep = ModelToRepresentation.toRepresentation(userSession);
             sessions.add(rep);
@@ -518,7 +516,7 @@ public class ClientResource {
 
         firstResult = firstResult != null ? firstResult : -1;
         maxResults = maxResults != null ? maxResults : Constants.DEFAULT_MAX_RESULTS;
-        List<UserSessionRepresentation> sessions = new ArrayList<UserSessionRepresentation>();
+        List<UserSessionRepresentation> sessions = new ArrayList<>();
         List<UserSessionModel> userSessions = session.sessions().getOfflineUserSessions(client.getRealm(), client, firstResult, maxResults);
         for (UserSessionModel userSession : userSessions) {
             UserSessionRepresentation rep = ModelToRepresentation.toRepresentation(userSession);

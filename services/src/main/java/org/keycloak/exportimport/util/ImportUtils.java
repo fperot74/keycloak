@@ -50,31 +50,19 @@ public class ImportUtils {
     private static final Logger logger = Logger.getLogger(ImportUtils.class);
 
     public static void importRealms(KeycloakSession session, Collection<RealmRepresentation> realms, Strategy strategy) {
-        boolean masterImported = false;
-
         // Import admin realm first
-        for (RealmRepresentation realm : realms) {
-            if (Config.getAdminRealm().equals(realm.getRealm())) {
-                if (importRealm(session, realm, strategy, false)) {
-                    masterImported = true;
-                }
-            }
-        }
+        boolean masterImported = realms.stream().anyMatch(realm -> Config.getAdminRealm().equals(realm.getRealm()) && importRealm(session, realm, strategy, false));
 
-        for (RealmRepresentation realm : realms) {
-            if (!Config.getAdminRealm().equals(realm.getRealm())) {
-                importRealm(session, realm, strategy, false);
-            }
-        }
+        realms.stream()
+            .filter(realm -> !Config.getAdminRealm().equals(realm.getRealm()))
+            .forEach(realm -> importRealm(session, realm, strategy, false));
 
         // If master was imported, we may need to re-create realm management clients
         if (masterImported) {
-            for (RealmModel realm : session.realms().getRealms()) {
-                if (realm.getMasterAdminClient() == null) {
-                    logger.infof("Re-created management client in master realm for realm '%s'", realm.getName());
-                    new RealmManager(session).setupMasterAdminManagement(realm);
-                }
-            }
+            session.realms().getRealms().stream().filter(realm -> realm.getMasterAdminClient() == null).forEach(realm -> {
+                logger.infof("Re-created management client in master realm for realm '%s'", realm.getName());
+                new RealmManager(session).setupMasterAdminManagement(realm);
+            });
         }
     }
 
@@ -135,7 +123,7 @@ public class ImportUtils {
     }
 
     public static Map<String, RealmRepresentation> getRealmsFromStream(ObjectMapper mapper, InputStream is) throws IOException {
-        Map<String, RealmRepresentation> result = new HashMap<String, RealmRepresentation>();
+        Map<String, RealmRepresentation> result = new HashMap<>();
 
         JsonFactory factory = mapper.getFactory();
         JsonParser parser = factory.createParser(is);
@@ -146,7 +134,7 @@ public class ImportUtils {
                 // Case with more realms in stream
                 parser.nextToken();
 
-                List<RealmRepresentation> realmReps = new ArrayList<RealmRepresentation>();
+                List<RealmRepresentation> realmReps = new ArrayList<>();
                 while (parser.getCurrentToken() == JsonToken.START_OBJECT) {
                     RealmRepresentation realmRep = parser.readValueAs(RealmRepresentation.class);
                     parser.nextToken();
@@ -198,7 +186,7 @@ public class ImportUtils {
                     }
 
                     // TODO: support for more transactions per single users file (if needed)
-                    List<UserRepresentation> userReps = new ArrayList<UserRepresentation>();
+                    List<UserRepresentation> userReps = new ArrayList<>();
                     while (parser.getCurrentToken() == JsonToken.START_OBJECT) {
                         UserRepresentation user = parser.readValueAs(UserRepresentation.class);
                         userReps.add(user);
@@ -240,7 +228,7 @@ public class ImportUtils {
                     }
 
                     // TODO: support for more transactions per single users file (if needed)
-                    List<UserRepresentation> userReps = new ArrayList<UserRepresentation>();
+                    List<UserRepresentation> userReps = new ArrayList<>();
                     while (parser.getCurrentToken() == JsonToken.START_OBJECT) {
                         UserRepresentation user = parser.readValueAs(UserRepresentation.class);
                         userReps.add(user);

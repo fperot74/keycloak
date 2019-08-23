@@ -44,11 +44,12 @@ public class FreeMarkerUtil {
         }
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public String processTemplate(Object data, String templateName, Theme theme) throws FreeMarkerException {
         if (data instanceof Map) {
             ((Map)data).put("kcSanitize", kcSanitizeMethod);
         }
-        
+
         try {
             Template template;
             if (cache != null) {

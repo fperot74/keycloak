@@ -40,7 +40,7 @@ public class ProfileBean {
         if (user.getAttributes() != null) {
             for (Map.Entry<String, List<String>> attr : user.getAttributes().entrySet()) {
                 List<String> attrValue = attr.getValue();
-                if (attrValue != null && attrValue.size() > 0) {
+                if (attrValue != null && !attrValue.isEmpty()) {
                     attributes.put(attr.getKey(), attrValue.get(0));
                 }
 

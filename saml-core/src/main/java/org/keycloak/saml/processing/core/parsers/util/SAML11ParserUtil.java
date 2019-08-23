@@ -86,7 +86,7 @@ public class SAML11ParserUtil {
             throws ParsingException {
         StartElement startElement = StaxParserUtil.getNextStartElement(xmlEventReader);
 
-        StaxParserUtil.validate(startElement, SAML11Constants.AUTHENTICATION_STATEMENT);
+        StaxParserUtil.validate(startElement, new QName(SAML11Constants.AUTHENTICATION_STATEMENT));
 
         Attribute authMethod = startElement.getAttributeByName(new QName(SAML11Constants.AUTHENTICATION_METHOD));
         if (authMethod == null)
@@ -113,7 +113,6 @@ public class SAML11ParserUtil {
                 else
                     throw logger.parserUnknownEndElement(endElementTag, xmlEvent.getLocation());
             }
-            startElement = null;
 
             if (xmlEvent instanceof StartElement) {
                 startElement = (StartElement) xmlEvent;
@@ -233,7 +232,7 @@ public class SAML11ParserUtil {
     public static SubjectConfirmationDataType parseSubjectConfirmationData(XMLEventReader xmlEventReader)
             throws ParsingException {
         StartElement startElement = StaxParserUtil.getNextStartElement(xmlEventReader);
-        StaxParserUtil.validate(startElement, JBossSAMLConstants.SUBJECT_CONFIRMATION_DATA.get());
+        StaxParserUtil.validate(startElement, new QName(JBossSAMLConstants.SUBJECT_CONFIRMATION_DATA.get()));
 
         SubjectConfirmationDataType subjectConfirmationData = new SubjectConfirmationDataType();
 
@@ -295,7 +294,7 @@ public class SAML11ParserUtil {
         SAML11AttributeStatementType attributeStatementType = new SAML11AttributeStatementType();
 
         StartElement startElement = StaxParserUtil.getNextStartElement(xmlEventReader);
-        String ATTRIBSTATEMT = JBossSAMLConstants.ATTRIBUTE_STATEMENT.get();
+        QName ATTRIBSTATEMT = new QName(JBossSAMLConstants.ATTRIBUTE_STATEMENT.get());
         StaxParserUtil.validate(startElement, ATTRIBSTATEMT);
 
         while (xmlEventReader.hasNext()) {
@@ -332,7 +331,7 @@ public class SAML11ParserUtil {
      */
     public static SAML11AttributeType parseSAML11Attribute(XMLEventReader xmlEventReader) throws ParsingException {
         StartElement startElement = StaxParserUtil.getNextStartElement(xmlEventReader);
-        StaxParserUtil.validate(startElement, JBossSAMLConstants.ATTRIBUTE.get());
+        StaxParserUtil.validate(startElement, new QName(JBossSAMLConstants.ATTRIBUTE.get()));
         SAML11AttributeType attributeType = null;
 
         Attribute name = startElement.getAttributeByName(new QName(SAML11Constants.ATTRIBUTE_NAME));
@@ -396,7 +395,7 @@ public class SAML11ParserUtil {
      */
     public static Object parseAttributeValue(XMLEventReader xmlEventReader) throws ParsingException {
         StartElement startElement = StaxParserUtil.getNextStartElement(xmlEventReader);
-        StaxParserUtil.validate(startElement, JBossSAMLConstants.ATTRIBUTE_VALUE.get());
+        StaxParserUtil.validate(startElement, new QName(JBossSAMLConstants.ATTRIBUTE_VALUE.get()));
 
         Attribute type = startElement.getAttributeByName(new QName(JBossSAMLURIConstants.XSI_NSURI.get(), "type", "xsi"));
         if (type == null) {
@@ -416,7 +415,7 @@ public class SAML11ParserUtil {
         SAML11AuthorizationDecisionStatementType authzDecision = null;
 
         StartElement startElement = StaxParserUtil.getNextStartElement(xmlEventReader);
-        StaxParserUtil.validate(startElement, SAML11Constants.AUTHORIZATION_DECISION_STATEMENT);
+        StaxParserUtil.validate(startElement, new QName(SAML11Constants.AUTHORIZATION_DECISION_STATEMENT));
 
         Attribute decision = startElement.getAttributeByName(new QName(SAML11Constants.DECISION));
         if (decision == null)
@@ -475,7 +474,7 @@ public class SAML11ParserUtil {
         StartElement startElement;
         SAML11ConditionsType conditions = new SAML11ConditionsType();
         StartElement conditionsElement = StaxParserUtil.getNextStartElement(xmlEventReader);
-        StaxParserUtil.validate(conditionsElement, JBossSAMLConstants.CONDITIONS.get());
+        StaxParserUtil.validate(conditionsElement, new QName(JBossSAMLConstants.CONDITIONS.get()));
 
         String assertionNS = SAML11Constants.ASSERTION_11_NSURI;
 
@@ -535,7 +534,7 @@ public class SAML11ParserUtil {
     public static KeyInfoType parseKeyInfo(XMLEventReader xmlEventReader) throws ParsingException {
         KeyInfoType keyInfo = new KeyInfoType();
         StartElement startElement = StaxParserUtil.getNextStartElement(xmlEventReader);
-        StaxParserUtil.validate(startElement, WSTrustConstants.XMLDSig.KEYINFO);
+        StaxParserUtil.validate(startElement, new QName(WSTrustConstants.XMLDSig.KEYINFO));
 
         XMLEvent xmlEvent = null;
         String tag = null;
@@ -560,7 +559,7 @@ public class SAML11ParserUtil {
 
                 // Let us go for the X509 certificate
                 startElement = StaxParserUtil.getNextStartElement(xmlEventReader);
-                StaxParserUtil.validate(startElement, WSTrustConstants.XMLDSig.X509CERT);
+                StaxParserUtil.validate(startElement, new QName(WSTrustConstants.XMLDSig.X509CERT));
 
                 X509CertificateType cert = new X509CertificateType();
                 String certValue = StaxParserUtil.getElementText(xmlEventReader);
@@ -594,7 +593,7 @@ public class SAML11ParserUtil {
 
     public static RSAKeyValueType parseRSAKeyValue(XMLEventReader xmlEventReader) throws ParsingException {
         StartElement startElement = StaxParserUtil.getNextStartElement(xmlEventReader);
-        StaxParserUtil.validate(startElement, WSTrustConstants.XMLDSig.RSA_KEYVALUE);
+        StaxParserUtil.validate(startElement, new QName(WSTrustConstants.XMLDSig.RSA_KEYVALUE));
 
         XMLEvent xmlEvent = null;
         String tag = null;
@@ -630,7 +629,7 @@ public class SAML11ParserUtil {
 
     private static DSAKeyValueType parseDSAKeyValue(XMLEventReader xmlEventReader) throws ParsingException {
         StartElement startElement = StaxParserUtil.peekNextStartElement(xmlEventReader);
-        StaxParserUtil.validate(startElement, WSTrustConstants.XMLDSig.DSA_KEYVALUE);
+        StaxParserUtil.validate(startElement, new QName(WSTrustConstants.XMLDSig.DSA_KEYVALUE));
 
         Element dsaElement = StaxParserUtil.getDOMElement(xmlEventReader);
         return getDSAKeyValue(dsaElement);
@@ -642,10 +641,8 @@ public class SAML11ParserUtil {
      * @param element
      *
      * @return
-     *
-     * @throws org.keycloak.saml.common.exceptions.ParsingException
      */
-    private static DSAKeyValueType getDSAKeyValue(Element element) throws ParsingException {
+    private static DSAKeyValueType getDSAKeyValue(Element element) {
         DSAKeyValueType dsa = new DSAKeyValueType();
         NodeList nl = element.getChildNodes();
         int length = nl.getLength();

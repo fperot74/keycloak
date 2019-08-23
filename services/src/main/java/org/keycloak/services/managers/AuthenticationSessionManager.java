@@ -30,7 +30,6 @@ import org.keycloak.sessions.RootAuthenticationSessionModel;
 import org.keycloak.sessions.StickySessionEncoderProvider;
 
 import javax.ws.rs.core.UriInfo;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -87,7 +86,7 @@ public class AuthenticationSessionManager {
             }
 
             return null;
-        }).filter(authSession -> Objects.nonNull(authSession)).findFirst().orElse(null);
+        }).filter(Objects::nonNull).findFirst().orElse(null);
     }
 
 
@@ -106,7 +105,7 @@ public class AuthenticationSessionManager {
             }
 
             return null;
-        }).filter(authSession -> Objects.nonNull(authSession)).findFirst().orElse(null);
+        }).filter(Objects::nonNull).findFirst().orElse(null);
     }
 
 
@@ -130,7 +129,7 @@ public class AuthenticationSessionManager {
             }
 
             return null;
-        }).filter(authSession -> Objects.nonNull(authSession)).findFirst().orElse(null);
+        }).filter(Objects::nonNull).findFirst().orElse(null);
     }
 
 

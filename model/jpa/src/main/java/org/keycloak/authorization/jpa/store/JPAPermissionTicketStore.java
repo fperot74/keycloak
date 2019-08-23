@@ -74,8 +74,7 @@ public class JPAPermissionTicketStore implements PermissionTicketStore {
 
         this.entityManager.persist(entity);
         this.entityManager.flush();
-        PermissionTicket model = new PermissionTicketAdapter(entity, entityManager, provider.getStoreFactory());
-        return model;
+        return new PermissionTicketAdapter(entity, entityManager, provider.getStoreFactory());
     }
 
     @Override
@@ -176,7 +175,7 @@ public class JPAPermissionTicketStore implements PermissionTicketStore {
 
         querybuilder.select(root.get("id"));
 
-        List<Predicate> predicates = new ArrayList();
+        List<Predicate> predicates = new ArrayList<>();
 
         if (resourceServerId != null) {
             predicates.add(builder.equal(root.get("resourceServer").get("id"), resourceServerId));
@@ -230,6 +229,7 @@ public class JPAPermissionTicketStore implements PermissionTicketStore {
             query.setMaxResults(maxResult);
         }
 
+        @SuppressWarnings("unchecked")
         List<String> result = query.getResultList();
         List<PermissionTicket> list = new LinkedList<>();
         PermissionTicketStore ticketStore = provider.getStoreFactory().getPermissionTicketStore();

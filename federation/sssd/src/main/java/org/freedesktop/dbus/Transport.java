@@ -167,7 +167,7 @@ public class Transport {
             while (!lock.createNewFile() && LOCK_TIMEOUT > (System.currentTimeMillis() - start)) ;
 
             // read old file
-            Vector<String> lines = new Vector<String>();
+            Vector<String> lines = new Vector<>();
             if (cookiefile.exists()) {
                 BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(cookiefile)));
                 String s = null;

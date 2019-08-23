@@ -361,7 +361,7 @@ public class OIDCLoginProtocolFactory extends AbstractLoginProtocolFactory {
             else root = root + "/*";
             newClient.addRedirectUri(root);
 
-            Set<String> origins = new HashSet<String>();
+            Set<String> origins = new HashSet<>();
             String origin = UriUtils.getOrigin(root);
             logger.debugv("adding default client origin: {0}" , origin);
             origins.add(origin);

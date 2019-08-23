@@ -17,7 +17,6 @@
 package org.keycloak.services.resources.admin;
 
 import org.jboss.resteasy.annotations.cache.NoCache;
-import org.jboss.resteasy.spi.NotFoundException;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
@@ -38,6 +37,7 @@ import org.keycloak.services.resources.admin.permissions.AdminPermissions;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -46,11 +46,11 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @resource Groups
@@ -129,10 +129,8 @@ public class GroupResource {
     public Response addChild(GroupRepresentation rep) {
         this.auth.groups().requireManage(group);
 
-        for (GroupModel group : group.getSubGroups()) {
-            if (group.getName().equals(rep.getName())) {
-                return ErrorResponse.exists("Parent already contains subgroup named '" + rep.getName() + "'");
-            }
+        if (group.getSubGroups().stream().anyMatch(g -> g.getName().equals(rep.getName()))) {
+            return ErrorResponse.exists("Parent already contains subgroup named '" + rep.getName() + "'");
         }
 
         Response.ResponseBuilder builder = Response.status(204);
@@ -167,13 +165,8 @@ public class GroupResource {
         if (rep.getAttributes() != null) {
             Set<String> attrsToRemove = new HashSet<>(model.getAttributes().keySet());
             attrsToRemove.removeAll(rep.getAttributes().keySet());
-            for (Map.Entry<String, List<String>> attr : rep.getAttributes().entrySet()) {
-                model.setAttribute(attr.getKey(), attr.getValue());
-            }
-
-            for (String attr : attrsToRemove) {
-                model.removeAttribute(attr);
-            }
+            rep.getAttributes().forEach(model::setAttribute);
+            attrsToRemove.forEach(model::removeAttribute);
         }
     }
 
@@ -210,19 +203,13 @@ public class GroupResource {
         
         firstResult = firstResult != null ? firstResult : 0;
         maxResults = maxResults != null ? maxResults : Constants.DEFAULT_MAX_RESULTS;
-        boolean briefRepresentationB = briefRepresentation != null && briefRepresentation;
 
-        List<UserRepresentation> results = new ArrayList<UserRepresentation>();
         List<UserModel> userModels = session.users().getGroupMembers(realm, group, firstResult, maxResults);
 
-        for (UserModel user : userModels) {
-            UserRepresentation userRep = briefRepresentationB
-                    ? ModelToRepresentation.toBriefRepresentation(user)
-                    : ModelToRepresentation.toRepresentation(session, realm, user);
-
-            results.add(userRep);
-        }
-        return results;
+        Function<UserModel, UserRepresentation> userMapper = briefRepresentation != null && briefRepresentation
+            ? ModelToRepresentation::toBriefRepresentation
+            : u -> ModelToRepresentation.toRepresentation(session, realm, u);
+        return userModels.stream().map(userMapper).collect(Collectors.toList());
     }
 
     /**

@@ -44,9 +44,9 @@ import java.util.regex.Pattern;
  */
 public class UsernameTemplateMapper extends AbstractIdentityProviderMapper {
 
-    public static final String[] COMPATIBLE_PROVIDERS = {SAMLIdentityProviderFactory.PROVIDER_ID};
+    private static final String[] COMPATIBLE_PROVIDERS = {SAMLIdentityProviderFactory.PROVIDER_ID};
 
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
     public static final String TEMPLATE = "template";
 

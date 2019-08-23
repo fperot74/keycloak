@@ -17,8 +17,6 @@
 
 package org.keycloak.exportimport;
 
-
-import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.services.ServicesLogger;
@@ -29,9 +27,6 @@ import java.io.IOException;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class ExportImportManager {
-
-    private static final Logger logger = Logger.getLogger(ExportImportManager.class);
-
     private KeycloakSessionFactory sessionFactory;
 
     private final String realmName;

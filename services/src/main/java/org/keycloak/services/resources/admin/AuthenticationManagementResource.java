@@ -18,8 +18,6 @@ package org.keycloak.services.resources.admin;
 
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import org.jboss.resteasy.spi.BadRequestException;
-import org.jboss.resteasy.spi.NotFoundException;
 import org.keycloak.authentication.AuthenticationFlow;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.ClientAuthenticator;
@@ -53,9 +51,11 @@ import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.utils.CredentialHelper;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -1168,7 +1168,6 @@ public class AuthenticationManagementResource {
             throw new NotFoundException("Could not find authenticator config");
 
         }
-        List<AuthenticationFlowModel> flows = new LinkedList<>();
         for (AuthenticationFlowModel flow : realm.getAuthenticationFlows()) {
             for (AuthenticationExecutionModel exe : realm.getAuthenticationExecutions(flow.getId())) {
                 if (id.equals(exe.getAuthenticatorConfig())) {

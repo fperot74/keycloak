@@ -239,10 +239,10 @@ public class AuthenticationSessionEntity implements Serializable {
               KeycloakMarshallUtil.readMap(input, KeycloakMarshallUtil.STRING_EXT, EXECUTION_STATUS_EXT, size -> new ConcurrentHashMap<>(size)), // executionStatus
               MarshallUtil.unmarshallString(input),     // protocol
 
-              KeycloakMarshallUtil.readMap(input, KeycloakMarshallUtil.STRING_EXT, KeycloakMarshallUtil.STRING_EXT, size -> new ConcurrentHashMap<>(size)), // clientNotes
-              KeycloakMarshallUtil.readMap(input, KeycloakMarshallUtil.STRING_EXT, KeycloakMarshallUtil.STRING_EXT, size -> new ConcurrentHashMap<>(size)), // authNotes
+              KeycloakMarshallUtil.readMap(input, KeycloakMarshallUtil.STRING_EXT, KeycloakMarshallUtil.STRING_EXT, ConcurrentHashMap::new), // clientNotes
+              KeycloakMarshallUtil.readMap(input, KeycloakMarshallUtil.STRING_EXT, KeycloakMarshallUtil.STRING_EXT, ConcurrentHashMap::new), // authNotes
               KeycloakMarshallUtil.readCollection(input, KeycloakMarshallUtil.STRING_EXT, size -> new ConcurrentHashSet<>()),  // requiredActions
-              KeycloakMarshallUtil.readMap(input, KeycloakMarshallUtil.STRING_EXT, KeycloakMarshallUtil.STRING_EXT, size -> new ConcurrentHashMap<>(size)) // userSessionNotes
+              KeycloakMarshallUtil.readMap(input, KeycloakMarshallUtil.STRING_EXT, KeycloakMarshallUtil.STRING_EXT, ConcurrentHashMap::new) // userSessionNotes
             );
         }
     }

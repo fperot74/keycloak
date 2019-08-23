@@ -29,7 +29,6 @@ import org.keycloak.exportimport.ExportImportManager;
 import org.keycloak.migration.MigrationModelManager;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.models.KeycloakSessionTask;
 import org.keycloak.models.ModelDuplicateException;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
@@ -100,8 +99,8 @@ public class KeycloakApplication extends Application {
 
     protected boolean embedded = false;
 
-    protected Set<Object> singletons = new HashSet<Object>();
-    protected Set<Class<?>> classes = new HashSet<Class<?>>();
+    protected Set<Object> singletons = new HashSet<>();
+    protected Set<Class<?>> classes = new HashSet<>();
 
     protected KeycloakSessionFactory sessionFactory;
     protected String contextPath;
@@ -134,21 +133,16 @@ public class KeycloakApplication extends Application {
 
             ExportImportManager[] exportImportManager = new ExportImportManager[1];
 
-            KeycloakModelUtils.runJobInTransaction(sessionFactory, new KeycloakSessionTask() {
-
-                @Override
-                public void run(KeycloakSession lockSession) {
-                    DBLockManager dbLockManager = new DBLockManager(lockSession);
-                    dbLockManager.checkForcedUnlock();
-                    DBLockProvider dbLock = dbLockManager.getDBLock();
-                    dbLock.waitForLock(DBLockProvider.Namespace.KEYCLOAK_BOOT);
-                    try {
-                        exportImportManager[0] = migrateAndBootstrap();
-                    } finally {
-                        dbLock.releaseLock();
-                    }
+            KeycloakModelUtils.runJobInTransaction(sessionFactory, lockSession -> {
+                DBLockManager dbLockManager = new DBLockManager(lockSession);
+                dbLockManager.checkForcedUnlock();
+                DBLockProvider dbLock = dbLockManager.getDBLock();
+                dbLock.waitForLock(DBLockProvider.Namespace.KEYCLOAK_BOOT);
+                try {
+                    exportImportManager[0] = migrateAndBootstrap();
+                } finally {
+                    dbLock.releaseLock();
                 }
-
             });
 
 
@@ -157,14 +151,9 @@ public class KeycloakApplication extends Application {
             }
 
             AtomicBoolean bootstrapAdminUser = new AtomicBoolean(false);
-            KeycloakModelUtils.runJobInTransaction(sessionFactory, new KeycloakSessionTask() {
-
-                @Override
-                public void run(KeycloakSession session) {
-                    boolean shouldBootstrapAdmin = new ApplianceBootstrap(session).isNoMasterUser();
-                    bootstrapAdminUser.set(shouldBootstrapAdmin);
-                }
-
+            KeycloakModelUtils.runJobInTransaction(sessionFactory, session -> {
+                boolean shouldBootstrapAdmin = new ApplianceBootstrap(session).isNoMasterUser();
+                bootstrapAdminUser.set(shouldBootstrapAdmin);
             });
 
             sessionFactory.publish(new PostMigrationEvent());
@@ -191,20 +180,17 @@ public class KeycloakApplication extends Application {
         try {
             session.getTransactionManager().begin();
             JtaTransactionManagerLookup lookup = (JtaTransactionManagerLookup) sessionFactory.getProviderFactory(JtaTransactionManagerLookup.class);
-            if (lookup != null) {
-                if (lookup.getTransactionManager() != null) {
-                    try {
-                        Transaction transaction = lookup.getTransactionManager().getTransaction();
-                        logger.debugv("bootstrap current transaction? {0}", transaction != null);
-                        if (transaction != null) {
-                            logger.debugv("bootstrap current transaction status? {0}", transaction.getStatus());
-                        }
-                    } catch (SystemException e) {
-                        throw new RuntimeException(e);
+            if (lookup != null && lookup.getTransactionManager() != null) {
+                try {
+                    Transaction transaction = lookup.getTransactionManager().getTransaction();
+                    logger.debugv("bootstrap current transaction? {0}", transaction != null);
+                    if (transaction != null) {
+                        logger.debugv("bootstrap current transaction status? {0}", transaction.getStatus());
                     }
+                } catch (SystemException e) {
+                    throw new RuntimeException(e);
                 }
             }
-
 
             ApplianceBootstrap applianceBootstrap = new ApplianceBootstrap(session);
             exportImportManager = new ExportImportManager(session);

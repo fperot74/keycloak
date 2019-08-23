@@ -20,8 +20,6 @@ package org.keycloak.services.resources.admin;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
-import org.jboss.resteasy.spi.NotAcceptableException;
-import org.jboss.resteasy.spi.NotFoundException;
 import org.keycloak.common.util.PemUtils;
 import org.keycloak.common.util.StreamUtil;
 import org.keycloak.events.admin.OperationType;
@@ -45,16 +43,17 @@ import org.keycloak.util.JsonSerialization;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -101,8 +100,7 @@ public class ClientAttributeCertificateResource {
     public CertificateRepresentation getKeyInfo() {
         auth.clients().requireView(client);
 
-        CertificateRepresentation info = CertificateInfoHelper.getCertificateFromClient(client, attributePrefix);
-        return info;
+        return CertificateInfoHelper.getCertificateFromClient(client, attributePrefix);
     }
 
     /**
@@ -186,7 +184,7 @@ public class ClientAttributeCertificateResource {
         String keystoreFormat = keystoreFormatPart.get(0).getBodyAsString();
         List<InputPart> inputParts = uploadForm.get("file");
         if (keystoreFormat.equals(CERTIFICATE_PEM)) {
-            String pem = StreamUtil.readString(inputParts.get(0).getBody(InputStream.class, null));
+            String pem = StreamUtil.readString(inputParts.get(0).getBody(InputStream.class, null), Charset.defaultCharset());
 
             pem = PemUtils.removeBeginEnd(pem);
 
@@ -196,7 +194,7 @@ public class ClientAttributeCertificateResource {
             info.setCertificate(pem);
             return info;
         } else if (keystoreFormat.equals(PUBLIC_KEY_PEM)) {
-            String pem = StreamUtil.readString(inputParts.get(0).getBody(InputStream.class, null));
+            String pem = StreamUtil.readString(inputParts.get(0).getBody(InputStream.class, null), Charset.defaultCharset());
 
             // Validate format
             KeycloakModelUtils.getPublicKey(pem);
@@ -287,8 +285,7 @@ public class ClientAttributeCertificateResource {
             throw new ErrorResponseException("password-missing", "Need to specify a store password for jks download", Response.Status.BAD_REQUEST);
         }
 
-        byte[] rtn = getKeystore(config, privatePem, certPem);
-        return rtn;
+        return getKeystore(config, privatePem, certPem);
     }
 
     /**
@@ -365,8 +362,7 @@ public class ClientAttributeCertificateResource {
             keyStore.store(stream, config.getStorePassword().trim().toCharArray());
             stream.flush();
             stream.close();
-            byte[] rtn = stream.toByteArray();
-            return rtn;
+            return stream.toByteArray();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

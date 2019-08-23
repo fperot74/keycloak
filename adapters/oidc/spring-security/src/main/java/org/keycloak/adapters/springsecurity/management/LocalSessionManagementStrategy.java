@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class LocalSessionManagementStrategy implements SessionManagementStrategy {
 
-    private final Map<String, HttpSession> sessions = new ConcurrentHashMap<String, HttpSession>();
+    private final Map<String, HttpSession> sessions = new ConcurrentHashMap<>();
 
     @Override
     public void clear() {

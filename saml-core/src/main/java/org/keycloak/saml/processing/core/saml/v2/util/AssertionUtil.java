@@ -193,13 +193,11 @@ public class AssertionUtil {
      * @param assertion
      * @param durationInMilis
      *
-     * @throws ConfigurationException
      * @throws IssueInstantMissingException
      * @see {{@link #createTimedConditions(AssertionType, long, long)}
      *      </p>
      */
-    public static void createTimedConditions(AssertionType assertion, long durationInMilis) throws ConfigurationException,
-            IssueInstantMissingException {
+    public static void createTimedConditions(AssertionType assertion, long durationInMilis) throws IssueInstantMissingException {
         XMLGregorianCalendar issueInstant = assertion.getIssueInstant();
         if (issueInstant == null)
             throw new IssueInstantMissingException(ErrorCodes.NULL_ISSUE_INSTANT);
@@ -217,11 +215,9 @@ public class AssertionUtil {
      * @param assertion
      * @param durationInMilis
      *
-     * @throws ConfigurationException
      * @throws IssueInstantMissingException
      */
-    public static void createTimedConditions(AssertionType assertion, long durationInMilis, long clockSkew)
-            throws ConfigurationException, IssueInstantMissingException {
+    public static void createTimedConditions(AssertionType assertion, long durationInMilis, long clockSkew) throws IssueInstantMissingException {
         XMLGregorianCalendar issueInstant = assertion.getIssueInstant();
         if (issueInstant == null)
             throw logger.samlIssueInstantMissingError();
@@ -243,11 +239,9 @@ public class AssertionUtil {
      * @param assertion
      * @param durationInMilis
      *
-     * @throws ConfigurationException
      * @throws IssueInstantMissingException
      */
-    public static void createSAML11TimedConditions(SAML11AssertionType assertion, long durationInMilis, long clockSkew)
-            throws ConfigurationException, IssueInstantMissingException {
+    public static void createSAML11TimedConditions(SAML11AssertionType assertion, long durationInMilis, long clockSkew) throws IssueInstantMissingException {
         XMLGregorianCalendar issueInstant = assertion.getIssueInstant();
         if (issueInstant == null)
             throw new IssueInstantMissingException(ErrorCodes.NULL_ISSUE_INSTANT);
@@ -320,10 +314,8 @@ public class AssertionUtil {
      * @param assertion
      *
      * @return
-     *
-     * @throws ConfigurationException
      */
-    public static boolean hasExpired(AssertionType assertion) throws ConfigurationException {
+    public static boolean hasExpired(AssertionType assertion) {
         boolean expiry = false;
 
         // Check for validity of assertion
@@ -361,10 +353,8 @@ public class AssertionUtil {
      * @param clockSkewInMilis in miliseconds
      *
      * @return
-     *
-     * @throws ConfigurationException
      */
-    public static boolean hasExpired(AssertionType assertion, long clockSkewInMilis) throws ConfigurationException {
+    public static boolean hasExpired(AssertionType assertion, long clockSkewInMilis) {
         boolean expiry = false;
 
         // Check for validity of assertion
@@ -393,10 +383,8 @@ public class AssertionUtil {
      * @param assertion
      *
      * @return
-     *
-     * @throws ConfigurationException
      */
-    public static boolean hasExpired(SAML11AssertionType assertion) throws ConfigurationException {
+    public static boolean hasExpired(SAML11AssertionType assertion) {
         boolean expiry = false;
 
         // Check for validity of assertion
@@ -427,10 +415,8 @@ public class AssertionUtil {
      * @param clockSkewInMilis in miliseconds
      *
      * @return
-     *
-     * @throws ConfigurationException
      */
-    public static boolean hasExpired(SAML11AssertionType assertion, long clockSkewInMilis) throws ConfigurationException {
+    public static boolean hasExpired(SAML11AssertionType assertion, long clockSkewInMilis) {
         boolean expiry = false;
 
         // Check for validity of assertion
@@ -480,7 +466,7 @@ public class AssertionUtil {
      * @return
      */
     public static List<String> getRoles(AssertionType assertion, List<String> roleKeys) {
-        List<String> roles = new ArrayList<String>();
+        List<String> roles = new ArrayList<>();
         Set<StatementAbstractType> statements = assertion.getStatements();
         for (StatementAbstractType statement : statements) {
             if (statement instanceof AttributeStatementType) {
@@ -488,9 +474,8 @@ public class AssertionUtil {
                 List<ASTChoiceType> attList = attributeStatement.getAttributes();
                 for (ASTChoiceType obj : attList) {
                     AttributeType attr = obj.getAttribute();
-                    if (roleKeys != null && roleKeys.size() > 0) {
-                        if (!roleKeys.contains(attr.getName()))
-                            continue;
+                    if (roleKeys != null && !roleKeys.isEmpty() && !roleKeys.contains(attr.getName())) {
+                        continue;
                     }
                     List<Object> attributeValues = attr.getAttributeValue();
                     if (attributeValues != null) {
@@ -519,16 +504,15 @@ public class AssertionUtil {
      * @return
      */
     public static List<String> getRoles(SAML11AssertionType assertion, List<String> roleKeys) {
-        List<String> roles = new ArrayList<String>();
+        List<String> roles = new ArrayList<>();
         List<SAML11StatementAbstractType> statements = assertion.getStatements();
         for (SAML11StatementAbstractType statement : statements) {
             if (statement instanceof SAML11AttributeStatementType) {
                 SAML11AttributeStatementType attributeStatement = (SAML11AttributeStatementType) statement;
                 List<SAML11AttributeType> attributes = attributeStatement.get();
                 for (SAML11AttributeType attr : attributes) {
-                    if (roleKeys != null && roleKeys.size() > 0) {
-                        if (!roleKeys.contains(attr.getAttributeName()))
-                            continue;
+                    if (roleKeys != null && !roleKeys.isEmpty() && !roleKeys.contains(attr.getAttributeName())) {
+                        continue;
                     }
                     List<Object> attributeValues = attr.get();
                     if (attributeValues != null) {
@@ -601,7 +585,7 @@ public class AssertionUtil {
         SAMLParser parser = SAMLParser.getInstance();
 
         JAXPValidationUtil.checkSchemaValidation(decryptedDocumentElement);
-        AssertionType assertion = (AssertionType) parser.parse(parser.createEventReader(DocumentUtil
+        AssertionType assertion = (AssertionType) parser.parse(SAMLParser.createEventReader(DocumentUtil
                 .getNodeAsStream(decryptedDocumentElement)));
 
         responseType.replaceAssertion(oldID, new ResponseType.RTChoiceType(assertion));

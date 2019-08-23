@@ -102,7 +102,7 @@ public abstract class AbstractUserAdapterFederatedStorage implements UserModel {
      * @return
      */
     protected Set<GroupModel> getGroupsInternal() {
-        return Collections.EMPTY_SET;
+        return Collections.emptySet();
     }
 
     /**
@@ -163,7 +163,7 @@ public abstract class AbstractUserAdapterFederatedStorage implements UserModel {
     public Set<RoleModel> getRealmRoleMappings() {
         Set<RoleModel> roleMappings = getRoleMappings();
 
-        Set<RoleModel> realmRoles = new HashSet<RoleModel>();
+        Set<RoleModel> realmRoles = new HashSet<>();
         for (RoleModel role : roleMappings) {
             RoleContainerModel container = role.getContainer();
             if (container instanceof RealmModel) {
@@ -185,7 +185,7 @@ public abstract class AbstractUserAdapterFederatedStorage implements UserModel {
     public Set<RoleModel> getClientRoleMappings(ClientModel app) {
         Set<RoleModel> roleMappings = getRoleMappings();
 
-        Set<RoleModel> roles = new HashSet<RoleModel>();
+        Set<RoleModel> roles = new HashSet<>();
         for (RoleModel role : roleMappings) {
             RoleContainerModel container = role.getContainer();
             if (container instanceof ClientModel) {
@@ -223,7 +223,7 @@ public abstract class AbstractUserAdapterFederatedStorage implements UserModel {
     }
 
     protected Set<RoleModel> getRoleMappingsInternal() {
-        return Collections.EMPTY_SET;
+        return Collections.emptySet();
     }
 
     /**
@@ -442,7 +442,7 @@ public abstract class AbstractUserAdapterFederatedStorage implements UserModel {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || !(o instanceof UserModel)) return false;
+        if (!(o instanceof UserModel)) return false;
 
         UserModel that = (UserModel) o;
         return that.getId().equals(getId());

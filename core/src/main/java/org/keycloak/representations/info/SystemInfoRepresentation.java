@@ -214,7 +214,7 @@ public class SystemInfoRepresentation {
 
     private static String formatUptime(long uptime) {
         long diffInSeconds = uptime / 1000;
-        long diff[] = new long[]{0, 0, 0, 0}; // sec
+        long[] diff = new long[]{0, 0, 0, 0}; // sec
         diff[3] = (diffInSeconds >= 60 ? diffInSeconds % 60 : diffInSeconds); // min
         diff[2] = (diffInSeconds = (diffInSeconds / 60)) >= 60 ? diffInSeconds % 60 : diffInSeconds; // hours
         diff[1] = (diffInSeconds = (diffInSeconds / 60)) >= 24 ? diffInSeconds % 24 : diffInSeconds; // days

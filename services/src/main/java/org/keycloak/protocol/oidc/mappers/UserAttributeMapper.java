@@ -39,7 +39,7 @@ import java.util.List;
  */
 public class UserAttributeMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper, UserInfoTokenMapper {
 
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
     static {
         ProviderConfigProperty property;
@@ -97,7 +97,7 @@ public class UserAttributeMapper extends AbstractOIDCProtocolMapper implements O
 
         UserModel user = userSession.getUser();
         String attributeName = mappingModel.getConfig().get(ProtocolMapperUtils.USER_ATTRIBUTE);
-        boolean aggregateAttrs = Boolean.valueOf(mappingModel.getConfig().get(ProtocolMapperUtils.AGGREGATE_ATTRS));
+        boolean aggregateAttrs = Boolean.parseBoolean(mappingModel.getConfig().get(ProtocolMapperUtils.AGGREGATE_ATTRS));
         Collection<String> attributeValue = KeycloakModelUtils.resolveAttribute(user, attributeName, aggregateAttrs);
         if (attributeValue == null) return;
         OIDCAttributeMapperHelper.mapClaim(token, mappingModel, attributeValue);

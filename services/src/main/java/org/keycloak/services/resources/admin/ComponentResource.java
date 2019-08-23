@@ -18,7 +18,6 @@ package org.keycloak.services.resources.admin;
 
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import org.jboss.resteasy.spi.NotFoundException;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.component.ComponentFactory;
 import org.keycloak.component.ComponentModel;
@@ -44,6 +43,7 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -98,7 +98,7 @@ public class ComponentResource {
                                                        @QueryParam("type") String type,
                                                        @QueryParam("name") String name) {
         auth.realm().requireViewRealm();
-        List<ComponentModel> components = Collections.EMPTY_LIST;
+        List<ComponentModel> components = Collections.emptyList();
         if (parent == null && type == null) {
             components = realm.getComponents();
 
@@ -215,7 +215,8 @@ public class ComponentResource {
      * @param subtype
      * @return
      */
-    @GET
+    @SuppressWarnings("unchecked")
+	@GET
     @Path("{id}/sub-component-types")
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache

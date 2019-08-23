@@ -16,9 +16,7 @@
  */
 package org.keycloak.services.resources.admin;
 
-import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import org.jboss.resteasy.spi.NotFoundException;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.KeycloakSession;
@@ -27,6 +25,7 @@ import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluato
 import org.keycloak.storage.client.ClientStorageProvider;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -42,8 +41,6 @@ import java.util.Map;
  * @version $Revision: 1 $
  */
 public class ClientStorageProviderResource {
-    private static final Logger logger = Logger.getLogger(ClientStorageProviderResource.class);
-
     protected RealmModel realm;
 
     protected AdminPermissionEvaluator auth;

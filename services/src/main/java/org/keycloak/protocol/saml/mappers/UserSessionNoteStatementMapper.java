@@ -34,7 +34,7 @@ import java.util.List;
  * @version $Revision: 1 $
  */
 public class UserSessionNoteStatementMapper extends AbstractSAMLProtocolMapper implements SAMLAttributeStatementMapper {
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
     static {
         ProviderConfigProperty property;

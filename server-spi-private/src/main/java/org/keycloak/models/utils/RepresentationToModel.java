@@ -49,7 +49,6 @@ import org.keycloak.authorization.store.ResourceServerStore;
 import org.keycloak.authorization.store.ResourceStore;
 import org.keycloak.authorization.store.ScopeStore;
 import org.keycloak.authorization.store.StoreFactory;
-import org.keycloak.common.Profile;
 import org.keycloak.common.enums.SslRequired;
 import org.keycloak.common.util.Base64;
 import org.keycloak.common.util.MultivaluedHashMap;
@@ -406,7 +405,7 @@ public class RepresentationToModel {
         }
 
         if (rep.getSmtpServer() != null) {
-            newRealm.setSmtpConfig(new HashMap(rep.getSmtpServer()));
+            newRealm.setSmtpConfig(new HashMap<>(rep.getSmtpServer()));
         }
 
         if (rep.getBrowserSecurityHeaders() != null) {
@@ -439,7 +438,7 @@ public class RepresentationToModel {
 
         if (rep.getUsers() != null) {
             for (UserRepresentation userRep : rep.getUsers()) {
-                UserModel user = createUser(session, newRealm, userRep);
+                createUser(session, newRealm, userRep);
             }
         }
 
@@ -458,7 +457,7 @@ public class RepresentationToModel {
             newRealm.setInternationalizationEnabled(rep.isInternationalizationEnabled());
         }
         if (rep.getSupportedLocales() != null) {
-            newRealm.setSupportedLocales(new HashSet<String>(rep.getSupportedLocales()));
+            newRealm.setSupportedLocales(new HashSet<>(rep.getSupportedLocales()));
         }
         if (rep.getDefaultLocale() != null) {
             newRealm.setDefaultLocale(rep.getDefaultLocale());
@@ -791,7 +790,7 @@ public class RepresentationToModel {
     private static void convertDeprecatedApplications(KeycloakSession session, RealmRepresentation realm) {
         if (realm.getApplications() != null || realm.getOauthClients() != null) {
             if (realm.getClients() == null) {
-                realm.setClients(new LinkedList<ClientRepresentation>());
+                realm.setClients(new LinkedList<>());
             }
 
             List<ApplicationRepresentation> clients = new LinkedList<>();
@@ -1062,7 +1061,7 @@ public class RepresentationToModel {
         realm.setWebAuthnPolicy(webAuthnPolicy);
 
         if (rep.getSmtpServer() != null) {
-            Map<String, String> config = new HashMap(rep.getSmtpServer());
+            Map<String, String> config = new HashMap<>(rep.getSmtpServer());
             if (rep.getSmtpServer().containsKey("password") && ComponentRepresentation.SECRET_VALUE.equals(rep.getSmtpServer().get("password"))) {
                 String passwordValue = realm.getSmtpConfig() != null ? realm.getSmtpConfig().get("password") : null;
                 config.put("password", passwordValue);
@@ -1183,7 +1182,7 @@ public class RepresentationToModel {
     // CLIENTS
 
     private static Map<String, ClientModel> createClients(KeycloakSession session, RealmRepresentation rep, RealmModel realm, Map<String, String> mappedFlows) {
-        Map<String, ClientModel> appMap = new HashMap<String, ClientModel>();
+        Map<String, ClientModel> appMap = new HashMap<>();
         for (ClientRepresentation resourceRep : rep.getClients()) {
             ClientModel app = createClient(session, realm, resourceRep, false, mappedFlows);
             appMap.put(app.getClientId(), app);
@@ -1273,9 +1272,7 @@ public class RepresentationToModel {
 
         if (resourceRep.getAuthenticationFlowBindingOverrides() != null) {
             for (Map.Entry<String, String> entry : resourceRep.getAuthenticationFlowBindingOverrides().entrySet()) {
-                if (entry.getValue() == null || entry.getValue().trim().equals("")) {
-                    continue;
-                } else {
+                if (entry.getValue() != null && !entry.getValue().trim().equals("")) {
                     String flowId = entry.getValue();
                     // check if flow id was mapped when the flows were imported
                     if (mappedFlows != null && mappedFlows.containsKey(flowId)) {
@@ -1303,7 +1300,7 @@ public class RepresentationToModel {
         } else {
             // add origins from redirect uris
             if (resourceRep.getRedirectUris() != null) {
-                Set<String> origins = new HashSet<String>();
+                Set<String> origins = new HashSet<>();
                 for (String redirectUri : resourceRep.getRedirectUris()) {
                     logger.debugv("add redirect-uri to origin: {0}", redirectUri);
                     if (redirectUri.startsWith("http")) {
@@ -1312,7 +1309,7 @@ public class RepresentationToModel {
                         origins.add(origin);
                     }
                 }
-                if (origins.size() > 0) {
+                if (!origins.isEmpty()) {
                     client.setWebOrigins(origins);
                 }
             }
@@ -1553,67 +1550,39 @@ public class RepresentationToModel {
                 resource.setAttribute(entry.getKey(), entry.getValue());
             }
         }
+    }
 
+    private static final Map<Function<ClaimRepresentation, Boolean>, Long> claimsMaskHelperMap = createClaimsMaskHelperMap();
+
+    private static Map<Function<ClaimRepresentation, Boolean>, Long> createClaimsMaskHelperMap() {
+        Map<Function<ClaimRepresentation, Boolean>, Long> map = new HashMap<>();
+        map.put(ClaimRepresentation::getAddress, ClaimMask.ADDRESS);
+        map.put(ClaimRepresentation::getEmail, ClaimMask.EMAIL);
+        map.put(ClaimRepresentation::getGender, ClaimMask.GENDER);
+        map.put(ClaimRepresentation::getLocale, ClaimMask.LOCALE);
+        map.put(ClaimRepresentation::getName, ClaimMask.NAME);
+        map.put(ClaimRepresentation::getPhone, ClaimMask.PHONE);
+        map.put(ClaimRepresentation::getPicture, ClaimMask.PICTURE);
+        map.put(ClaimRepresentation::getProfile, ClaimMask.PROFILE);
+        map.put(ClaimRepresentation::getUsername, ClaimMask.USERNAME);
+        map.put(ClaimRepresentation::getWebsite, ClaimMask.WEBSITE);
+        return map;
     }
 
     public static long getClaimsMask(ClaimRepresentation rep) {
         long mask = ClaimMask.ALL;
 
-        if (rep.getAddress()) {
-            mask |= ClaimMask.ADDRESS;
-        } else {
-            mask &= ~ClaimMask.ADDRESS;
-        }
-        if (rep.getEmail()) {
-            mask |= ClaimMask.EMAIL;
-        } else {
-            mask &= ~ClaimMask.EMAIL;
-        }
-        if (rep.getGender()) {
-            mask |= ClaimMask.GENDER;
-        } else {
-            mask &= ~ClaimMask.GENDER;
-        }
-        if (rep.getLocale()) {
-            mask |= ClaimMask.LOCALE;
-        } else {
-            mask &= ~ClaimMask.LOCALE;
-        }
-        if (rep.getName()) {
-            mask |= ClaimMask.NAME;
-        } else {
-            mask &= ~ClaimMask.NAME;
-        }
-        if (rep.getPhone()) {
-            mask |= ClaimMask.PHONE;
-        } else {
-            mask &= ~ClaimMask.PHONE;
-        }
-        if (rep.getPicture()) {
-            mask |= ClaimMask.PICTURE;
-        } else {
-            mask &= ~ClaimMask.PICTURE;
-        }
-        if (rep.getProfile()) {
-            mask |= ClaimMask.PROFILE;
-        } else {
-            mask &= ~ClaimMask.PROFILE;
-        }
-        if (rep.getUsername()) {
-            mask |= ClaimMask.USERNAME;
-        } else {
-            mask &= ~ClaimMask.USERNAME;
-        }
-        if (rep.getWebsite()) {
-            mask |= ClaimMask.WEBSITE;
-        } else {
-            mask &= ~ClaimMask.WEBSITE;
+        for(Entry<Function<ClaimRepresentation, Boolean>, Long> entry : claimsMaskHelperMap.entrySet()) {
+            if (entry.getKey().apply(rep)) {
+                mask |= entry.getValue();
+            } else {
+                mask &= ~entry.getValue();
+            }
         }
         return mask;
     }
 
     // Scope mappings
-
     public static void createClientScopeMappings(RealmModel realm, ClientModel clientModel, List<ScopeMappingRepresentation> mappings) {
         for (ScopeMappingRepresentation mapping : mappings) {
             ScopeContainerModel scopeContainer = getScopeContainerHavingScope(realm, mapping);
@@ -2223,7 +2192,8 @@ public class RepresentationToModel {
             if (applyPolicies != null && !applyPolicies.isEmpty()) {
                 PolicyStore policyStore = storeFactory.getPolicyStore();
                 try {
-                    List<String> policies = (List<String>) JsonSerialization.readValue(applyPolicies, List.class);
+                    @SuppressWarnings("unchecked")
+					List<String> policies = (List<String>) JsonSerialization.readValue(applyPolicies, List.class);
                     Set<String> policyIds = new HashSet<>();
 
                     for (String policyName : policies) {
@@ -2270,15 +2240,16 @@ public class RepresentationToModel {
         return null;
     }
 
-    public static Policy toModel(AbstractPolicyRepresentation representation, AuthorizationProvider authorization, Policy model) {
+    @SuppressWarnings("unchecked")
+	public static Policy toModel(AbstractPolicyRepresentation representation, AuthorizationProvider authorization, Policy model) {
         model.setName(representation.getName());
         model.setDescription(representation.getDescription());
         model.setDecisionStrategy(representation.getDecisionStrategy());
         model.setLogic(representation.getLogic());
 
-        Set resources = representation.getResources();
-        Set scopes = representation.getScopes();
-        Set policies = representation.getPolicies();
+        Set<String> resources = representation.getResources();
+        Set<String> scopes = representation.getScopes();
+        Set<String> policies = representation.getPolicies();
 
         if (representation instanceof PolicyRepresentation) {
             PolicyRepresentation policy = PolicyRepresentation.class.cast(representation);
@@ -2347,7 +2318,7 @@ public class RepresentationToModel {
     private static void updateScopes(Set<String> scopeIds, Policy policy, StoreFactory storeFactory) {
         if (scopeIds != null) {
             if (scopeIds.isEmpty()) {
-                for (Scope scope : new HashSet<Scope>(policy.getScopes())) {
+                for (Scope scope : new HashSet<>(policy.getScopes())) {
                     policy.removeScope(scope);
                 }
                 return;
@@ -2355,7 +2326,7 @@ public class RepresentationToModel {
             for (String scopeId : scopeIds) {
                 boolean hasScope = false;
 
-                for (Scope scopeModel : new HashSet<Scope>(policy.getScopes())) {
+                for (Scope scopeModel : new HashSet<>(policy.getScopes())) {
                     if (scopeModel.getId().equals(scopeId) || scopeModel.getName().equals(scopeId)) {
                         hasScope = true;
                     }

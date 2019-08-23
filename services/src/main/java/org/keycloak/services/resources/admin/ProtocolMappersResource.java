@@ -18,7 +18,6 @@ package org.keycloak.services.resources.admin;
 
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import org.jboss.resteasy.spi.NotFoundException;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.KeycloakSession;
@@ -38,6 +37,7 @@ import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluato
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -100,10 +100,8 @@ public class ProtocolMappersResource {
     public List<ProtocolMapperRepresentation> getMappersPerProtocol(@PathParam("protocol") String protocol) {
         viewPermission.require();
 
-        List<ProtocolMapperRepresentation> mappers = new LinkedList<ProtocolMapperRepresentation>();
-        for (ProtocolMapperModel mapper : client.getProtocolMappers()) {
-            if (mapper.getProtocol().equals(protocol)) mappers.add(ModelToRepresentation.toRepresentation(mapper));
-        }
+        List<ProtocolMapperRepresentation> mappers = new LinkedList<>();
+        client.getProtocolMappers().stream().filter(m -> m.getProtocol().equals(protocol)).map(ModelToRepresentation::toRepresentation).forEach(mappers::add);
         return mappers;
     }
 
@@ -143,11 +141,10 @@ public class ProtocolMappersResource {
     public void createMapper(List<ProtocolMapperRepresentation> reps) {
         managePermission.require();
 
-        ProtocolMapperModel model = null;
         for (ProtocolMapperRepresentation rep : reps) {
-            model = RepresentationToModel.toModel(rep);
+            ProtocolMapperModel model = RepresentationToModel.toModel(rep);
             validateModel(model);
-            model = client.addProtocolMapper(model);
+            client.addProtocolMapper(model);
         }
         adminEvent.operation(OperationType.CREATE).resourcePath(session.getContext().getUri()).representation(reps).success();
     }
@@ -164,7 +161,7 @@ public class ProtocolMappersResource {
     public List<ProtocolMapperRepresentation> getMappers() {
         viewPermission.require();
 
-        List<ProtocolMapperRepresentation> mappers = new LinkedList<ProtocolMapperRepresentation>();
+        List<ProtocolMapperRepresentation> mappers = new LinkedList<>();
         for (ProtocolMapperModel mapper : client.getProtocolMappers()) {
             mappers.add(ModelToRepresentation.toRepresentation(mapper));
         }

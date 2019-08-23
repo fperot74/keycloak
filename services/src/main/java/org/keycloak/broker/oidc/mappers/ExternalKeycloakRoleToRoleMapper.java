@@ -40,9 +40,9 @@ import java.util.List;
  */
 public class ExternalKeycloakRoleToRoleMapper extends AbstractClaimMapper {
 
-    public static final String[] COMPATIBLE_PROVIDERS = {KeycloakOIDCIdentityProviderFactory.PROVIDER_ID};
+    private static final String[] COMPATIBLE_PROVIDERS = {KeycloakOIDCIdentityProviderFactory.PROVIDER_ID};
 
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
     private static final String EXTERNAL_ROLE = "external.role";
 
     static {

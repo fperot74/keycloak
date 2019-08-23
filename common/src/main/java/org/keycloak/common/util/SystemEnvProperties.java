@@ -33,7 +33,7 @@ public class SystemEnvProperties extends Properties {
     }
 
     public SystemEnvProperties() {
-        this.overrides = Collections.EMPTY_MAP;
+        this.overrides = Collections.emptyMap();
     }
 
     @Override
@@ -52,5 +52,4 @@ public class SystemEnvProperties extends Properties {
         String value = getProperty(key);
         return value != null ? value : defaultValue;
     }
-
 }

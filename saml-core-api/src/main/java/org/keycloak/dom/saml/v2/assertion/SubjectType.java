@@ -51,7 +51,7 @@ import java.util.List;
  */
 public class SubjectType implements Serializable {
 
-    protected List<SubjectConfirmationType> subjectConfirmation = new ArrayList<SubjectConfirmationType>();
+    protected List<SubjectConfirmationType> subjectConfirmation = new ArrayList<>();
 
     protected STSubType subType;
 
@@ -115,7 +115,7 @@ public class SubjectType implements Serializable {
 
         private EncryptedElementType encryptedID;
 
-        protected List<SubjectConfirmationType> subjectConfirmation = new ArrayList<SubjectConfirmationType>();
+        protected List<SubjectConfirmationType> subjectConfirmation = new ArrayList<>();
 
         public void addBaseID(BaseIDAbstractType base) {
             this.baseID = base;

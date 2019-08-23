@@ -17,15 +17,21 @@
  */
 package org.keycloak.authorization.protection.permission;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.keycloak.OAuthErrorException;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.common.KeycloakIdentity;
 import org.keycloak.authorization.model.PermissionTicket;
+import org.keycloak.authorization.model.Resource;
 import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.Scope;
 import org.keycloak.authorization.store.PermissionTicketStore;
+import org.keycloak.authorization.store.ResourceStore;
+import org.keycloak.authorization.store.ScopeStore;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.models.Constants;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.models.UserProvider;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
@@ -45,11 +51,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import org.keycloak.authorization.model.Resource;
-import org.keycloak.authorization.model.Scope;
-import org.keycloak.authorization.store.ResourceStore;
-import org.keycloak.authorization.store.ScopeStore;
-import org.keycloak.models.UserModel;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -116,7 +117,7 @@ public class PermissionTicketService {
         if (!match)
            throw new ErrorResponseException("invalid_resource_id", "Resource set with id [" + representation.getResource() + "] does not have Scope [" + scope.getName() + "]", Response.Status.BAD_REQUEST);     
         
-        Map<String, String> attributes = new HashMap<String, String>();
+        Map<String, String> attributes = new HashMap<>();
         attributes.put(PermissionTicket.RESOURCE, resource.getId());
         attributes.put(PermissionTicket.SCOPE, scope.getId());
         attributes.put(PermissionTicket.REQUESTER, user.getId());
@@ -221,7 +222,7 @@ public class PermissionTicketService {
 
         return Response.ok().entity(permissionTicketStore.find(filters, resourceServer.getId(), firstResult != null ? firstResult : -1, maxResult != null ? maxResult : Constants.DEFAULT_MAX_RESULTS)
                     .stream()
-                        .map(permissionTicket -> ModelToRepresentation.toRepresentation(permissionTicket, authorization, returnNames == null ? false : returnNames))
+                        .map(permissionTicket -> ModelToRepresentation.toRepresentation(permissionTicket, authorization, BooleanUtils.isTrue(returnNames)))
                         .collect(Collectors.toList()))
                 .build();
     }

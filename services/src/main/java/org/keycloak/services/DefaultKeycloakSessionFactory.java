@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, ProviderManagerDeployer {
 
@@ -186,7 +187,7 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, Pr
 
         for (Spi spi : spiList) {
 
-            Map<String, ProviderFactory> factories = new HashMap<String, ProviderFactory>();
+            Map<String, ProviderFactory> factories = new HashMap<>();
             factoryMap.put(spi.getProviderClass(), factories);
 
             String provider = Config.getProvider(spi.getName());
@@ -244,7 +245,7 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, Pr
         for (Spi spi : spiList) {
             spis.add(spi);
 
-            Map<String, ProviderFactory> factories = new HashMap<String, ProviderFactory>();
+            Map<String, ProviderFactory> factories = new HashMap<>();
             factoriesMap.put(spi.getProviderClass(), factories);
 
             String provider = Config.getProvider(spi.getName());
@@ -332,7 +333,7 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, Pr
 
     @Override
     public List<ProviderFactory> getProviderFactories(Class<? extends Provider> clazz) {
-        List<ProviderFactory> list = new LinkedList<ProviderFactory>();
+        List<ProviderFactory> list = new LinkedList<>();
         if (factoriesMap == null) return list;
         Map<String, ProviderFactory> providerFactoryMap = factoriesMap.get(clazz);
         if (providerFactoryMap == null) return list;
@@ -341,11 +342,7 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, Pr
     }
 
     <T extends Provider> Set<String> getAllProviderIds(Class<T> clazz) {
-        Set<String> ids = new HashSet<String>();
-        for (ProviderFactory f : factoriesMap.get(clazz).values()) {
-            ids.add(f.getId());
-        }
-        return ids;
+        return factoriesMap.get(clazz).values().stream().map(ProviderFactory::getId).collect(Collectors.toSet());
     }
 
     Class<? extends Provider> getProviderClass(String providerClassName) {
@@ -359,11 +356,7 @@ public class DefaultKeycloakSessionFactory implements KeycloakSessionFactory, Pr
 
     public void close() {
         ProviderManagerRegistry.SINGLETON.setDeployer(null);
-        for (Map<String, ProviderFactory> factories : factoriesMap.values()) {
-            for (ProviderFactory factory : factories.values()) {
-                factory.close();
-            }
-        }
+        factoriesMap.values().stream().flatMap(f -> f.values().stream()).forEach(ProviderFactory::close);
     }
 
     private boolean isInternal(ProviderFactory<?> factory) {

@@ -61,7 +61,7 @@ public abstract class AbstractJsonUserAttributeMapper extends AbstractIdentityPr
 	 */
 	public static final String CONTEXT_JSON_NODE = OIDCIdentityProvider.USER_INFO;
 
-	private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
+	private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
 	static {
 		ProviderConfigProperty property;
@@ -116,6 +116,7 @@ public abstract class AbstractJsonUserAttributeMapper extends AbstractIdentityPr
 		return "Import user profile information if it exists in Social provider JSON data into the specified user attribute.";
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void preprocessFederatedIdentity(KeycloakSession session, RealmModel realm, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
 		String attribute = mapperModel.getConfig().get(CONF_USER_ATTRIBUTE);
@@ -183,7 +184,7 @@ public abstract class AbstractJsonUserAttributeMapper extends AbstractIdentityPr
 			String currentNodeName = currentFieldName;
 			int arrayIndex = -1;
 			if (currentFieldName.endsWith("]")) {
-				int bi = currentFieldName.indexOf("[");
+				int bi = currentFieldName.indexOf('[');
 				if (bi == -1) {
 					logger.debug("Invalid array index construct in " + currentFieldName);
 					return null;

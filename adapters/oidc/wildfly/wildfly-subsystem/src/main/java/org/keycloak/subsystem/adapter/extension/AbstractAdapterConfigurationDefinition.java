@@ -108,7 +108,7 @@ abstract class AbstractAdapterConfigurationDefinition extends SimpleResourceDefi
                     .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
                     .build();
 
-    static final List<SimpleAttributeDefinition> DEPLOYMENT_ONLY_ATTRIBUTES = new ArrayList<SimpleAttributeDefinition>();
+    static final List<SimpleAttributeDefinition> DEPLOYMENT_ONLY_ATTRIBUTES = new ArrayList<>();
 
     static {
         DEPLOYMENT_ONLY_ATTRIBUTES.add(REALM);
@@ -131,7 +131,7 @@ abstract class AbstractAdapterConfigurationDefinition extends SimpleResourceDefi
         ALL_ATTRIBUTES.addAll(SharedAttributeDefinitons.ATTRIBUTES);
     }
 
-    static final Map<String, SimpleAttributeDefinition> XML_ATTRIBUTES = new HashMap<String, SimpleAttributeDefinition>();
+    static final Map<String, SimpleAttributeDefinition> XML_ATTRIBUTES = new HashMap<>();
 
     static {
         for (SimpleAttributeDefinition def : ALL_ATTRIBUTES) {
@@ -139,7 +139,7 @@ abstract class AbstractAdapterConfigurationDefinition extends SimpleResourceDefi
         }
     }
 
-    private static final Map<String, SimpleAttributeDefinition> DEFINITION_LOOKUP = new HashMap<String, SimpleAttributeDefinition>();
+    private static final Map<String, SimpleAttributeDefinition> DEFINITION_LOOKUP = new HashMap<>();
     static {
         for (SimpleAttributeDefinition def : ALL_ATTRIBUTES) {
             DEFINITION_LOOKUP.put(def.getXmlName(), def);

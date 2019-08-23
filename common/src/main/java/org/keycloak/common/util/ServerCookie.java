@@ -84,8 +84,9 @@ public class ServerCookie implements Serializable {
     /**
      * @deprecated - Not used
      */
+    @Deprecated
     public static boolean checkName(String name) {
-        if (!isToken(name)
+        return !(!isToken(name)
                 || name.equalsIgnoreCase("Comment")     // rfc2019
                 || name.equalsIgnoreCase("Discard")     // rfc2965
                 || name.equalsIgnoreCase("Domain")      // rfc2019
@@ -95,10 +96,7 @@ public class ServerCookie implements Serializable {
                 || name.equalsIgnoreCase("Secure")      // rfc2019
                 || name.equalsIgnoreCase("Version")     // rfc2019
             // TODO remaining RFC2965 attributes
-                ) {
-            return false;
-        }
-        return true;
+                );
     }
 
     // -------------------- Cookie parsing tools
@@ -127,19 +125,19 @@ public class ServerCookie implements Serializable {
     /**
      * US locale - all HTTP dates are in english
      */
-    private final static Locale LOCALE_US = Locale.US;
+    private static final Locale LOCALE_US = Locale.US;
 
     /**
      * GMT timezone - all HTTP dates are on GMT
      */
-    public final static TimeZone GMT_ZONE = TimeZone.getTimeZone("GMT");
+    public static final TimeZone GMT_ZONE = TimeZone.getTimeZone("GMT");
     /**
      * Pattern used for old cookies
      */
-    private final static String OLD_COOKIE_PATTERN = "EEE, dd-MMM-yyyy HH:mm:ss z";
+    private static final String OLD_COOKIE_PATTERN = "EEE, dd-MMM-yyyy HH:mm:ss z";
 
 
-    private final static DateFormat OLD_COOKIE_FORMAT = new SimpleDateFormat(OLD_COOKIE_PATTERN, LOCALE_US);
+    private static final DateFormat OLD_COOKIE_FORMAT = new SimpleDateFormat(OLD_COOKIE_PATTERN, LOCALE_US);
     static{
         OLD_COOKIE_FORMAT.setTimeZone(GMT_ZONE);
     }
@@ -277,11 +275,7 @@ public class ServerCookie implements Serializable {
             buf.append('"');
             buf.append(escapeDoubleQuotes(value, 1, value.length() - 1));
             buf.append('"');
-        } else if (version == 0 && !isToken(value)) {
-            buf.append('"');
-            buf.append(escapeDoubleQuotes(value, 0, value.length()));
-            buf.append('"');
-        } else if (version == 1 && !isToken2(value)) {
+        } else if ((version == 0 && !isToken(value)) || (version == 1 && !isToken2(value))) {
             buf.append('"');
             buf.append(escapeDoubleQuotes(value, 0, value.length()));
             buf.append('"');

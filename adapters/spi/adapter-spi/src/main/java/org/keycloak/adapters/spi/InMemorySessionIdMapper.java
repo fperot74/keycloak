@@ -80,7 +80,7 @@ public class InMemorySessionIdMapper implements SessionIdMapper {
 
         Set<String> userSessions = principalToSession.get(principal);
         if (userSessions == null) {
-            final Set<String> tmp = Collections.synchronizedSet(new HashSet<String>());
+            final Set<String> tmp = Collections.synchronizedSet(new HashSet<>());
             userSessions = principalToSession.putIfAbsent(principal, tmp);
             if (userSessions == null) {
                 userSessions = tmp;

@@ -310,7 +310,7 @@ public class Encode
     */
    public static String encodeValue(String segment, String[] encoding)
    {
-      ArrayList<String> params = new ArrayList<String>();
+      ArrayList<String> params = new ArrayList<>();
       boolean foundParam = false;
       StringBuilder newSegment = new StringBuilder();
       if (savePathParams(segment, newSegment, params))
@@ -486,7 +486,7 @@ public class Encode
     */
    public static MultivaluedHashMap<String, String> decode(MultivaluedHashMap<String, String> map)
    {
-       MultivaluedHashMap<String, String> decoded = new MultivaluedHashMap<String, String>();
+       MultivaluedHashMap<String, String> decoded = new MultivaluedHashMap<>();
       for (Map.Entry<String, List<String>> entry : map.entrySet())
       {
          List<String> values = entry.getValue();
@@ -518,7 +518,7 @@ public class Encode
       {
          charset = UTF_8;
       }
-      MultivaluedHashMap<String, String> decoded = new MultivaluedHashMap<String, String>();
+      MultivaluedHashMap<String, String> decoded = new MultivaluedHashMap<>();
       for (Map.Entry<String, List<String>> entry : map.entrySet())
       {
          List<String> values = entry.getValue();
@@ -539,7 +539,7 @@ public class Encode
 
    public static MultivaluedHashMap<String, String> encode(MultivaluedHashMap<String, String> map)
    {
-       MultivaluedHashMap<String, String> decoded = new MultivaluedHashMap<String, String>();
+       MultivaluedHashMap<String, String> decoded = new MultivaluedHashMap<>();
       for (Map.Entry<String, List<String>> entry : map.entrySet())
       {
          List<String> values = entry.getValue();

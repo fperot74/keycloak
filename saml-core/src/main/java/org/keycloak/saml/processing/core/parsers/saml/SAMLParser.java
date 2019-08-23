@@ -45,7 +45,6 @@ import org.keycloak.saml.common.parsers.StaxParser;
 import org.keycloak.saml.processing.core.parsers.saml.assertion.SAMLAssertionQNames;
 import org.keycloak.saml.processing.core.parsers.saml.assertion.SAMLAuthnStatementParser;
 import org.keycloak.saml.processing.core.parsers.saml.assertion.SAMLEncryptedAssertionParser;
-import java.io.InputStream;
 
 /**
  * Parse SAML payload
@@ -66,7 +65,7 @@ public class SAMLParser extends AbstractParser {
     private interface ParserFactory {
         public StaxParser create();
     }
-    private static final Map<QName, ParserFactory> PARSERS = new HashMap<QName, ParserFactory>();
+    private static final Map<QName, ParserFactory> PARSERS = new HashMap<>();
 
     static {
         PARSERS.put(SAML_11_ASSERTION, new ParserFactory() { @Override public StaxParser create() { return new SAML11AssertionParser(); }});

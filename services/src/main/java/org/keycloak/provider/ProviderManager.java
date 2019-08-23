@@ -22,7 +22,6 @@ import org.keycloak.common.util.MultivaluedHashMap;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +35,7 @@ public class ProviderManager {
 
     private static final Logger logger = Logger.getLogger(ProviderManager.class);
 
-    private List<ProviderLoader> loaders = new LinkedList<ProviderLoader>();
+    private List<ProviderLoader> loaders = new LinkedList<>();
     private MultivaluedHashMap<Class<? extends Provider>, ProviderFactory> cache = new MultivaluedHashMap<>();
 
 
@@ -102,7 +101,7 @@ public class ProviderManager {
             }
         }
         List<ProviderFactory> rtn = cache.get(spi.getProviderClass());
-        return rtn == null ? Collections.EMPTY_LIST : rtn;
+        return rtn == null ? Collections.emptyList() : rtn;
     }
 
     /**

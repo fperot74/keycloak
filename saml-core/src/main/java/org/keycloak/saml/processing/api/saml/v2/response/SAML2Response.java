@@ -19,7 +19,6 @@ package org.keycloak.saml.processing.api.saml.v2.response;
 import org.keycloak.dom.saml.v2.SAML2Object;
 import org.keycloak.dom.saml.v2.assertion.ActionType;
 import org.keycloak.dom.saml.v2.assertion.AssertionType;
-import org.keycloak.dom.saml.v2.assertion.AudienceRestrictionType;
 import org.keycloak.dom.saml.v2.assertion.AuthnContextClassRefType;
 import org.keycloak.dom.saml.v2.assertion.AuthnContextType;
 import org.keycloak.dom.saml.v2.assertion.AuthnStatementType;
@@ -213,8 +212,6 @@ public class SAML2Response {
 
         try {
             AssertionUtil.createTimedConditions(assertionType, ASSERTION_VALIDITY, CLOCK_SKEW);
-        } catch (ConfigurationException e) {
-            throw logger.processingError(e);
         } catch (IssueInstantMissingException e) {
             throw logger.processingError(e);
         }

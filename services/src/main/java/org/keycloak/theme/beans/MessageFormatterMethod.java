@@ -41,8 +41,9 @@ public class MessageFormatterMethod implements TemplateMethodModelEx {
     }
 
     @Override
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public Object exec(List list) throws TemplateModelException {
-        if (list.size() >= 1) {
+        if (!list.isEmpty()) {
             // resolve any remaining ${} expressions
             List<Object> resolved = resolve(list.subList(1, list.size()));
             String key = list.get(0).toString();

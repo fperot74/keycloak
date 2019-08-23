@@ -4,7 +4,6 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ThemeManager;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Set;
 
 public class DefaultThemeManager implements ThemeManager {

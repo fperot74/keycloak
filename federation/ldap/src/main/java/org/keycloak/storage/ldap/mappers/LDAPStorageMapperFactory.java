@@ -17,7 +17,6 @@
 package org.keycloak.storage.ldap.mappers;
 
 import org.keycloak.Config;
-import org.keycloak.component.ComponentFactory;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
 import org.keycloak.component.SubComponentFactory;
@@ -25,7 +24,6 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ProviderConfigProperty;
-import org.keycloak.representations.idm.UserFederationMapperSyncConfigRepresentation;
 import org.keycloak.storage.UserStorageProviderModel;
 
 import java.util.Collections;
@@ -75,7 +73,7 @@ public interface LDAPStorageMapperFactory<T extends LDAPStorageMapper> extends S
 
     @Override
     default List<ProviderConfigProperty> getConfigProperties() {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     @Override

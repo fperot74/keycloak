@@ -77,7 +77,7 @@ public interface ClientStorageProviderFactory<T extends ClientStorageProvider> e
 
     @Override
     default List<ProviderConfigProperty> getConfigProperties() {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     @Override
@@ -112,7 +112,6 @@ public interface ClientStorageProviderFactory<T extends ClientStorageProvider> e
     @Override
     default
     Map<String, Object> getTypeMetadata() {
-        Map<String, Object> metadata = new HashMap<>();
-        return metadata;
+        return new HashMap<>();
     }
 }

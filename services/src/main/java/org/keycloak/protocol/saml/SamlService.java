@@ -90,7 +90,6 @@ import org.keycloak.saml.processing.core.util.KeycloakKeySamlExtensionGenerator;
 import org.keycloak.saml.validators.DestinationValidator;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import java.nio.charset.StandardCharsets;
-import java.util.logging.Level;
 
 /**
  * Resource class for the saml connect token service
@@ -155,7 +154,7 @@ public class SamlService extends AuthorizationEndpointBase {
                 return ErrorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.INVALID_REQUEST);
             }
 
-            AuthenticationManager.AuthResult authResult = authManager.authenticateIdentityCookie(session, realm, false);
+            AuthenticationManager.AuthResult authResult = AuthenticationManager.authenticateIdentityCookie(session, realm, false);
             if (authResult == null) {
                 logger.warn("Unknown saml response.");
                 event.event(EventType.LOGOUT);
@@ -188,7 +187,7 @@ public class SamlService extends AuthorizationEndpointBase {
 
             session.getContext().setClient(client);
             logger.debug("logout response");
-            Response response = authManager.browserLogout(session, realm, userSession, session.getContext().getUri(), clientConnection, headers, null);
+            Response response = AuthenticationManager.browserLogout(session, realm, userSession, session.getContext().getUri(), clientConnection, headers, null);
             event.success();
             return response;
         }
@@ -345,7 +344,7 @@ public class SamlService extends AuthorizationEndpointBase {
                 SubjectType.STSubType subType = subject.getSubType();
                 if (subType != null) {
                     BaseIDAbstractType baseID = subject.getSubType().getBaseID();
-                    if (baseID != null && baseID instanceof NameIDType) {
+                    if (baseID instanceof NameIDType) {
                         NameIDType nameID = (NameIDType) baseID;
                         authSession.setClientNote(OIDCLoginProtocol.LOGIN_HINT_PARAM, nameID.getValue());
                     }
@@ -358,8 +357,7 @@ public class SamlService extends AuthorizationEndpointBase {
                 authSession.setAuthNote(SamlProtocol.SAML_LOGIN_REQUEST_FORCEAUTHN, SamlProtocol.SAML_FORCEAUTHN_REQUIREMENT);
             }
             //If unset we fall back to default "false"
-            final boolean isPassive = (null == requestAbstractType.isIsPassive() ?
-                    false : requestAbstractType.isIsPassive().booleanValue());
+            final boolean isPassive = null != requestAbstractType.isIsPassive() && requestAbstractType.isIsPassive().booleanValue();
             return newBrowserAuthentication(authSession, isPassive, redirectToAuthentication);
         }
 
@@ -378,11 +376,8 @@ public class SamlService extends AuthorizationEndpointBase {
         }
 
         private boolean isSupportedNameIdFormat(String nameIdFormat) {
-            if (nameIdFormat.equals(JBossSAMLURIConstants.NAMEID_FORMAT_EMAIL.get()) || nameIdFormat.equals(JBossSAMLURIConstants.NAMEID_FORMAT_TRANSIENT.get()) || nameIdFormat.equals(JBossSAMLURIConstants.NAMEID_FORMAT_PERSISTENT.get())
-                    || nameIdFormat.equals(JBossSAMLURIConstants.NAMEID_FORMAT_UNSPECIFIED.get())) {
-                return true;
-            }
-            return false;
+            return nameIdFormat.equals(JBossSAMLURIConstants.NAMEID_FORMAT_EMAIL.get()) || nameIdFormat.equals(JBossSAMLURIConstants.NAMEID_FORMAT_TRANSIENT.get()) || nameIdFormat.equals(JBossSAMLURIConstants.NAMEID_FORMAT_PERSISTENT.get())
+                    || nameIdFormat.equals(JBossSAMLURIConstants.NAMEID_FORMAT_UNSPECIFIED.get());
         }
 
         protected abstract String getBindingType();
@@ -402,7 +397,7 @@ public class SamlService extends AuthorizationEndpointBase {
             }
 
             // authenticate identity cookie, but ignore an access token timeout as we're logging out anyways.
-            AuthenticationManager.AuthResult authResult = authManager.authenticateIdentityCookie(session, realm, false);
+            AuthenticationManager.AuthResult authResult = AuthenticationManager.authenticateIdentityCookie(session, realm, false);
             if (authResult != null) {
                 String logoutBinding = getBindingType();
                 String postBindingUri = SamlProtocol.getLogoutServiceUrl(session.getContext().getUri(), client, SamlProtocol.SAML_POST_BINDING);
@@ -431,7 +426,7 @@ public class SamlService extends AuthorizationEndpointBase {
                     clientSession.setAction(AuthenticationSessionModel.Action.LOGGED_OUT.name());
                 }
                 logger.debug("browser Logout");
-                return authManager.browserLogout(session, realm, userSession, session.getContext().getUri(), clientConnection, headers, null);
+                return AuthenticationManager.browserLogout(session, realm, userSession, session.getContext().getUri(), clientConnection, headers, null);
             } else if (logoutRequest.getSessionIndex() != null) {
                 for (String sessionIndex : logoutRequest.getSessionIndex()) {
 
@@ -445,7 +440,7 @@ public class SamlService extends AuthorizationEndpointBase {
                     }
 
                     try {
-                        authManager.backchannelLogout(session, realm, userSession, session.getContext().getUri(), clientConnection, headers, true);
+                        AuthenticationManager.backchannelLogout(session, realm, userSession, session.getContext().getUri(), clientConnection, headers, true);
                     } catch (Exception e) {
                         logger.warn("Failure with backchannel logout", e);
                     }
@@ -594,9 +589,8 @@ public class SamlService extends AuthorizationEndpointBase {
     @Path("descriptor")
     @Produces(MediaType.APPLICATION_XML)
     @NoCache
-    public String getDescriptor() throws Exception {
+    public String getDescriptor() {
         return getIDPMetadataDescriptor(session.getContext().getUri(), session, realm);
-
     }
 
     public static String getIDPMetadataDescriptor(UriInfo uriInfo, KeycloakSession session, RealmModel realm) {
@@ -635,11 +629,7 @@ public class SamlService extends AuthorizationEndpointBase {
     }
 
     private boolean isClientProtocolCorrect(ClientModel clientModel) {
-        if (SamlProtocol.LOGIN_PROTOCOL.equals(clientModel.getProtocol())) {
-            return true;
-        }
-
-        return false;
+        return SamlProtocol.LOGIN_PROTOCOL.equals(clientModel.getProtocol());
     }
 
     @GET
@@ -651,9 +641,7 @@ public class SamlService extends AuthorizationEndpointBase {
         ClientModel client = null;
         for (ClientModel c : realm.getClients()) {
             String urlName = c.getAttribute(SamlProtocol.SAML_IDP_INITIATED_SSO_URL_NAME);
-            if (urlName == null)
-                continue;
-            if (urlName.equals(clientUrlName)) {
+            if (urlName!=null && urlName.equals(clientUrlName)) {
                 client = c;
                 break;
             }

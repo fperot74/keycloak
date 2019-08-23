@@ -18,7 +18,6 @@
 package org.keycloak.services.resources.admin;
 
 import org.jboss.resteasy.annotations.cache.NoCache;
-import org.jboss.resteasy.spi.NotFoundException;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.ClientModel;
@@ -34,14 +33,15 @@ import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluato
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @resource Scope Mappings
@@ -85,11 +85,7 @@ public class ScopeMappedClientResource {
         viewPermission.require();
 
         Set<RoleModel> mappings = KeycloakModelUtils.getClientScopeMappings(scopedClient, scopeContainer); //scopedClient.getClientScopeMappings(client);
-        List<RoleRepresentation> mapRep = new ArrayList<RoleRepresentation>();
-        for (RoleModel roleModel : mappings) {
-            mapRep.add(ModelToRepresentation.toBriefRepresentation(roleModel));
-        }
-        return mapRep;
+        return mappings.stream().map(ModelToRepresentation::toBriefRepresentation).collect(Collectors.toList());
     }
 
     /**

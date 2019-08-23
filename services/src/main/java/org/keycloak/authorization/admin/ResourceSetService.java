@@ -266,8 +266,8 @@ public class ResourceSetService {
             }
         }
 
-        policies.addAll(policyStore.findByScopeIds(model.getScopes().stream().map(scope -> scope.getId()).collect(Collectors.toList()), id, resourceServer.getId()));
-        policies.addAll(policyStore.findByScopeIds(model.getScopes().stream().map(scope -> scope.getId()).collect(Collectors.toList()), null, resourceServer.getId()));
+        policies.addAll(policyStore.findByScopeIds(model.getScopes().stream().map(Scope::getId).collect(Collectors.toList()), id, resourceServer.getId()));
+        policies.addAll(policyStore.findByScopeIds(model.getScopes().stream().map(Scope::getId).collect(Collectors.toList()), null, resourceServer.getId()));
 
         List<PolicyRepresentation> representation = new ArrayList<>();
 
@@ -428,9 +428,7 @@ public class ResourceSetService {
                 @Override
                 protected Collection<Map.Entry<String, Resource>> getPaths() {
                     Map<String, Resource> result = new HashMap<>();
-                    serverResources.forEach(resource -> resource.getUris().forEach(uri -> {
-                        result.put(uri, resource);
-                    }));
+                    serverResources.forEach(resource -> resource.getUris().forEach(uri -> result.put(uri, resource)));
 
                     return result.entrySet();
                 }

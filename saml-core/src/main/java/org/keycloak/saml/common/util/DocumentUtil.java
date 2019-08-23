@@ -82,10 +82,7 @@ public class DocumentUtil {
         if (node.getNodeType() == Node.ELEMENT_NODE) {
             Element elem = (Element) node;
             NodeList nl = doc.getElementsByTagNameNS(elem.getNamespaceURI(), elem.getLocalName());
-            if (nl != null && nl.getLength() > 0)
-                return true;
-            else
-                return false;
+            return nl != null && nl.getLength() > 0;
         }
         throw new UnsupportedOperationException();
     }
@@ -120,9 +117,7 @@ public class DocumentUtil {
         try {
             DocumentBuilder builder = getDocumentBuilder();
             return builder.getDOMImplementation().createDocument(baseNamespace, localPart, null);
-        } catch (DOMException e) {
-            throw logger.processingError(e);
-        } catch (ParserConfigurationException e) {
+        } catch (DOMException | ParserConfigurationException e) {
             throw logger.processingError(e);
         }
     }
@@ -391,7 +386,7 @@ public class DocumentUtil {
      * @throws TransformerException
      */
     public static Node getNodeWithAttribute(Document document, final String nsURI, String nodeName, String attributeName,
-                                            String attributeValue) throws XPathException, TransformerFactoryConfigurationError, TransformerException {
+                                            String attributeValue) throws TransformerFactoryConfigurationError {
         NodeList nl = document.getElementsByTagNameNS(nsURI, nodeName);
         int len = nl != null ? nl.getLength() : 0;
 

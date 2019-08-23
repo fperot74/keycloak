@@ -18,7 +18,6 @@
 package org.keycloak.protocol.oidc.mappers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.protocol.ProtocolMapper;
 import org.keycloak.protocol.ProtocolMapperUtils;
@@ -60,6 +59,7 @@ public class OIDCAttributeMapperHelper {
         if (attributeValue == null) return null;
 
         if (attributeValue instanceof Collection) {
+            @SuppressWarnings("unchecked")
             Collection<Object> valueAsList = (Collection<Object>) attributeValue;
             if (valueAsList.isEmpty()) return null;
 
@@ -90,6 +90,7 @@ public class OIDCAttributeMapperHelper {
                 .collect(Collectors.toList());
     }
 
+    @SuppressWarnings("unchecked")
     private static Object convertToType(String type, Object attributeValue) {
         if (type == null || attributeValue == null) return attributeValue;
         switch (type) {
@@ -188,7 +189,8 @@ public class OIDCAttributeMapperHelper {
         return claimComponents;
     }
 
-    public static void mapClaim(IDToken token, ProtocolMapperModel mappingModel, Object attributeValue) {
+    @SuppressWarnings("unchecked")
+	public static void mapClaim(IDToken token, ProtocolMapperModel mappingModel, Object attributeValue) {
         attributeValue = mapAttributeValue(mappingModel, attributeValue);
         if (attributeValue == null) return;
 
@@ -205,13 +207,7 @@ public class OIDCAttributeMapperHelper {
             if (i == length) {
                 jsonObject.put(component, attributeValue);
             } else {
-                Map<String, Object> nested = (Map<String, Object>)jsonObject.get(component);
-
-                if (nested == null) {
-                    nested = new HashMap<String, Object>();
-                    jsonObject.put(component, nested);
-                }
-
+                Map<String, Object> nested = (Map<String, Object>)jsonObject.computeIfAbsent(component, k -> new HashMap<>());
                 jsonObject = nested;
             }
         }
@@ -234,7 +230,7 @@ public class OIDCAttributeMapperHelper {
         mapper.setName(name);
         mapper.setProtocolMapper(mapperId);
         mapper.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
-        Map<String, String> config = new HashMap<String, String>();
+        Map<String, String> config = new HashMap<>();
         config.put(ProtocolMapperUtils.USER_ATTRIBUTE, userAttribute);
         config.put(TOKEN_CLAIM_NAME, tokenClaimName);
         config.put(JSON_TYPE, claimType);
@@ -288,7 +284,7 @@ public class OIDCAttributeMapperHelper {
         ProviderConfigProperty property = new ProviderConfigProperty();
         property.setName(JSON_TYPE);
         property.setLabel(JSON_TYPE);
-        List<String> types = new ArrayList(5);
+        List<String> types = new ArrayList<>(5);
         types.add("String");
         types.add("long");
         types.add("int");

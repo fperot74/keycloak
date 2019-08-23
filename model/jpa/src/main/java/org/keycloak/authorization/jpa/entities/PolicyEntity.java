@@ -95,7 +95,7 @@ public class PolicyEntity {
     @MapKeyColumn(name = "NAME")
     @Column(name = "VALUE", columnDefinition = "TEXT")
     @CollectionTable(name = "POLICY_CONFIG", joinColumns = {@JoinColumn(name = "POLICY_ID")})
-    private Map<String, String> config = new HashMap();
+    private Map<String, String> config = new HashMap<>();
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "RESOURCE_SERVER_ID")

@@ -83,7 +83,7 @@ public class KeycloakBaseSpringBootConfiguration {
 
         private List<io.undertow.servlet.api.SecurityConstraint> getSecurityConstraints() {
 
-            List<io.undertow.servlet.api.SecurityConstraint> undertowSecurityConstraints = new ArrayList<io.undertow.servlet.api.SecurityConstraint>();
+            List<io.undertow.servlet.api.SecurityConstraint> undertowSecurityConstraints = new ArrayList<>();
             for (KeycloakSpringBootProperties.SecurityConstraint constraintDefinition : keycloakProperties.getSecurityConstraints()) {
 
                 io.undertow.servlet.api.SecurityConstraint undertowSecurityConstraint = new io.undertow.servlet.api.SecurityConstraint();
@@ -122,7 +122,7 @@ public class KeycloakBaseSpringBootConfiguration {
             /* see org.eclipse.jetty.webapp.StandardDescriptorProcessor#visitSecurityConstraint for an example
                on how to map servlet spec to Constraints */
 
-            List<ConstraintMapping> jettyConstraintMappings = new ArrayList<ConstraintMapping>();
+            List<ConstraintMapping> jettyConstraintMappings = new ArrayList<>();
             for (KeycloakSpringBootProperties.SecurityConstraint constraintDefinition : keycloakProperties.getSecurityConstraints()) {
 
                 for (KeycloakSpringBootProperties.SecurityCollection securityCollectionDefinition : constraintDefinition
@@ -220,7 +220,7 @@ public class KeycloakBaseSpringBootConfiguration {
             loginConfig.setAuthMethod("KEYCLOAK");
             context.setLoginConfig(loginConfig);
 
-            Set<String> authRoles = new HashSet<String>();
+            Set<String> authRoles = new HashSet<>();
             for (KeycloakSpringBootProperties.SecurityConstraint constraint : keycloakProperties.getSecurityConstraints()) {
                 for (String authRole : constraint.getAuthRoles()) {
                     if (!authRoles.contains(authRole)) {

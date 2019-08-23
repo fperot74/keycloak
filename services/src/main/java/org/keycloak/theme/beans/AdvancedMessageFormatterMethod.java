@@ -38,8 +38,9 @@ public class AdvancedMessageFormatterMethod implements TemplateMethodModelEx {
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public Object exec(List list) throws TemplateModelException {
-        if (list.size() >= 1) {
+        if (!list.isEmpty()) {
             String key = list.get(0).toString();
             if (key.startsWith("${") && key.endsWith("}")) {
                 key = key.substring(2, key.length() - 1);

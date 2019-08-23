@@ -30,6 +30,7 @@ import org.keycloak.dom.saml.v2.assertion.AttributeStatementType;
 import org.keycloak.dom.saml.v2.assertion.AttributeType;
 import org.keycloak.dom.saml.v2.assertion.AuthnStatementType;
 import org.keycloak.dom.saml.v2.assertion.NameIDType;
+import org.keycloak.dom.saml.v2.assertion.StatementAbstractType;
 import org.keycloak.dom.saml.v2.assertion.SubjectType;
 import org.keycloak.dom.saml.v2.protocol.LogoutRequestType;
 import org.keycloak.dom.saml.v2.protocol.RequestAbstractType;
@@ -339,11 +340,7 @@ public class SAMLEndpoint {
                 } else {
                     return binding.redirectBinding(builder.buildDocument()).response(config.getSingleLogoutServiceUrl());
                 }
-            } catch (ConfigurationException e) {
-                throw new RuntimeException(e);
-            } catch (ProcessingException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
+            } catch (ConfigurationException | ProcessingException | IOException e) {
                 throw new RuntimeException(e);
             }
 
@@ -440,7 +437,7 @@ public class SAMLEndpoint {
                 }
 
                 AuthnStatementType authn = null;
-                for (Object statement : assertion.getStatements()) {
+                for (StatementAbstractType statement : assertion.getStatements()) {
                     if (statement instanceof AuthnStatementType) {
                         authn = (AuthnStatementType)statement;
                         identity.getContextData().put(SAML_AUTHN_STATEMENT, authn);

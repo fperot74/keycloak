@@ -67,6 +67,7 @@ public class PasswordPolicy implements Serializable {
         return policyConfig.keySet();
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T getPolicyConfig(String key) {
         return (T) policyConfig.get(key);
     }
@@ -212,7 +213,8 @@ public class PasswordPolicy implements Serializable {
             return sb.toString();
         }
 
-        public Builder clone() {
+        @SuppressWarnings("unchecked")
+		public Builder clone() {
             return new Builder((LinkedHashMap<String, String>) map.clone());
         }
 

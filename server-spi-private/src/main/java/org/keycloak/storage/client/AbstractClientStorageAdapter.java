@@ -91,7 +91,7 @@ public abstract class AbstractClientStorageAdapter extends UnsupportedOperations
      */
     @Override
     public Map<String, Integer> getRegisteredNodes() {
-        return Collections.EMPTY_MAP;
+        return Collections.emptyMap();
     }
 
     /**

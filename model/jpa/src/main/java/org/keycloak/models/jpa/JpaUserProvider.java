@@ -68,19 +68,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.persistence.LockModeType;
 import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Path;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 public class JpaUserProvider implements UserProvider, UserCredentialStore {
-
-    private static final String EMAIL = "email";
-    private static final String USERNAME = "username";
-    private static final String FIRST_NAME = "firstName";
-    private static final String LAST_NAME = "lastName";
-
     private final KeycloakSession session;
     protected EntityManager em;
 
@@ -233,7 +226,7 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
         query.setParameter("userId", userId);
         List<UserConsentEntity> results = query.getResultList();
 
-        List<UserConsentModel> consents = new ArrayList<UserConsentModel>();
+        List<UserConsentModel> consents = new ArrayList<>();
         for (UserConsentEntity entity : results) {
             UserConsentModel model = toConsentModel(realm, entity);
             consents.add(model);
@@ -364,7 +357,7 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
 
     @Override
     public void grantToAllUsers(RealmModel realm, RoleModel role) {
-        int num = em.createNamedQuery("grantRoleToAllUsers")
+        em.createNamedQuery("grantRoleToAllUsers")
                 .setParameter("realmId", realm.getId())
                 .setParameter("roleId", role.getId())
                 .executeUpdate();
@@ -372,67 +365,67 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
 
     @Override
     public void preRemove(RealmModel realm) {
-        int num = em.createNamedQuery("deleteUserConsentClientScopesByRealm")
+        em.createNamedQuery("deleteUserConsentClientScopesByRealm")
                 .setParameter("realmId", realm.getId()).executeUpdate();
-        num = em.createNamedQuery("deleteUserConsentsByRealm")
+        em.createNamedQuery("deleteUserConsentsByRealm")
                 .setParameter("realmId", realm.getId()).executeUpdate();
-        num = em.createNamedQuery("deleteUserRoleMappingsByRealm")
+        em.createNamedQuery("deleteUserRoleMappingsByRealm")
                 .setParameter("realmId", realm.getId()).executeUpdate();
-        num = em.createNamedQuery("deleteUserRequiredActionsByRealm")
+        em.createNamedQuery("deleteUserRequiredActionsByRealm")
                 .setParameter("realmId", realm.getId()).executeUpdate();
-        num = em.createNamedQuery("deleteFederatedIdentityByRealm")
+        em.createNamedQuery("deleteFederatedIdentityByRealm")
                 .setParameter("realmId", realm.getId()).executeUpdate();
-        num = em.createNamedQuery("deleteCredentialAttributeByRealm")
+        em.createNamedQuery("deleteCredentialAttributeByRealm")
                 .setParameter("realmId", realm.getId()).executeUpdate();
-        num = em.createNamedQuery("deleteCredentialsByRealm")
+        em.createNamedQuery("deleteCredentialsByRealm")
                 .setParameter("realmId", realm.getId()).executeUpdate();
-        num = em.createNamedQuery("deleteUserAttributesByRealm")
+        em.createNamedQuery("deleteUserAttributesByRealm")
                 .setParameter("realmId", realm.getId()).executeUpdate();
-        num = em.createNamedQuery("deleteUserGroupMembershipByRealm")
+        em.createNamedQuery("deleteUserGroupMembershipByRealm")
                 .setParameter("realmId", realm.getId()).executeUpdate();
-        num = em.createNamedQuery("deleteUsersByRealm")
+        em.createNamedQuery("deleteUsersByRealm")
                 .setParameter("realmId", realm.getId()).executeUpdate();
     }
 
     @Override
     public void removeImportedUsers(RealmModel realm, String storageProviderId) {
-        int num = em.createNamedQuery("deleteUserRoleMappingsByRealmAndLink")
+        em.createNamedQuery("deleteUserRoleMappingsByRealmAndLink")
                 .setParameter("realmId", realm.getId())
                 .setParameter("link", storageProviderId)
                 .executeUpdate();
-        num = em.createNamedQuery("deleteUserRequiredActionsByRealmAndLink")
+        em.createNamedQuery("deleteUserRequiredActionsByRealmAndLink")
                 .setParameter("realmId", realm.getId())
                 .setParameter("link", storageProviderId)
                 .executeUpdate();
-        num = em.createNamedQuery("deleteFederatedIdentityByRealmAndLink")
+        em.createNamedQuery("deleteFederatedIdentityByRealmAndLink")
                 .setParameter("realmId", realm.getId())
                 .setParameter("link", storageProviderId)
                 .executeUpdate();
-        num = em.createNamedQuery("deleteCredentialAttributeByRealmAndLink")
+        em.createNamedQuery("deleteCredentialAttributeByRealmAndLink")
                 .setParameter("realmId", realm.getId())
                 .setParameter("link", storageProviderId)
                 .executeUpdate();
-        num = em.createNamedQuery("deleteCredentialsByRealmAndLink")
+        em.createNamedQuery("deleteCredentialsByRealmAndLink")
                 .setParameter("realmId", realm.getId())
                 .setParameter("link", storageProviderId)
                 .executeUpdate();
-        num = em.createNamedQuery("deleteUserAttributesByRealmAndLink")
+        em.createNamedQuery("deleteUserAttributesByRealmAndLink")
                 .setParameter("realmId", realm.getId())
                 .setParameter("link", storageProviderId)
                 .executeUpdate();
-        num = em.createNamedQuery("deleteUserGroupMembershipsByRealmAndLink")
+        em.createNamedQuery("deleteUserGroupMembershipsByRealmAndLink")
                 .setParameter("realmId", realm.getId())
                 .setParameter("link", storageProviderId)
                 .executeUpdate();
-        num = em.createNamedQuery("deleteUserConsentClientScopesByRealmAndLink")
+        em.createNamedQuery("deleteUserConsentClientScopesByRealmAndLink")
                 .setParameter("realmId", realm.getId())
                 .setParameter("link", storageProviderId)
                 .executeUpdate();
-        num = em.createNamedQuery("deleteUserConsentsByRealmAndLink")
+        em.createNamedQuery("deleteUserConsentsByRealmAndLink")
                 .setParameter("realmId", realm.getId())
                 .setParameter("link", storageProviderId)
                 .executeUpdate();
-        num = em.createNamedQuery("deleteUsersByRealmAndLink")
+        em.createNamedQuery("deleteUsersByRealmAndLink")
                 .setParameter("realmId", realm.getId())
                 .setParameter("link", storageProviderId)
                 .executeUpdate();
@@ -712,7 +705,7 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
         CriteriaQuery<UserEntity> queryBuilder = builder.createQuery(UserEntity.class);
         Root<UserEntity> root = queryBuilder.from(UserEntity.class);
 
-        List<Predicate> predicates = new ArrayList();
+        List<Predicate> predicates = new ArrayList<>();
 
         predicates.add(builder.equal(root.get("realmId"), realm.getId()));
 
@@ -799,11 +792,7 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
         query.setParameter("realmId", realm.getId());
         List<UserEntity> results = query.getResultList();
 
-        List<UserModel> users = new ArrayList<UserModel>();
-        for (UserEntity user : results) {
-            users.add(new UserAdapter(session, realm, em, user));
-        }
-        return users;
+        return results.stream().map(u -> new UserAdapter(session, realm, em, u)).collect(Collectors.toList());
     }
 
     private FederatedIdentityEntity findFederatedIdentity(UserModel user, String identityProvider, LockModeType lockMode) {
@@ -813,7 +802,7 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
         query.setParameter("identityProvider", identityProvider);
         query.setLockMode(lockMode);
         List<FederatedIdentityEntity> results = query.getResultList();
-        return results.size() > 0 ? results.get(0) : null;
+        return !results.isEmpty() ? results.get(0) : null;
     }
 
 
@@ -823,7 +812,7 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
         UserEntity userEntity = em.getReference(UserEntity.class, user.getId());
         query.setParameter("user", userEntity);
         List<FederatedIdentityEntity> results = query.getResultList();
-        Set<FederatedIdentityModel> set = new HashSet<FederatedIdentityModel>();
+        Set<FederatedIdentityModel> set = new HashSet<>();
         for (FederatedIdentityEntity entity : results) {
             set.add(new FederatedIdentityModel(entity.getIdentityProvider(), entity.getUserId(), entity.getUserName(), entity.getToken()));
         }
@@ -968,9 +957,7 @@ public class JpaUserProvider implements UserProvider, UserCredentialStore {
     @Override
     public CredentialModel getStoredCredentialById(RealmModel realm, UserModel user, String id) {
         CredentialEntity entity = em.find(CredentialEntity.class, id);
-        if (entity == null) return null;
-        CredentialModel model = toModel(entity);
-        return model;
+        return entity!=null ? toModel(entity) : null;
     }
 
     protected CredentialModel toModel(CredentialEntity entity) {

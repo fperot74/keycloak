@@ -99,7 +99,7 @@ public class CertificateValidator {
         public int getInt() { return this.value; }
         public String getName() {  return this.name; }
 
-        static public KeyUsageBits parse(String name) throws IllegalArgumentException, IndexOutOfBoundsException {
+        public static KeyUsageBits parse(String name) throws IllegalArgumentException, IndexOutOfBoundsException {
             if (name == null || name.trim().length() == 0)
                 throw new IllegalArgumentException("name");
 
@@ -110,7 +110,7 @@ public class CertificateValidator {
             throw new IndexOutOfBoundsException("name");
         }
 
-        static public KeyUsageBits fromValue(int value) throws IndexOutOfBoundsException {
+        public static KeyUsageBits fromValue(int value) throws IndexOutOfBoundsException {
             if (value < 0 || value > 8)
                 throw new IndexOutOfBoundsException("value");
             for (KeyUsageBits bit : KeyUsageBits.values())
@@ -136,7 +136,7 @@ public class CertificateValidator {
         }
     }
 
-    public static abstract class OCSPChecker {
+    public abstract static class OCSPChecker {
         /**
          * Requests certificate revocation status using OCSP. The OCSP responder URI
          * is obtained from the certificate's AIA extension.
@@ -147,7 +147,7 @@ public class CertificateValidator {
         public abstract OCSPUtils.OCSPRevocationStatus check(X509Certificate cert, X509Certificate issuerCertificate) throws CertPathValidatorException;
     }
 
-    public static abstract class CRLLoaderImpl {
+    public abstract static class CRLLoaderImpl {
         /**
          * Returns a collection of {@link X509CRL}
          * @return
@@ -187,7 +187,7 @@ public class CertificateValidator {
                 try {
                     uri = new URI(responderUri);
                 } catch (URISyntaxException e) {
-                    String message = String.format("Unable to check certificate revocation status using OCSP.\n%s", e.getMessage());
+                    String message = String.format("Unable to check certificate revocation status using OCSP.%n%s", e.getMessage());
                     throw new CertPathValidatorException(message, e);
                 }
                 logger.tracef("Responder URI \"%s\" will be used to verify revocation status of the certificate using OCSP with responderCert=%s",
@@ -276,7 +276,7 @@ public class CertificateValidator {
                     crlColl = loadCRLFromFile(cf, cRLPath);
                 }
             }
-            if (crlColl == null || crlColl.size() == 0) {
+            if (crlColl == null || crlColl.isEmpty()) {
                 String message = String.format("Unable to load CRL from \"%s\"", cRLPath);
                 throw new GeneralSecurityException(message);
             }
@@ -319,9 +319,7 @@ public class CertificateValidator {
                 } finally {
                     ctx.close();
                 }
-            } catch (NamingException e) {
-                logger.error(e.getMessage());
-            } catch(IOException e) {
+            } catch (NamingException | IOException e) {
                 logger.error(e.getMessage());
             }
 
@@ -403,7 +401,7 @@ public class CertificateValidator {
         }
 
         boolean isCritical = false;
-        Set critSet = certs[0].getCriticalExtensionOIDs();
+        Set<String> critSet = certs[0].getCriticalExtensionOIDs();
         if (critSet != null) {
             isCritical = critSet.contains("2.5.29.15");
         }
@@ -421,15 +419,13 @@ public class CertificateValidator {
                 logger.warn(message);
             }
         }
-        if (sb.length() > 0) {
-            if (isCritical) {
-                throw new GeneralSecurityException(sb.toString());
-            }
+        if (sb.length() > 0 && isCritical) {
+            throw new GeneralSecurityException(sb.toString());
         }
     }
 
     private static void validateExtendedKeyUsage(X509Certificate[] certs, List<String> expectedEKU) throws GeneralSecurityException {
-        if (expectedEKU == null || expectedEKU.size() == 0) {
+        if (expectedEKU == null || expectedEKU.isEmpty()) {
             logger.debug("Extended Key Usage validation is not enabled.");
             return;
         }
@@ -440,7 +436,7 @@ public class CertificateValidator {
         }
 
         boolean isCritical = false;
-        Set critSet = certs[0].getCriticalExtensionOIDs();
+        Set<String> critSet = certs[0].getCriticalExtensionOIDs();
         if (critSet != null) {
             isCritical = critSet.contains("2.5.29.37");
         }
@@ -532,7 +528,7 @@ public class CertificateValidator {
 
     private static void checkRevocationStatusUsingCRL(X509Certificate[] certs, CRLLoaderImpl crLoader, KeycloakSession session) throws GeneralSecurityException {
         Collection<X509CRL> crlColl = crLoader.getX509CRLs();
-        if (crlColl != null && crlColl.size() > 0) {
+        if (crlColl != null && !crlColl.isEmpty()) {
             for (X509CRL it : crlColl) {
                 CRLUtils.check(certs, it, session);
             }
@@ -541,8 +537,7 @@ public class CertificateValidator {
     private static List<String> getCRLDistributionPoints(X509Certificate cert) {
         try {
             return CRLUtils.getCRLDistributionPoints(cert);
-        }
-        catch(IOException e) {
+        } catch(IOException e) {
             logger.error(e.getMessage());
         }
         return new ArrayList<>();
@@ -551,7 +546,7 @@ public class CertificateValidator {
     private static void checkRevocationStatusUsingCRLDistributionPoints(X509Certificate[] certs, KeycloakSession session) throws GeneralSecurityException {
 
         List<String> distributionPoints = getCRLDistributionPoints(certs[0]);
-        if (distributionPoints == null || distributionPoints.size() == 0) {
+        if (distributionPoints == null || distributionPoints.isEmpty()) {
             throw new GeneralSecurityException("Could not find any CRL distribution points in the certificate, unable to check the certificate revocation status using CRL/DP.");
         }
         for (String dp : distributionPoints) {

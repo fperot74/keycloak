@@ -155,7 +155,7 @@ public class UserAttributeStatementMapper extends AbstractIdentityProviderMapper
         Boolean useFriendlyNames = Boolean.valueOf(mapperModel.getConfig().get(USE_FRIENDLY_NAMES));
         List<AttributeType> attributesInContext = findAttributesInContext(context, getAttributePattern(mapperModel));
 
-        Set<String> assertedUserAttributes = new HashSet<String>();
+        Set<String> assertedUserAttributes = new HashSet<>();
         for (AttributeType a : attributesInContext) {
             String attribute = useFriendlyNames ? a.getFriendlyName() : a.getName();
             List<String> attributeValuesInContext = a.getAttributeValue().stream().filter(Objects::nonNull).map(Object::toString).collect(Collectors.toList());
@@ -188,7 +188,7 @@ public class UserAttributeStatementMapper extends AbstractIdentityProviderMapper
             assertedUserAttributes.add(attribute);
         }
         // Remove user attributes that were not referenced in assertion.
-        user.getAttributes().keySet().stream().filter(a -> !assertedUserAttributes.contains(a)).forEach(a -> user.removeAttribute(a));
+        user.getAttributes().keySet().stream().filter(a -> !assertedUserAttributes.contains(a)).forEach(user::removeAttribute);
     }
 
     @Override

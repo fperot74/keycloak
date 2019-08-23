@@ -26,10 +26,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
 
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.authorization.AuthorizationProvider;
@@ -40,7 +38,6 @@ import org.keycloak.authorization.store.PolicyStore;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentation;
@@ -152,12 +149,12 @@ public class PolicyResourceService {
 
         List<Policy> policies = authorization.getStoreFactory().getPolicyStore().findDependentPolicies(policy.getId(), resourceServer.getId());
 
-        return Response.ok(policies.stream().map(policy -> {
+        return Response.ok(policies.stream().map(p -> {
             PolicyRepresentation representation1 = new PolicyRepresentation();
 
-            representation1.setId(policy.getId());
-            representation1.setName(policy.getName());
-            representation1.setType(policy.getType());
+            representation1.setId(p.getId());
+            representation1.setName(p.getName());
+            representation1.setType(p.getType());
 
             return representation1;
         }).collect(Collectors.toList())).build();
@@ -222,13 +219,13 @@ public class PolicyResourceService {
             return Response.status(Status.NOT_FOUND).build();
         }
 
-        return Response.ok(policy.getAssociatedPolicies().stream().map(policy -> {
+        return Response.ok(policy.getAssociatedPolicies().stream().map(p -> {
             PolicyRepresentation representation1 = new PolicyRepresentation();
 
-            representation1.setId(policy.getId());
-            representation1.setName(policy.getName());
-            representation1.setType(policy.getType());
-            representation1.setDescription(policy.getDescription());
+            representation1.setId(p.getId());
+            representation1.setName(p.getName());
+            representation1.setType(p.getType());
+            representation1.setDescription(p.getDescription());
 
             return representation1;
         }).collect(Collectors.toList())).build();

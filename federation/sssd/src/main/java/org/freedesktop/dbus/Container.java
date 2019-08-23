@@ -21,7 +21,7 @@ import java.util.Map;
  * and holds common methods.
  */
 abstract class Container {
-    private static Map<Type, Type[]> typecache = new HashMap<Type, Type[]>();
+    private static Map<Type, Type[]> typecache = new HashMap<>();
 
     static void putTypeCache(Type k, Type[] v) {
         typecache.put(k, v);

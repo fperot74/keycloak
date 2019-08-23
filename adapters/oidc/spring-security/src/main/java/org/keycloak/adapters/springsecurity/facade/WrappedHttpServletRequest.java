@@ -114,7 +114,7 @@ class WrappedHttpServletRequest implements Request {
     @Override
     public List<String> getHeaders(String name) {
         Enumeration<String> values = request.getHeaders(name);
-        List<String> array = new ArrayList<String>();
+        List<String> array = new ArrayList<>();
 
         while (values.hasMoreElements()) {
             array.add(values.nextElement());

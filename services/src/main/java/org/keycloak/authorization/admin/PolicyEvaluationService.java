@@ -104,7 +104,7 @@ public class PolicyEvaluationService {
             if (givenAttributes != null) {
                 givenAttributes.forEach((key, entryValue) -> {
                     if (entryValue != null) {
-                        List<String> values = new ArrayList();
+                        List<String> values = new ArrayList<>();
 
                         for (String value : entryValue.split(",")) {
                             values.add(value);
@@ -140,7 +140,7 @@ public class PolicyEvaluationService {
                 if (givenAttributes != null) {
                     givenAttributes.forEach((key, entryValue) -> {
                         if (entryValue != null) {
-                            List<String> values = new ArrayList();
+                            List<String> values = new ArrayList<>();
 
                             for (String value : entryValue.split(",")) {
                                 values.add(value);
@@ -166,7 +166,7 @@ public class PolicyEvaluationService {
             Set<ScopeRepresentation> givenScopes = resource.getScopes();
 
             if (givenScopes == null) {
-                givenScopes = new HashSet();
+                givenScopes = new HashSet<>();
             }
 
             ScopeStore scopeStore = storeFactory.getScopeStore();

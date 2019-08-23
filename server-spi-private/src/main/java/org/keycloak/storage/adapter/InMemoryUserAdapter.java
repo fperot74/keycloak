@@ -28,13 +28,13 @@ import org.keycloak.models.utils.DefaultRoles;
 import org.keycloak.models.utils.RoleUtils;
 import org.keycloak.storage.ReadOnlyException;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -252,12 +252,8 @@ public class InMemoryUserAdapter implements UserModel {
 
     @Override
     public Set<GroupModel> getGroups() {
-        if (groupIds.size() == 0) return Collections.EMPTY_SET;
-        Set<GroupModel> groups = new HashSet<>();
-        for (String id : groupIds) {
-            groups.add(realm.getGroupById(id));
-        }
-        return groups;
+        if (groupIds.isEmpty()) return Collections.emptySet();
+        return groupIds.stream().map(realm::getGroupById).collect(Collectors.toSet());
     }
 
     @Override
@@ -311,26 +307,14 @@ public class InMemoryUserAdapter implements UserModel {
         Set<RoleModel> allRoles = getRoleMappings();
 
         // Filter to retrieve just realm roles
-        Set<RoleModel> realmRoles = new HashSet<RoleModel>();
-        for (RoleModel role : allRoles) {
-            if (role.getContainer() instanceof RealmModel) {
-                realmRoles.add(role);
-            }
-        }
-        return realmRoles;
+        return allRoles.stream().filter(r -> r.getContainer() instanceof RealmModel).collect(Collectors.toSet());
     }
 
     @Override
     public Set<RoleModel> getClientRoleMappings(ClientModel app) {
-        Set<RoleModel> result = new HashSet<RoleModel>();
         Set<RoleModel> roles = getRoleMappings();
 
-        for (RoleModel role : roles) {
-            if (app.equals(role.getContainer())) {
-                result.add(role);
-            }
-        }
-        return result;
+        return roles.stream().filter(r -> app.equals(r.getContainer())).collect(Collectors.toSet());
     }
 
     @Override
@@ -348,12 +332,8 @@ public class InMemoryUserAdapter implements UserModel {
 
     @Override
     public Set<RoleModel> getRoleMappings() {
-        if (roleIds.size() == 0) return Collections.EMPTY_SET;
-        Set<RoleModel> roles = new HashSet<>();
-        for (String id : roleIds) {
-            roles.add(realm.getRoleById(id));
-        }
-        return roles;
+        if (roleIds.isEmpty()) return Collections.emptySet();
+        return roleIds.stream().map(realm::getRoleById).collect(Collectors.toSet());
     }
 
     @Override
@@ -365,7 +345,7 @@ public class InMemoryUserAdapter implements UserModel {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || !(o instanceof UserModel)) return false;
+        if (!(o instanceof UserModel)) return false;
 
         UserModel that = (UserModel) o;
         return that.getId().equals(getId());

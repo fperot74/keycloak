@@ -88,7 +88,6 @@ import javax.ws.rs.core.UriInfo;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -319,7 +318,7 @@ public class AuthenticationManager {
         if (logoutBroker) {
             String brokerId = userSession.getNote(Details.IDENTITY_PROVIDER);
             if (brokerId != null) {
-                IdentityProvider identityProvider = IdentityBrokerService.getIdentityProvider(session, realm, brokerId);
+                IdentityProvider<?> identityProvider = IdentityBrokerService.getIdentityProvider(session, realm, brokerId);
                 try {
                     identityProvider.backchannelLogout(session, userSession, uriInfo, realm);
                 } catch (Exception e) {
@@ -534,7 +533,7 @@ public class AuthenticationManager {
 
         String brokerId = userSession.getNote(Details.IDENTITY_PROVIDER);
         if (brokerId != null && !brokerId.equals(initiatingIdp)) {
-            IdentityProvider identityProvider = IdentityBrokerService.getIdentityProvider(session, realm, brokerId);
+            IdentityProvider<?> identityProvider = IdentityBrokerService.getIdentityProvider(session, realm, brokerId);
             response = identityProvider.keycloakInitiatedBrowserLogout(session, userSession, uriInfo, realm);
             if (response != null) {
                 return response;
@@ -972,7 +971,7 @@ public class AuthenticationManager {
             List<ClientScopeModel> clientScopesToApprove = getClientScopesToApproveOnConsentScreen(realm, grantedConsent, authSession);
 
             // Skip grant screen if everything was already approved by this user
-            if (clientScopesToApprove.size() > 0) {
+            if (!clientScopesToApprove.isEmpty()) {
                 String execution = AuthenticatedClientSessionModel.Action.OAUTH_GRANT.name();
 
                 ClientSessionCode<AuthenticationSessionModel> accessCode = new ClientSessionCode<>(session, realm, authSession);
@@ -1025,10 +1024,8 @@ public class AuthenticationManager {
         // todo scope param protocol independent
         String scopeParam = authSession.getClientNote(OAuth2Constants.SCOPE);
 
-        Set<String> requestedClientScopes = new HashSet<String>();
-        for (ClientScopeModel clientScope : org.keycloak.protocol.oidc.TokenManager.getRequestedClientScopes(scopeParam, client)) {
-            requestedClientScopes.add(clientScope.getId());
-        }
+        Set<String> requestedClientScopes = org.keycloak.protocol.oidc.TokenManager.getRequestedClientScopes(scopeParam, client).stream()
+            .map(ClientScopeModel::getId).collect(Collectors.toSet());
         authSession.setClientScopes(requestedClientScopes);
     }
 
@@ -1105,12 +1102,9 @@ public class AuthenticationManager {
             RequiredActionProviderModel model = realm.getRequiredActionProviderByAlias(action);
             if (model == null) {
                 logger.warnv("Could not find configuration for Required Action {0}, did you forget to register it?", action);
-                continue;
+            } else if (model.isEnabled()) {
+                actions.add(model);
             }
-            if (!model.isEnabled()) {
-                continue;
-            }
-            actions.add(model);
         }
         Collections.sort(actions, RequiredActionProviderModel.RequiredActionComparator.SINGLETON);
         return actions;
@@ -1198,11 +1192,9 @@ public class AuthenticationManager {
             verifier.verifierContext(signatureVerifier);
 
             AccessToken token = verifier.verify().getToken();
-            if (checkActive) {
-                if (!token.isActive() || token.getIssuedAt() < realm.getNotBefore()) {
-                    logger.debug("Identity cookie expired");
-                    return null;
-                }
+            if (checkActive && (!token.isActive() || token.getIssuedAt() < realm.getNotBefore())) {
+                logger.debug("Identity cookie expired");
+                return null;
             }
 
             UserSessionModel userSession = session.sessions().getUserSession(realm, token.getSessionState());

@@ -25,7 +25,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class SimpleGroup extends SimplePrincipal implements Group {
-    private final Set<Principal> members = new HashSet<Principal>();
+    private final Set<Principal> members = new HashSet<>();
 
     /**
      * Creates a new group with the given name.

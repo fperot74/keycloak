@@ -24,7 +24,7 @@ import java.util.Map;
  */
 public class PolicyRepresentation extends AbstractPolicyRepresentation {
 
-    private Map<String, String> config = new HashMap();
+    private Map<String, String> config = new HashMap<>();
 
     public Map<String, String> getConfig() {
         return this.config;

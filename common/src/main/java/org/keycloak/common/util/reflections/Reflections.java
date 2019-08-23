@@ -85,7 +85,7 @@ public class Reflections {
      * @return the set of all declared fields or an empty set if there are none
      */
     public static Set<Field> getAllDeclaredFields(Class<?> clazz) {
-        HashSet<Field> fields = new HashSet<Field>();
+        HashSet<Field> fields = new HashSet<>();
         for (Class<?> c = clazz; c != null && c != Object.class; c = c.getSuperclass()) {
             for (Field a : c.getDeclaredFields()) {
                 fields.add(a);
@@ -124,7 +124,7 @@ public class Reflections {
      */
     public static Set<Annotation> getAnnotationsWithMetaAnnotation(
             Set<Annotation> annotations, Class<? extends Annotation> metaAnnotationType) {
-        Set<Annotation> set = new HashSet<Annotation>();
+        Set<Annotation> set = new HashSet<>();
         for (Annotation annotation : annotations) {
             if (annotation.annotationType().isAnnotationPresent(metaAnnotationType)) {
                 set.add(annotation);
@@ -160,7 +160,7 @@ public class Reflections {
      * @return the set of all declared methods or an empty set if there are none
      */
     public static Set<Method> getAllDeclaredMethods(Class<?> clazz) {
-        HashSet<Method> methods = new HashSet<Method>();
+        HashSet<Method> methods = new HashSet<>();
         for (Class<?> c = clazz; c != null && c != Object.class; c = c.getSuperclass()) {
             for (Method a : c.getDeclaredMethods()) {
                 methods.add(a);
@@ -218,7 +218,7 @@ public class Reflections {
      * @return the set of all declared constructors or an empty set if there are none
      */
     public static Set<Constructor<?>> getAllDeclaredConstructors(Class<?> clazz) {
-        HashSet<Constructor<?>> constructors = new HashSet<Constructor<?>>();
+        HashSet<Constructor<?>> constructors = new HashSet<>();
         for (Class<?> c = clazz; c != null && c != Object.class; c = c.getSuperclass()) {
             for (Constructor<?> constructor : c.getDeclaredConstructors()) {
                 constructors.add(constructor);
@@ -261,7 +261,8 @@ public class Reflections {
      *
      * @throws ClassNotFoundException if the class cannot be found
      */
-    public static <T> Class<T> classForName(String name, ClassLoader... loaders) throws ClassNotFoundException {
+    @SuppressWarnings("unchecked")
+	public static <T> Class<T> classForName(String name, ClassLoader... loaders) throws ClassNotFoundException {
         try {
             if (Thread.currentThread().getContextClassLoader() != null) {
                 return (Class<T>) Class.forName(name, true, Thread.currentThread().getContextClassLoader());
@@ -489,7 +490,7 @@ public class Reflections {
 
 
     public static Map<Class<?>, Type> buildTypeMap(Set<Type> types) {
-        Map<Class<?>, Type> map = new HashMap<Class<?>, Type>();
+        Map<Class<?>, Type> map = new HashMap<>();
         for (Type type : types) {
             if (type instanceof Class<?>) {
                 map.put((Class<?>) type, type);
@@ -839,15 +840,11 @@ public class Reflections {
     }
 
     public static boolean isTypeBounded(Type type, Type[] lowerBounds, Type[] upperBounds) {
-        if (lowerBounds.length > 0) {
-            if (!isAssignableFrom(type, lowerBounds)) {
-                return false;
-            }
+        if (lowerBounds.length > 0 && !isAssignableFrom(type, lowerBounds)) {
+            return false;
         }
-        if (upperBounds.length > 0) {
-            if (!isAssignableFrom(upperBounds, type)) {
-                return false;
-            }
+        if (upperBounds.length > 0 && !isAssignableFrom(upperBounds, type)) {
+            return false;
         }
         return true;
     }
@@ -957,7 +954,7 @@ public class Reflections {
 
     public static boolean isPrimitive(Type type) {
         Class<?> rawType = getRawType(type);
-        return rawType == null ? false : rawType.isPrimitive();
+        return rawType != null && rawType.isPrimitive();
     }
 
     /**
@@ -991,6 +988,7 @@ public class Reflections {
      * @throws IllegalAccessException
      * @throws InstantiationException
      */
+    @SuppressWarnings("unchecked")
     public static <T> T newInstance(final Class<?> type, final String fullQualifiedName) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
         return (T) classForName(fullQualifiedName, type.getClassLoader()).newInstance();
     }

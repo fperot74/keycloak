@@ -18,7 +18,6 @@
 package org.keycloak.utils;
 
 import java.util.Map;
-import java.util.Set;
 
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.ClientSessionContext;

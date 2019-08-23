@@ -32,6 +32,7 @@ import org.keycloak.util.TokenUtil;
 
 import javax.crypto.SecretKey;
 
+import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
 import java.util.*;
 import java.util.logging.Level;
@@ -112,7 +113,7 @@ public class TokenVerifier<T extends JsonWebToken> {
 
             return true;
         }
-    };
+    }
 
     public static class TokenTypeCheck implements Predicate<JsonWebToken> {
 
@@ -131,8 +132,7 @@ public class TokenVerifier<T extends JsonWebToken> {
             }
             return true;
         }
-    };
-
+    }
 
     public static class AudienceCheck implements Predicate<JsonWebToken> {
 
@@ -159,8 +159,7 @@ public class TokenVerifier<T extends JsonWebToken> {
 
             throw new VerificationException("Expected audience not available in the token");
         }
-    };
-
+    }
 
     public static class IssuedForCheck implements Predicate<JsonWebToken> {
 
@@ -224,7 +223,7 @@ public class TokenVerifier<T extends JsonWebToken> {
      * @return
      */
     public static <T extends JsonWebToken> TokenVerifier<T> create(String tokenString, Class<T> clazz) {
-        return new TokenVerifier(tokenString, clazz);
+        return new TokenVerifier<>(tokenString, clazz);
     }
 
     /**
@@ -237,7 +236,7 @@ public class TokenVerifier<T extends JsonWebToken> {
      * @return
      */
     public static <T extends JsonWebToken> TokenVerifier<T> createWithoutSignature(T token) {
-        return new TokenVerifier(token);
+        return new TokenVerifier<>(token);
     }
 
     /**
@@ -420,7 +419,7 @@ public class TokenVerifier<T extends JsonWebToken> {
     public void verifySignature() throws VerificationException {
         if (this.verifier != null) {
             try {
-                if (!verifier.verify(jws.getEncodedSignatureInput().getBytes("UTF-8"), jws.getSignature())) {
+                if (!verifier.verify(jws.getEncodedSignatureInput().getBytes(StandardCharsets.UTF_8), jws.getSignature())) {
                     throw new TokenSignatureInvalidException(token, "Invalid token signature");
                 }
             } catch (Exception e) {

@@ -75,7 +75,7 @@ public class IdpReviewProfileAuthenticatorFactory implements AuthenticatorFactor
         return true;
     }
 
-    public static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
+    private static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
             AuthenticationExecutionModel.Requirement.REQUIRED,
             AuthenticationExecutionModel.Requirement.DISABLED};
 
@@ -99,7 +99,7 @@ public class IdpReviewProfileAuthenticatorFactory implements AuthenticatorFactor
         return false;
     }
 
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
     static {
         ProviderConfigProperty property;

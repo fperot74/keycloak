@@ -147,7 +147,7 @@ public interface UserQueryProvider {
      */
     default List<UserModel> getRoleMembers(RealmModel realm, RoleModel role)
     {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     /**
@@ -162,7 +162,7 @@ public interface UserQueryProvider {
      */
     default List<UserModel> getRoleMembers(RealmModel realm, RoleModel role, int firstResult, int maxResults)
     {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     /**

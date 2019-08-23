@@ -201,9 +201,7 @@ public class AccountRestService {
                     }
                 }
 
-                for (Map.Entry<String, List<String>> e : userRep.getAttributes().entrySet()) {
-                    user.setAttribute(e.getKey(), e.getValue());
-                }
+                userRep.getAttributes().entrySet().forEach(e -> user.setAttribute(e.getKey(), e.getValue()));
             }
 
             event.success();

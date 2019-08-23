@@ -32,8 +32,8 @@ import org.keycloak.util.JsonSerialization;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -60,10 +60,7 @@ public class SingleFileExportProvider implements ExportProvider {
             @Override
             protected void runExportImportTask(KeycloakSession session) throws IOException {
                 List<RealmModel> realms = session.realms().getRealms();
-                List<RealmRepresentation> reps = new ArrayList<RealmRepresentation>();
-                for (RealmModel realm : realms) {
-                    reps.add(ExportUtils.exportRealm(session, realm, true, true));
-                }
+                List<RealmRepresentation> reps = realms.stream().map(realm -> ExportUtils.exportRealm(session, realm, true, true)).collect(Collectors.toList());
 
                 writeToFile(reps);
             }

@@ -78,7 +78,7 @@ public class PermissionResource {
         if (requests == null || requests.isEmpty()) {
             throw new IllegalArgumentException("Permission request must not be null or empty");
         }
-        Callable<PermissionResponse> callable = new Callable<PermissionResponse>() {
+        Callable<PermissionResponse> callable = new Callable<>() {
             @Override
             public PermissionResponse call() throws Exception {
                 return http.<PermissionResponse>post(serverConfiguration.getPermissionEndpoint())
@@ -113,7 +113,7 @@ public class PermissionResource {
         if (ticket.getScope() == null && ticket.getScopeName() == null) {
             throw new IllegalArgumentException("Permission ticket must have a scope");
         }
-        Callable<PermissionTicketRepresentation> callable = new Callable<PermissionTicketRepresentation>() {
+        Callable<PermissionTicketRepresentation> callable = new Callable<>() {
             @Override
             public PermissionTicketRepresentation call() throws Exception {
                 return http.<PermissionTicketRepresentation>post(serverConfiguration.getPermissionEndpoint()+"/ticket")
@@ -139,7 +139,7 @@ public class PermissionResource {
         if (scopeId == null) {
             throw new IllegalArgumentException("Scope id must not be null");
         }
-        Callable<List<PermissionTicketRepresentation>> callable = new Callable<List<PermissionTicketRepresentation>>() {
+        Callable<List<PermissionTicketRepresentation>> callable = new Callable<>() {
             @Override
             public List<PermissionTicketRepresentation> call() throws Exception {
                 return http.<List<PermissionTicketRepresentation>>get(serverConfiguration.getPermissionEndpoint()+"/ticket")
@@ -165,7 +165,7 @@ public class PermissionResource {
         if (resourceId == null) {
             throw new IllegalArgumentException("Resource id must not be null");
         }
-        Callable<List<PermissionTicketRepresentation>> callable = new Callable<List<PermissionTicketRepresentation>>() {
+        Callable<List<PermissionTicketRepresentation>> callable = new Callable<>() {
             @Override
             public List<PermissionTicketRepresentation> call() throws Exception {
                 return http.<List<PermissionTicketRepresentation>>get(serverConfiguration.getPermissionEndpoint()+"/ticket")
@@ -202,7 +202,7 @@ public class PermissionResource {
                                                      final Boolean returnNames,
                                                      final Integer firstResult,
                                                      final Integer maxResult) {
-        Callable<List<PermissionTicketRepresentation>> callable = new Callable<List<PermissionTicketRepresentation>>() {
+        Callable<List<PermissionTicketRepresentation>> callable = new Callable<>() {
             @Override
             public List<PermissionTicketRepresentation> call() throws Exception {
                 return http.<List<PermissionTicketRepresentation>>get(serverConfiguration.getPermissionEndpoint()+"/ticket")

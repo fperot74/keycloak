@@ -35,7 +35,7 @@ public class HardcodedLDAPAttributeMapperFactory extends AbstractLDAPStorageMapp
 
     public static final String PROVIDER_ID = "hardcoded-ldap-attribute-mapper";
 
-    protected static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
+    protected static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
     static {
         ProviderConfigProperty attrName = createConfigProperty(HardcodedLDAPAttributeMapper.LDAP_ATTRIBUTE_NAME, "LDAP Attribute Name",

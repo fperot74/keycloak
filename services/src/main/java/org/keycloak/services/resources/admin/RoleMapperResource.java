@@ -18,7 +18,6 @@ package org.keycloak.services.resources.admin;
 
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import org.jboss.resteasy.spi.NotFoundException;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
@@ -39,6 +38,7 @@ import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluato
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -116,8 +116,8 @@ public class RoleMapperResource {
         MappingsRepresentation all = new MappingsRepresentation();
         Set<RoleModel> realmMappings = roleMapper.getRealmRoleMappings();
         RealmManager manager = new RealmManager(session);
-        if (realmMappings.size() > 0) {
-            List<RoleRepresentation> realmRep = new ArrayList<RoleRepresentation>();
+        if (!realmMappings.isEmpty()) {
+            List<RoleRepresentation> realmRep = new ArrayList<>();
             for (RoleModel roleModel : realmMappings) {
                 realmRep.add(ModelToRepresentation.toBriefRepresentation(roleModel));
             }
@@ -125,15 +125,15 @@ public class RoleMapperResource {
         }
 
         List<ClientModel> clients = realm.getClients();
-        if (clients.size() > 0) {
-            Map<String, ClientMappingsRepresentation> appMappings = new HashMap<String, ClientMappingsRepresentation>();
+        if (!clients.isEmpty()) {
+            Map<String, ClientMappingsRepresentation> appMappings = new HashMap<>();
             for (ClientModel client : clients) {
                 Set<RoleModel> roleMappings = roleMapper.getClientRoleMappings(client);
-                if (roleMappings.size() > 0) {
+                if (!roleMappings.isEmpty()) {
                     ClientMappingsRepresentation mappings = new ClientMappingsRepresentation();
                     mappings.setId(client.getId());
                     mappings.setClient(client.getClientId());
-                    List<RoleRepresentation> roles = new ArrayList<RoleRepresentation>();
+                    List<RoleRepresentation> roles = new ArrayList<>();
                     mappings.setMappings(roles);
                     for (RoleModel role : roleMappings) {
                         roles.add(ModelToRepresentation.toBriefRepresentation(role));
@@ -159,11 +159,7 @@ public class RoleMapperResource {
         viewPermission.require();
 
         Set<RoleModel> realmMappings = roleMapper.getRealmRoleMappings();
-        List<RoleRepresentation> realmMappingsRep = new ArrayList<RoleRepresentation>();
-        for (RoleModel roleModel : realmMappings) {
-            realmMappingsRep.add(ModelToRepresentation.toBriefRepresentation(roleModel));
-        }
-        return realmMappingsRep;
+        return realmMappings.stream().map(ModelToRepresentation::toBriefRepresentation).collect(Collectors.toList());
     }
 
     /**
@@ -181,13 +177,7 @@ public class RoleMapperResource {
         viewPermission.require();
 
         Set<RoleModel> roles = realm.getRoles();
-        List<RoleRepresentation> realmMappingsRep = new ArrayList<RoleRepresentation>();
-        for (RoleModel roleModel : roles) {
-            if (roleMapper.hasRole(roleModel)) {
-               realmMappingsRep.add(ModelToRepresentation.toBriefRepresentation(roleModel));
-            }
-        }
-        return realmMappingsRep;
+        return roles.stream().filter(roleMapper::hasRole).map(ModelToRepresentation::toBriefRepresentation).collect(Collectors.toList());
     }
 
     /**
@@ -203,9 +193,7 @@ public class RoleMapperResource {
         viewPermission.require();
 
         Set<RoleModel> available = realm.getRoles();
-        Set<RoleModel> set = available.stream().filter(r ->
-            canMapRole(r)
-        ).collect(Collectors.toSet());
+        Set<RoleModel> set = available.stream().filter(this::canMapRole).collect(Collectors.toSet());
         return ClientRoleMappingsResource.getAvailableRoles(roleMapper, set);
     }
 
@@ -288,10 +276,9 @@ public class RoleMapperResource {
         if (clientModel == null) {
             throw new NotFoundException("Client not found");
         }
-        ClientRoleMappingsResource resource = new ClientRoleMappingsResource(session.getContext().getUri(), session, realm, auth, roleMapper,
+        return new ClientRoleMappingsResource(session.getContext().getUri(), session, realm, auth, roleMapper,
                 clientModel, adminEvent,
                 managePermission, viewPermission);
-        return resource;
 
     }
 }

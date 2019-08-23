@@ -48,7 +48,7 @@ public class CustomerService {
         AccessToken accessToken = securityContext.getToken();
         System.out.println(String.format("User '%s' with email '%s' made request to CustomerService REST endpoint", accessToken.getPreferredUsername(), accessToken.getEmail()));
 
-        ArrayList<String> rtn = new ArrayList<String>();
+        ArrayList<String> rtn = new ArrayList<>();
         rtn.add("Bill Burke");
         rtn.add("Stian Thorgersen");
         rtn.add("Stan Silvert");

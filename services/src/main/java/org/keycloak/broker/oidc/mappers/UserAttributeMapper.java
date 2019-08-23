@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
  */
 public class UserAttributeMapper extends AbstractClaimMapper {
 
-    public static final String[] COMPATIBLE_PROVIDERS = {KeycloakOIDCIdentityProviderFactory.PROVIDER_ID, OIDCIdentityProviderFactory.PROVIDER_ID};
+    private static final String[] COMPATIBLE_PROVIDERS = {KeycloakOIDCIdentityProviderFactory.PROVIDER_ID, OIDCIdentityProviderFactory.PROVIDER_ID};
 
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
@@ -126,8 +126,9 @@ public class UserAttributeMapper extends AbstractClaimMapper {
     }
 
     private List<String> toList(Object value) {
+        @SuppressWarnings("unchecked")
         List<Object> values = (value instanceof List)
-                ? (List) value
+                ? (List<Object>) value
                 : Collections.singletonList(value);
         return values.stream()
                 .filter(Objects::nonNull)

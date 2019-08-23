@@ -22,8 +22,8 @@ import java.util.List;
 import static org.freedesktop.dbus.Gettext.getString;
 
 class ArrayFrob {
-    static Hashtable<Class<? extends Object>, Class<? extends Object>> primitiveToWrapper = new Hashtable<Class<? extends Object>, Class<? extends Object>>();
-    static Hashtable<Class<? extends Object>, Class<? extends Object>> wrapperToPrimitive = new Hashtable<Class<? extends Object>, Class<? extends Object>>();
+    static Hashtable<Class<? extends Object>, Class<? extends Object>> primitiveToWrapper = new Hashtable<>();
+    static Hashtable<Class<? extends Object>, Class<? extends Object>> wrapperToPrimitive = new Hashtable<>();
 
     static {
         primitiveToWrapper.put(Boolean.TYPE, Boolean.class);
@@ -78,7 +78,7 @@ class ArrayFrob {
     public static <T> List<T> listify(Object o) throws IllegalArgumentException {
         if (o instanceof Object[]) return listify((T[]) o);
         if (!o.getClass().isArray()) throw new IllegalArgumentException(getString("invalidArray"));
-        List<T> l = new ArrayList<T>(Array.getLength(o));
+        List<T> l = new ArrayList<>(Array.getLength(o));
         for (int i = 0; i < Array.getLength(o); i++)
             l.add((T) Array.get(o, i));
         return l;

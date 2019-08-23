@@ -30,10 +30,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
 
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
@@ -46,6 +44,7 @@ import org.keycloak.authorization.identity.Identity;
 import org.keycloak.authorization.model.Policy;
 import org.keycloak.authorization.model.Resource;
 import org.keycloak.authorization.model.ResourceServer;
+import org.keycloak.authorization.model.Scope;
 import org.keycloak.authorization.store.ResourceStore;
 import org.keycloak.representations.idm.authorization.UmaPermissionRepresentation;
 import org.keycloak.services.ErrorResponseException;
@@ -163,7 +162,7 @@ public class UserManagedPermissionService {
         }
 
         if (representation != null) {
-            Set<String> resourceScopes = resource.getScopes().stream().map(scope -> scope.getName()).collect(Collectors.toSet());
+            Set<String> resourceScopes = resource.getScopes().stream().map(Scope::getName).collect(Collectors.toSet());
             Set<String> scopes = representation.getScopes();
 
             if (scopes == null || scopes.isEmpty()) {

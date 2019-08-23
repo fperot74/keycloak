@@ -41,7 +41,7 @@ import static org.freedesktop.dbus.Gettext.getString;
  */
 public abstract class AbstractConnection {
     protected class FallbackContainer {
-        private Map<String[], ExportedObject> fallbacks = new HashMap<String[], ExportedObject>();
+        private Map<String[], ExportedObject> fallbacks = new HashMap<>();
 
         public synchronized void add(String path, ExportedObject eo) {
             if (Debug.debug) Debug.print(Debug.DEBUG, "Adding fallback on " + path + " of " + eo);
@@ -251,7 +251,7 @@ public abstract class AbstractConnection {
     protected boolean _run;
     EfficientQueue outgoing;
     LinkedList<Error> pendingErrors;
-    private static final Map<Thread, DBusCallInfo> infomap = new HashMap<Thread, DBusCallInfo>();
+    private static final Map<Thread, DBusCallInfo> infomap = new HashMap<>();
     protected _thread thread;
     protected _sender sender;
     protected Transport transport;
@@ -842,7 +842,7 @@ public abstract class AbstractConnection {
     @SuppressWarnings({"unchecked", "deprecation"})
     private void handleMessage(final DBusSignal s) {
         if (Debug.debug) Debug.print(Debug.DEBUG, "Handling incoming signal: " + s);
-        Vector<DBusSigHandler<? extends DBusSignal>> v = new Vector<DBusSigHandler<? extends DBusSignal>>();
+        Vector<DBusSigHandler<? extends DBusSignal>> v = new Vector<>();
         synchronized (handledSignals) {
             Vector<DBusSigHandler<? extends DBusSignal>> t;
             t = handledSignals.get(new SignalTuple(s.getInterface(), s.getName(), null, null));

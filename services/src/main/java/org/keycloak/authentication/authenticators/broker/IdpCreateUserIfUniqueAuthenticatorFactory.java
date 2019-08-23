@@ -73,7 +73,7 @@ public class IdpCreateUserIfUniqueAuthenticatorFactory implements AuthenticatorF
         return true;
     }
 
-    public static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
+    private static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
             AuthenticationExecutionModel.Requirement.ALTERNATIVE,
             AuthenticationExecutionModel.Requirement.REQUIRED,
             AuthenticationExecutionModel.Requirement.DISABLED};
@@ -98,7 +98,7 @@ public class IdpCreateUserIfUniqueAuthenticatorFactory implements AuthenticatorF
         return false;
     }
 
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
     static {
         ProviderConfigProperty property;

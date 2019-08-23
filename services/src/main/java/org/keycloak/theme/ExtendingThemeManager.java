@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,6 +35,7 @@ import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -46,11 +46,11 @@ public class ExtendingThemeManager implements ThemeProvider {
     private static final Logger log = Logger.getLogger(ExtendingThemeManager.class);
 
     private final KeycloakSession session;
-    private final ConcurrentHashMap<ExtendingThemeManagerFactory.ThemeKey, Theme> themeCache;
+    private final ConcurrentMap<ExtendingThemeManagerFactory.ThemeKey, Theme> themeCache;
     private List<ThemeProvider> providers;
     private String defaultTheme;
 
-    public ExtendingThemeManager(KeycloakSession session, ConcurrentHashMap<ExtendingThemeManagerFactory.ThemeKey, Theme> themeCache) {
+    public ExtendingThemeManager(KeycloakSession session, ConcurrentMap<ExtendingThemeManagerFactory.ThemeKey, Theme> themeCache) {
         this.session = session;
         this.themeCache = themeCache;
         this.defaultTheme = Config.scope("theme").get("default", Version.NAME.toLowerCase());
@@ -58,22 +58,15 @@ public class ExtendingThemeManager implements ThemeProvider {
 
     private List<ThemeProvider> getProviders() {
         if (providers == null) {
-            providers = new LinkedList();
+            providers = new LinkedList<>();
 
             for (ThemeProvider p : session.getAllProviders(ThemeProvider.class)) {
-                if (!(p instanceof ExtendingThemeManager)) {
-                    if (!p.getClass().equals(ExtendingThemeManager.class)) {
-                        providers.add(p);
-                    }
+                if (!(p instanceof ExtendingThemeManager) && !p.getClass().equals(ExtendingThemeManager.class)) {
+                    providers.add(p);
                 }
             }
 
-            Collections.sort(providers, new Comparator<ThemeProvider>() {
-                @Override
-                public int compare(ThemeProvider o1, ThemeProvider o2) {
-                    return o2.getProviderPriority() - o1.getProviderPriority();
-                }
-            });
+            Collections.sort(providers, (o1, o2) -> o2.getProviderPriority() - o1.getProviderPriority());
         }
 
         return providers;
@@ -111,7 +104,7 @@ public class ExtendingThemeManager implements ThemeProvider {
         }
     }
 
-    private Theme loadTheme(String name, Theme.Type type) throws IOException {
+    private Theme loadTheme(String name, Theme.Type type) {
         Theme theme = findTheme(name, type);
         List<Theme> themes = new LinkedList<>();
         themes.add(theme);
@@ -138,10 +131,8 @@ public class ExtendingThemeManager implements ThemeProvider {
 
     @Override
     public Set<String> nameSet(Theme.Type type) {
-        Set<String> themes = new HashSet<String>();
-        for (ThemeProvider p : getProviders()) {
-            themes.addAll(p.nameSet(type));
-        }
+        Set<String> themes = new HashSet<>();
+        getProviders().forEach(p -> themes.addAll(p.nameSet(type)));
         return themes;
     }
 
@@ -253,10 +244,10 @@ public class ExtendingThemeManager implements ThemeProvider {
         @Override
         public Properties getMessages(String baseBundlename, Locale locale) throws IOException {
             if (messages.get(baseBundlename) == null || messages.get(baseBundlename).get(locale) == null) {
-                Properties messages = new Properties();
+                Properties msg = new Properties();
 
                 if (!Locale.ENGLISH.equals(locale)) {
-                    messages.putAll(getMessages(baseBundlename, Locale.ENGLISH));
+                    msg.putAll(getMessages(baseBundlename, Locale.ENGLISH));
                 }
 
                 for (ThemeResourceProvider t : themeResourceProviders ){
@@ -267,14 +258,14 @@ public class ExtendingThemeManager implements ThemeProvider {
                 while (itr.hasPrevious()) {
                     Properties m = itr.previous().getMessages(baseBundlename, locale);
                     if (m != null) {
-                        messages.putAll(m);
+                        msg.putAll(m);
                     }
                 }
                 
                 this.messages.putIfAbsent(baseBundlename, new ConcurrentHashMap<Locale, Properties>());
-                this.messages.get(baseBundlename).putIfAbsent(locale, messages);
+                this.messages.get(baseBundlename).putIfAbsent(locale, msg);
 
-                return messages;
+                return msg;
             } else {
                 return messages.get(baseBundlename).get(locale);
             }

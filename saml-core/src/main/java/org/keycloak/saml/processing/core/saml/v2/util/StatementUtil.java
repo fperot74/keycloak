@@ -22,7 +22,6 @@ import org.keycloak.dom.saml.v2.assertion.AttributeType;
 import org.keycloak.dom.saml.v2.assertion.AuthnContextClassRefType;
 import org.keycloak.dom.saml.v2.assertion.AuthnContextType;
 import org.keycloak.dom.saml.v2.assertion.AuthnStatementType;
-import org.keycloak.dom.saml.v2.assertion.StatementAbstractType;
 import org.keycloak.saml.common.constants.JBossSAMLURIConstants;
 import org.keycloak.saml.common.util.StringUtil;
 import org.keycloak.saml.processing.core.constants.AttributeConstants;
@@ -80,7 +79,8 @@ public class StatementUtil {
      *
      * @return
      */
-    public static AttributeStatementType createAttributeStatement(Map<String, Object> attributes) {
+    @SuppressWarnings("unchecked")
+	public static AttributeStatementType createAttributeStatement(Map<String, Object> attributes) {
         AttributeStatementType attrStatement = null;
 
         int i = 0;
@@ -97,8 +97,8 @@ public class StatementUtil {
             if (AttributeConstants.ROLES.equalsIgnoreCase(key)) {
                 Object value = attributes.get(key);
                 if (value instanceof Collection<?>) {
-                    Collection<?> roles = (Collection<?>) value;
-                    attrStatement = createAttributeStatement(new ArrayList(roles));
+                    Collection<String> roles = (Collection<String>) value;
+                    attrStatement = createAttributeStatement(new ArrayList<>(roles));
                 }
             } else {
                 AttributeType att;
@@ -115,8 +115,8 @@ public class StatementUtil {
                 }
 
                 if (Collection.class.isInstance(value)) {
-                    Collection collection = (Collection) value;
-                    Iterator iterator = collection.iterator();
+                    Collection<?> collection = (Collection<?>) value;
+                    Iterator<?> iterator = collection.iterator();
 
                     while (iterator.hasNext()) {
                         att.addAttributeValue(iterator.next());
@@ -192,31 +192,26 @@ public class StatementUtil {
     }
 
     public static Map<String, Object> asMap(Set<AttributeStatementType> attributeStatementTypes) {
-        Map<String, Object> attrMap = new HashMap<String, Object>();
+        Map<String, Object> attrMap = new HashMap<>();
 
         if (attributeStatementTypes != null && !attributeStatementTypes.isEmpty()) {
-            attrMap = new HashMap<String, Object>();
+            for (AttributeStatementType attrStat : attributeStatementTypes) {
+                List<ASTChoiceType> attrs = attrStat.getAttributes();
+                for (ASTChoiceType attrChoice : attrs) {
+                    AttributeType attr = attrChoice.getAttribute();
+                    String attributeName = attr.getFriendlyName();
 
-            for (StatementAbstractType statement : attributeStatementTypes) {
-                if (statement instanceof AttributeStatementType) {
-                    AttributeStatementType attrStat = (AttributeStatementType) statement;
-                    List<ASTChoiceType> attrs = attrStat.getAttributes();
-                    for (ASTChoiceType attrChoice : attrs) {
-                        AttributeType attr = attrChoice.getAttribute();
-                        String attributeName = attr.getFriendlyName();
+                    if (attributeName == null) {
+                        attributeName = attr.getName();
+                    }
 
-                        if (attributeName == null) {
-                            attributeName = attr.getName();
-                        }
+                    List<Object> values = attr.getAttributeValue();
 
-                        List<Object> values = attr.getAttributeValue();
-
-                        if (values != null) {
-                            if (values.size() == 1) {
-                                attrMap.put(attributeName, values.get(0));
-                            } else {
-                                attrMap.put(attributeName, values);
-                            }
+                    if (values != null) {
+                        if (values.size() == 1) {
+                            attrMap.put(attributeName, values.get(0));
+                        } else {
+                            attrMap.put(attributeName, values);
                         }
                     }
                 }

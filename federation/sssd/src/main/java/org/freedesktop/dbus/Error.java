@@ -40,7 +40,7 @@ public class Error extends Message {
         headers.put(Message.HeaderField.REPLY_SERIAL, replyserial);
         headers.put(Message.HeaderField.ERROR_NAME, errorName);
 
-        Vector<Object> hargs = new Vector<Object>();
+        Vector<Object> hargs = new Vector<>();
         hargs.add(new Object[]{Message.HeaderField.ERROR_NAME, new Object[]{ArgumentType.STRING_STRING, errorName}});
         hargs.add(new Object[]{Message.HeaderField.REPLY_SERIAL, new Object[]{ArgumentType.UINT32_STRING, replyserial}});
 

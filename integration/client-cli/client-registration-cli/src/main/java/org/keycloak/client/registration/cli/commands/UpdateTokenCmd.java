@@ -117,9 +117,9 @@ public class UpdateTokenCmd extends AbstractAuthOptionsCmd {
                     // output to stdout
                     printOut(client.getRegistrationAccessToken());
                 } else {
-                    saveMergeConfig(cfg -> {
-                        setRegistrationToken(cfg.ensureRealmConfigData(server, realm), client.getClientId(), client.getRegistrationAccessToken());
-                    });
+                    saveMergeConfig(cfg ->
+                        setRegistrationToken(cfg.ensureRealmConfigData(server, realm), client.getClientId(), client.getRegistrationAccessToken())
+                    );
                 }
             } catch (IOException e) {
                 throw new RuntimeException("Failed to process response from server", e);
@@ -137,13 +137,14 @@ public class UpdateTokenCmd extends AbstractAuthOptionsCmd {
 
     @Override
     protected boolean nothingToDo() {
-        return noOptions() && (args == null || args.size() == 0);
+        return noOptions() && (args == null || args.isEmpty());
     }
 
     protected String suggestHelp() {
         return EOL + "Try '" + CMD + " help update-token' for more information";
     }
 
+    @Override
     protected String help() {
         return usage();
     }

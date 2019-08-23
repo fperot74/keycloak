@@ -19,8 +19,6 @@ package org.keycloak.services.resources.admin;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import org.jboss.resteasy.spi.BadRequestException;
-import org.jboss.resteasy.spi.NotFoundException;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.Config;
 import org.keycloak.KeyPairVerifier;
@@ -83,10 +81,12 @@ import org.keycloak.services.resources.admin.permissions.AdminPermissionManageme
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
 import org.keycloak.storage.UserStorageProviderModel;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -605,7 +605,7 @@ public class RealmAdminResource {
     public List<Map<String, String>> getClientSessionStats() {
         auth.realm().requireViewRealm();
 
-        Map<String, Map<String, String>> data = new HashMap();
+        Map<String, Map<String, String>> data = new HashMap<>();
         {
             Map<String, Long> activeCount =session.sessions().getActiveClientSessionStats(realm, false);
             for (Map.Entry<String, Long> entry : activeCount.entrySet()) {
@@ -635,7 +635,7 @@ public class RealmAdminResource {
             }
         }
         List<Map<String, String>> result = new LinkedList<>();
-        for (Map<String, String> item : data.values()) result.add(item);
+        data.values().forEach(result::add);
         return result;
     }
 

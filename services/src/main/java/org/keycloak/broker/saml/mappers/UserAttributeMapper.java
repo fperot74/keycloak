@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
  */
 public class UserAttributeMapper extends AbstractIdentityProviderMapper {
 
-    public static final String[] COMPATIBLE_PROVIDERS = {SAMLIdentityProviderFactory.PROVIDER_ID};
+    private static final String[] COMPATIBLE_PROVIDERS = {SAMLIdentityProviderFactory.PROVIDER_ID};
 
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 

@@ -19,7 +19,6 @@ package org.keycloak.authentication.authenticators.broker;
 
 import org.jboss.logging.Logger;
 import org.keycloak.authentication.AuthenticationFlowContext;
-import static org.keycloak.authentication.authenticators.broker.AbstractIdpAuthenticator.getExistingUser;
 import org.keycloak.authentication.authenticators.broker.util.SerializedBrokeredIdentityContext;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.models.KeycloakSession;

@@ -45,18 +45,13 @@ import javax.naming.ldap.LdapContext;
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.PagedResultsControl;
 import javax.naming.ldap.PagedResultsResponseControl;
-import javax.naming.ldap.StartTlsRequest;
 import javax.naming.ldap.StartTlsResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 /**
@@ -104,7 +99,7 @@ public class LDAPOperationManager {
      */
     public void modifyAttributes(String dn,  NamingEnumeration<Attribute> attributes) {
         try {
-            List<ModificationItem> modItems = new ArrayList<ModificationItem>();
+            List<ModificationItem> modItems = new ArrayList<>();
             while (attributes.hasMore()) {
                 ModificationItem modItem = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, attributes.next());
                 modItems.add(modItem);
@@ -188,8 +183,7 @@ public class LDAPOperationManager {
      */
     public String renameEntry(String oldDn, String newDn, boolean fallback) {
         try {
-            String newNonConflictingDn = execute(new LdapOperation<String>() {
-
+            return execute(new LdapOperation<String>() {
                 @Override
                 public String execute(LdapContext context) throws NamingException {
                     String dn = newDn;
@@ -229,7 +223,6 @@ public class LDAPOperationManager {
                 }
 
             });
-            return newNonConflictingDn;
         } catch (NamingException e) {
             throw new ModelException("Could not rename entry from DN [" + oldDn + "] to new DN [" + newDn + "]", e);
         }
@@ -246,10 +239,10 @@ public class LDAPOperationManager {
 
 
     public List<SearchResult> search(final String baseDN, final String filter, Collection<String> returningAttributes, int searchScope) throws NamingException {
-        final List<SearchResult> result = new ArrayList<SearchResult>();
+        final List<SearchResult> result = new ArrayList<>();
         final SearchControls cons = getSearchControls(returningAttributes, searchScope);
 
-        try {
+        try { 
             return execute(new LdapOperation<List<SearchResult>>() {
                 @Override
                 public List<SearchResult> execute(LdapContext context) throws NamingException {
@@ -285,7 +278,7 @@ public class LDAPOperationManager {
     }
 
     public List<SearchResult> searchPaginated(final String baseDN, final String filter, final LDAPQuery identityQuery) throws NamingException {
-        final List<SearchResult> result = new ArrayList<SearchResult>();
+        final List<SearchResult> result = new ArrayList<>();
         final SearchControls cons = getSearchControls(identityQuery.getReturningLdapAttributes(), identityQuery.getSearchScope());
 
         // Very 1st page. Pagination context is not yet present
@@ -422,9 +415,7 @@ public class LDAPOperationManager {
                             return search.next();
                         }
                     } finally {
-                        if (search != null) {
-                            search.close();
-                        }
+                        search.close();
                     }
 
                     return null;
@@ -714,7 +705,7 @@ public class LDAPOperationManager {
     }
 
     private Set<String> getReturningAttributes(final Collection<String> returningAttributes) {
-        Set<String> result = new HashSet<String>();
+        Set<String> result = new HashSet<>();
 
         result.addAll(returningAttributes);
         result.add(getUuidAttributeName());

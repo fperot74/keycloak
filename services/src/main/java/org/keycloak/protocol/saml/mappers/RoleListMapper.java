@@ -21,11 +21,8 @@ import org.keycloak.dom.saml.v2.assertion.AttributeStatementType;
 import org.keycloak.dom.saml.v2.assertion.AttributeType;
 import org.keycloak.models.ClientSessionContext;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.RoleModel;
 import org.keycloak.models.UserSessionModel;
-import org.keycloak.models.utils.RoleUtils;
 import org.keycloak.protocol.ProtocolMapper;
 import org.keycloak.protocol.ProtocolMapperUtils;
 import org.keycloak.protocol.saml.SamlProtocol;
@@ -33,12 +30,10 @@ import org.keycloak.provider.ProviderConfigProperty;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -68,7 +63,7 @@ public class RoleListMapper extends AbstractSAMLProtocolMapper implements SAMLRo
         property.setName(AttributeStatementHelper.SAML_ATTRIBUTE_NAMEFORMAT);
         property.setLabel("SAML Attribute NameFormat");
         property.setHelpText("SAML Attribute NameFormat.  Can be basic, URI reference, or unspecified.");
-        List<String> types = new ArrayList(3);
+        List<String> types = new ArrayList<>(3);
         types.add(AttributeStatementHelper.BASIC);
         types.add(AttributeStatementHelper.URI_REFERENCE);
         types.add(AttributeStatementHelper.UNSPECIFIED);

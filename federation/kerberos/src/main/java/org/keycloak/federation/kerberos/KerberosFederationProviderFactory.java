@@ -17,7 +17,6 @@
 
 package org.keycloak.federation.kerberos;
 
-import org.jboss.logging.Logger;
 import org.keycloak.Config;
 import org.keycloak.common.constants.KerberosConstants;
 import org.keycloak.component.ComponentModel;
@@ -46,8 +45,6 @@ import java.util.List;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class KerberosFederationProviderFactory implements UserStorageProviderFactory<KerberosFederationProvider> {
-
-    private static final Logger logger = Logger.getLogger(KerberosFederationProviderFactory.class);
     public static final String PROVIDER_NAME = "kerberos";
 
     @Override

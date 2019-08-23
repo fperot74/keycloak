@@ -72,7 +72,7 @@ public class SecretQuestionAuthenticatorFactory implements AuthenticatorFactory,
         return configProperties;
     }
 
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
     static {
         ProviderConfigProperty property;

@@ -346,7 +346,7 @@ public class FilterSessionStore implements AdapterSessionStore {
 
         String form = buf.toString();
 
-        MultivaluedHashMap<String, String> formData = new MultivaluedHashMap<String, String>();
+        MultivaluedHashMap<String, String> formData = new MultivaluedHashMap<>();
         if ("".equals(form)) return formData;
 
         String[] params = form.split("&");

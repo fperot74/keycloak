@@ -190,7 +190,7 @@ public class ServletReregistrationService {
                 }
             }
 
-            Hashtable<String, Object> servletInitParams = new Hashtable<String, Object>();
+            Hashtable<String, Object> servletInitParams = new Hashtable<>();
             Enumeration keys = sprops.keys();
 
             while(keys.hasMoreElements()){

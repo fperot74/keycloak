@@ -45,7 +45,7 @@ public class KeycloakAuthenticationProvider implements AuthenticationProvider {
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         KeycloakAuthenticationToken token = (KeycloakAuthenticationToken) authentication;
-        List<GrantedAuthority> grantedAuthorities = new ArrayList<GrantedAuthority>();
+        List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
 
         for (String role : token.getAccount().getRoles()) {
             grantedAuthorities.add(new KeycloakRole(role));

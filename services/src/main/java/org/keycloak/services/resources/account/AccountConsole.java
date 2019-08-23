@@ -1,8 +1,6 @@
 package org.keycloak.services.resources.account;
 
-import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import org.keycloak.common.Profile;
 import org.keycloak.common.Version;
 import org.keycloak.events.EventStoreProvider;
 import org.keycloak.models.ClientModel;
@@ -35,7 +33,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -47,8 +44,6 @@ import java.util.regex.Pattern;
  * Created by st on 29/03/17.
  */
 public class AccountConsole {
-    private static final Logger logger = Logger.getLogger(AccountConsole.class);
-    
     private final Pattern bundleParamPattern = Pattern.compile("(\\{\\s*(\\d+)\\s*\\})");
 
     @Context
@@ -77,7 +72,7 @@ public class AccountConsole {
 
     @GET
     @NoCache
-    public Response getMainPage() throws URISyntaxException, IOException, FreeMarkerException {
+    public Response getMainPage() throws IOException, FreeMarkerException {
         if (!session.getContext().getUri().getRequestUri().getPath().endsWith("/")) {
             return Response.status(302).location(session.getContext().getUri().getRequestUriBuilder().path("/").build()).build();
         } else {
@@ -120,7 +115,7 @@ public class AccountConsole {
         }
     }
     
-    private Map<String, String> supportedLocales(Properties messages) throws IOException {
+    private Map<String, String> supportedLocales(Properties messages) {
         Map<String, String> supportedLocales = new HashMap<>();
         for (String l : realm.getSupportedLocales()) {
             String label = messages.getProperty("locale_" + l, l);

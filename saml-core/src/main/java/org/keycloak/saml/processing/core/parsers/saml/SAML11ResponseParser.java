@@ -49,7 +49,7 @@ public class SAML11ResponseParser implements StaxParser {
 
     private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
 
-    private final String RESPONSE = JBossSAMLConstants.RESPONSE__PROTOCOL.get();
+    private final QName RESPONSE = new QName(JBossSAMLConstants.RESPONSE__PROTOCOL.get());
 
     /**
      * @see {@link ParserNamespaceSupport#parse(XMLEventReader)}
@@ -105,7 +105,7 @@ public class SAML11ResponseParser implements StaxParser {
         // Get the Start Element
         StartElement startElement = StaxParserUtil.getNextStartElement(xmlEventReader);
         String STATUS = JBossSAMLConstants.STATUS.get();
-        StaxParserUtil.validate(startElement, STATUS);
+        StaxParserUtil.validate(startElement, new QName(STATUS));
 
         SAML11StatusType status = new SAML11StatusType();
 

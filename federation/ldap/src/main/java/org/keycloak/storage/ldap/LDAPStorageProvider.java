@@ -46,8 +46,6 @@ import org.keycloak.policy.PasswordPolicyManagerProvider;
 import org.keycloak.policy.PolicyError;
 import org.keycloak.models.cache.UserCache;
 import org.keycloak.models.credential.PasswordUserCredentialModel;
-import org.keycloak.models.utils.KeycloakModelUtils;
-import org.keycloak.models.utils.ReadOnlyUserModelDelegate;
 import org.keycloak.storage.ReadOnlyException;
 import org.keycloak.storage.StorageId;
 import org.keycloak.storage.UserStorageProvider;
@@ -223,7 +221,7 @@ public class LDAPStorageProvider implements UserStorageProvider,
 
     @Override
     public List<UserModel> searchForUserByUserAttribute(String attrName, String attrValue, RealmModel realm) {
-    	 try (LDAPQuery ldapQuery = LDAPUtils.createQueryForUserSearch(this, realm)) {
+        try (LDAPQuery ldapQuery = LDAPUtils.createQueryForUserSearch(this, realm)) {
              LDAPQueryConditionsBuilder conditionsBuilder = new LDAPQueryConditionsBuilder();
 
              Condition attrCondition = conditionsBuilder.equal(attrName, attrValue, EscapeStrategy.DEFAULT);
@@ -235,7 +233,7 @@ public class LDAPStorageProvider implements UserStorageProvider,
                  return Collections.emptyList();
              }
 
-             List<UserModel> searchResults = new LinkedList<UserModel>();
+             List<UserModel> searchResults = new LinkedList<>();
 
              for (LDAPObject ldapUser : ldapObjects) {
                  String ldapUsername = LDAPUtils.getUsername(ldapUser, this.ldapIdentityStore.getConfig());
@@ -322,12 +320,12 @@ public class LDAPStorageProvider implements UserStorageProvider,
 
     @Override
     public List<UserModel> getUsers(RealmModel realm) {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     @Override
     public List<UserModel> getUsers(RealmModel realm, int firstResult, int maxResults) {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     @Override
@@ -337,7 +335,7 @@ public class LDAPStorageProvider implements UserStorageProvider,
 
     @Override
     public List<UserModel> searchForUser(String search, RealmModel realm, int firstResult, int maxResults) {
-        Map<String, String> attributes = new HashMap<String, String>();
+        Map<String, String> attributes = new HashMap<>();
         int spaceIndex = search.lastIndexOf(' ');
         if (spaceIndex > -1) {
             String firstName = search.substring(0, spaceIndex).trim();
@@ -361,7 +359,7 @@ public class LDAPStorageProvider implements UserStorageProvider,
 
     @Override
     public List<UserModel> searchForUser(Map<String, String> params, RealmModel realm, int firstResult, int maxResults) {
-        List<UserModel> searchResults =new LinkedList<UserModel>();
+        List<UserModel> searchResults =new LinkedList<>();
 
         List<LDAPObject> ldapUsers = searchLDAP(realm, params, maxResults + firstResult);
         int counter = 0;
@@ -391,7 +389,7 @@ public class LDAPStorageProvider implements UserStorageProvider,
             List<UserModel> users = ldapMapper.getGroupMembers(realm, group, firstResult, maxResults);
 
             // Sufficient for now
-            if (users.size() > 0) {
+            if (!users.isEmpty()) {
                 return users;
             }
         }
@@ -415,7 +413,7 @@ public class LDAPStorageProvider implements UserStorageProvider,
 
     protected List<LDAPObject> searchLDAP(RealmModel realm, Map<String, String> attributes, int maxResults) {
 
-        List<LDAPObject> results = new ArrayList<LDAPObject>();
+        List<LDAPObject> results = new ArrayList<>();
         if (attributes.containsKey(UserModel.USERNAME)) {
             try (LDAPQuery ldapQuery = LDAPUtils.createQueryForUserSearch(this, realm)) {
                 LDAPQueryConditionsBuilder conditionsBuilder = new LDAPQueryConditionsBuilder();
@@ -529,8 +527,7 @@ public class LDAPStorageProvider implements UserStorageProvider,
         }
         logger.debugf("Imported new user from LDAP to Keycloak DB. Username: [%s], Email: [%s], LDAP_ID: [%s], LDAP Entry DN: [%s]", imported.getUsername(), imported.getEmail(),
                 ldapUser.getUuid(), userDN);
-        UserModel proxy = proxy(realm, imported, ldapUser);
-        return proxy;
+        return proxy(realm, imported, ldapUser);
     }
 
     protected LDAPObject queryByEmail(RealmModel realm, String email) {
@@ -544,7 +541,6 @@ public class LDAPStorageProvider implements UserStorageProvider,
             return ldapQuery.getFirstResult();
         }
     }
-
 
     @Override
     public UserModel getUserByEmail(String email, RealmModel realm) {
@@ -616,37 +612,35 @@ public class LDAPStorageProvider implements UserStorageProvider,
         if (!CredentialModel.PASSWORD.equals(input.getType()) || ! (input instanceof PasswordUserCredentialModel)) return false;
         if (editMode == UserStorageProvider.EditMode.READ_ONLY) {
             throw new ReadOnlyException("Federated storage is not writable");
-
-        } else if (editMode == UserStorageProvider.EditMode.WRITABLE) {
-            LDAPIdentityStore ldapIdentityStore = getLdapIdentityStore();
-            PasswordUserCredentialModel cred = (PasswordUserCredentialModel)input;
-            String password = cred.getValue();
-            LDAPObject ldapUser = loadAndValidateUser(realm, user);
-            if (ldapIdentityStore.getConfig().isValidatePasswordPolicy()) {
-		PolicyError error = session.getProvider(PasswordPolicyManagerProvider.class).validate(realm, user, password);
-		if (error != null) throw new ModelException(error.getMessage(), error.getParameters());
-            }
-            try {
-                LDAPOperationDecorator operationDecorator = null;
-                if (updater != null) {
-                    operationDecorator = updater.beforePasswordUpdate(user, ldapUser, cred);
-                }
-
-                ldapIdentityStore.updatePassword(ldapUser, password, operationDecorator);
-
-                if (updater != null) updater.passwordUpdated(user, ldapUser, cred);
-                return true;
-            } catch (ModelException me) {
-                if (updater != null) {
-                    updater.passwordUpdateFailed(user, ldapUser, cred, me);
-                    return false;
-                } else {
-                    throw me;
-                }
-            }
-
-        } else {
+        }
+        if (editMode != UserStorageProvider.EditMode.WRITABLE) {
             return false;
+        }
+        LDAPIdentityStore ldapIdStore = getLdapIdentityStore();
+        PasswordUserCredentialModel cred = (PasswordUserCredentialModel)input;
+        String password = cred.getValue();
+        LDAPObject ldapUser = loadAndValidateUser(realm, user);
+        if (ldapIdStore.getConfig().isValidatePasswordPolicy()) {
+            PolicyError error = session.getProvider(PasswordPolicyManagerProvider.class).validate(realm, user, password);
+            if (error != null) throw new ModelException(error.getMessage(), error.getParameters());
+        }
+        try {
+            LDAPOperationDecorator operationDecorator = null;
+            if (updater != null) {
+                operationDecorator = updater.beforePasswordUpdate(user, ldapUser, cred);
+            }
+
+            ldapIdStore.updatePassword(ldapUser, password, operationDecorator);
+
+            if (updater != null) updater.passwordUpdated(user, ldapUser, cred);
+            return true;
+        } catch (ModelException me) {
+            if (updater != null) {
+                updater.passwordUpdateFailed(user, ldapUser, cred, me);
+                return false;
+            } else {
+                throw me;
+            }
         }
     }
 
@@ -657,11 +651,11 @@ public class LDAPStorageProvider implements UserStorageProvider,
 
     @Override
     public Set<String> getDisableableCredentialTypes(RealmModel realm, UserModel user) {
-        return Collections.EMPTY_SET;
+        return Collections.emptySet();
     }
 
     public Set<String> getSupportedCredentialTypes() {
-        return new HashSet<String>(this.supportedCredentialTypes);
+        return new HashSet<>(this.supportedCredentialTypes);
     }
 
 
@@ -689,36 +683,32 @@ public class LDAPStorageProvider implements UserStorageProvider,
     public CredentialValidationOutput authenticate(RealmModel realm, CredentialInput cred) {
         if (!(cred instanceof UserCredentialModel)) CredentialValidationOutput.failed();
         UserCredentialModel credential = (UserCredentialModel)cred;
-        if (credential.getType().equals(UserCredentialModel.KERBEROS)) {
-            if (kerberosConfig.isAllowKerberosAuthentication()) {
-                String spnegoToken = credential.getValue();
-                SPNEGOAuthenticator spnegoAuthenticator = factory.createSPNEGOAuthenticator(spnegoToken, kerberosConfig);
+        if (credential.getType().equals(UserCredentialModel.KERBEROS) && kerberosConfig.isAllowKerberosAuthentication()) {
+            String spnegoToken = credential.getValue();
+            SPNEGOAuthenticator spnegoAuthenticator = factory.createSPNEGOAuthenticator(spnegoToken, kerberosConfig);
 
-                spnegoAuthenticator.authenticate();
+            spnegoAuthenticator.authenticate();
 
-                Map<String, String> state = new HashMap<String, String>();
-                if (spnegoAuthenticator.isAuthenticated()) {
+            Map<String, String> state = new HashMap<>();
+            if (spnegoAuthenticator.isAuthenticated()) {
+                // TODO: This assumes that LDAP "uid" is equal to kerberos principal name. Like uid "hnelson" and kerberos principal "hnelson@KEYCLOAK.ORG".
+                // Check if it's correct or if LDAP attribute for mapping kerberos principal should be available (For ApacheDS it seems to be attribute "krb5PrincipalName" but on MSAD it's likely different)
+                String username = spnegoAuthenticator.getAuthenticatedUsername();
+                UserModel user = findOrCreateAuthenticatedUser(realm, username);
 
-                    // TODO: This assumes that LDAP "uid" is equal to kerberos principal name. Like uid "hnelson" and kerberos principal "hnelson@KEYCLOAK.ORG".
-                    // Check if it's correct or if LDAP attribute for mapping kerberos principal should be available (For ApacheDS it seems to be attribute "krb5PrincipalName" but on MSAD it's likely different)
-                    String username = spnegoAuthenticator.getAuthenticatedUsername();
-                    UserModel user = findOrCreateAuthenticatedUser(realm, username);
-
-                    if (user == null) {
-                        logger.warnf("Kerberos/SPNEGO authentication succeeded with username [%s], but couldn't find or create user with federation provider [%s]", username, model.getName());
-                        return CredentialValidationOutput.failed();
-                    } else {
-                        String delegationCredential = spnegoAuthenticator.getSerializedDelegationCredential();
-                        if (delegationCredential != null) {
-                            state.put(KerberosConstants.GSS_DELEGATION_CREDENTIAL, delegationCredential);
-                        }
-
-                        return new CredentialValidationOutput(user, CredentialValidationOutput.Status.AUTHENTICATED, state);
-                    }
-                }  else {
-                    state.put(KerberosConstants.RESPONSE_TOKEN, spnegoAuthenticator.getResponseToken());
-                    return new CredentialValidationOutput(null, CredentialValidationOutput.Status.CONTINUE, state);
+                if (user == null) {
+                    logger.warnf("Kerberos/SPNEGO authentication succeeded with username [%s], but couldn't find or create user with federation provider [%s]", username, model.getName());
+                    return CredentialValidationOutput.failed();
                 }
+                String delegationCredential = spnegoAuthenticator.getSerializedDelegationCredential();
+                if (delegationCredential != null) {
+                    state.put(KerberosConstants.GSS_DELEGATION_CREDENTIAL, delegationCredential);
+                }
+
+                return new CredentialValidationOutput(user, CredentialValidationOutput.Status.AUTHENTICATED, state);
+            }  else {
+                state.put(KerberosConstants.RESPONSE_TOKEN, spnegoAuthenticator.getResponseToken());
+                return new CredentialValidationOutput(null, CredentialValidationOutput.Status.CONTINUE, state);
             }
         }
 
@@ -773,12 +763,7 @@ public class LDAPStorageProvider implements UserStorageProvider,
             Condition usernameCondition = conditionsBuilder.equal(usernameMappedAttribute, username, EscapeStrategy.DEFAULT);
             ldapQuery.addWhereCondition(usernameCondition);
 
-            LDAPObject ldapUser = ldapQuery.getFirstResult();
-            if (ldapUser == null) {
-                return null;
-            }
-
-            return ldapUser;
+            return ldapQuery.getFirstResult();
         }
     }
 

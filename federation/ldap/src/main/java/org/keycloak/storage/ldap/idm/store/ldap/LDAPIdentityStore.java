@@ -45,6 +45,7 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -313,11 +314,11 @@ public class LDAPIdentityStore implements IdentityStore {
             // Replace the "unicdodePwd" attribute with a new value
             // Password must be both Unicode and a quoted string
             String newQuotedPassword = "\"" + password + "\"";
-            byte[] newUnicodePassword = newQuotedPassword.getBytes("UTF-16LE");
+            byte[] newUnicodePassword = newQuotedPassword.getBytes(StandardCharsets.UTF_16LE);
 
             BasicAttribute unicodePwd = new BasicAttribute("unicodePwd", newUnicodePassword);
 
-            List<ModificationItem> modItems = new ArrayList<ModificationItem>();
+            List<ModificationItem> modItems = new ArrayList<>();
             modItems.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE, unicodePwd));
 
             operationManager.modifyAttributes(userDN, modItems.toArray(new ModificationItem[] {}), passwordUpdateDecorator);

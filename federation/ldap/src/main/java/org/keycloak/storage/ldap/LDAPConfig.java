@@ -278,7 +278,7 @@ public class LDAPConfig {
 
     @Override
     public String toString() {
-        MultivaluedHashMap<String, String> copy = new MultivaluedHashMap<String, String>(config);
+        MultivaluedHashMap<String, String> copy = new MultivaluedHashMap<>(config);
         copy.remove(LDAPConstants.BIND_CREDENTIAL);
         return new StringBuilder(copy.toString())
                 .append(", binaryAttributes: ").append(binaryAttributeNames)

@@ -26,7 +26,7 @@ import javax.xml.namespace.QName;
  */
 public abstract class AbstractStaxXmlDSigParser<T> extends AbstractStaxParser<T, XmlDSigQNames> {
 
-    protected static final QNameEnumLookup<XmlDSigQNames> LOOKUP = new QNameEnumLookup(XmlDSigQNames.values());
+    protected static final QNameEnumLookup<XmlDSigQNames> LOOKUP = new QNameEnumLookup<>(XmlDSigQNames.values());
 
     public AbstractStaxXmlDSigParser(XmlDSigQNames expectedStartElement) {
         super(expectedStartElement.getQName(), XmlDSigQNames.UNKNOWN_ELEMENT);

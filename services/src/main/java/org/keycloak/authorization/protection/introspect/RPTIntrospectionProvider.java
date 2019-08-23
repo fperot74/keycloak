@@ -73,7 +73,7 @@ public class RPTIntrospectionProvider extends AccessTokenIntrospectionProvider {
                 Authorization authorization = accessToken.getAuthorization();
 
                 if (authorization != null) {
-                    Collection permissions;
+                    Collection<?> permissions;
 
                     if (authorization.getPermissions() != null) {
                         permissions = authorization.getPermissions().stream().map(UmaPermissionRepresentation::new).collect(Collectors.toSet());

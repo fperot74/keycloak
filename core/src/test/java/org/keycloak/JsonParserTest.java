@@ -66,13 +66,14 @@ public class JsonParserTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testUnwrap() throws Exception {
         // just experimenting with unwrapped and any properties
         IDToken test = new IDToken();
         test.getOtherClaims().put("phone_number", "978-666-0000");
         test.getOtherClaims().put("email_verified", "true");
         test.getOtherClaims().put("yo", "true");
-        Map<String, String> nested = new HashMap<String, String>();
+        Map<String, String> nested = new HashMap<>();
         nested.put("foo", "bar");
         test.getOtherClaims().put("nested", nested);
         String json = JsonSerialization.writeValueAsPrettyString(test);
@@ -157,6 +158,7 @@ public class JsonParserTest {
 
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testResourceRepresentationParsing() throws Exception {
         Map<String, Object> resource = parseResourceRepresentation("{ \"_id\": \"123\", \"name\": \"foo\" }");
         Assert.assertFalse(resource.containsKey("uri"));
@@ -165,7 +167,7 @@ public class JsonParserTest {
         resource = parseResourceRepresentation("{ \"_id\": \"123\", \"name\": \"foo\", \"uris\": [ \"uri1\", \"uri2\" ] }");
         Assert.assertFalse(resource.containsKey("uri"));
         Assert.assertTrue(resource.containsKey("uris"));
-        Collection<String> uris = (Collection) resource.get("uris");
+        Collection<String> uris = (Collection<String>) resource.get("uris");
         Assert.assertEquals(2, uris.size());
         Assert.assertTrue(uris.contains("uri1"));
         Assert.assertTrue(uris.contains("uri2"));
@@ -174,12 +176,13 @@ public class JsonParserTest {
         resource = parseResourceRepresentation("{ \"_id\": \"123\", \"name\": \"foo\", \"uri\": \"uri1\" }");
         Assert.assertFalse(resource.containsKey("uri"));
         Assert.assertTrue(resource.containsKey("uris"));
-        uris = (Collection) resource.get("uris");
+        uris = (Collection<String>) resource.get("uris");
         Assert.assertEquals(1, uris.size());
         Assert.assertTrue(uris.contains("uri1"));
     }
 
-    private Map<String, Object> parseResourceRepresentation(String resourceJson) throws Exception {
+    @SuppressWarnings("unchecked")
+	private Map<String, Object> parseResourceRepresentation(String resourceJson) throws Exception {
         ResourceRepresentation rep = JsonSerialization.readValue(resourceJson, ResourceRepresentation.class);
         String repp = JsonSerialization.writeValueAsString(rep);
         return JsonSerialization.readValue(repp, Map.class);

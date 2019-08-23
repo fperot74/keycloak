@@ -22,11 +22,9 @@ import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.authorization.admin.AuthorizationService;
-import org.keycloak.common.Profile;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.Constants;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ModelDuplicateException;
 import org.keycloak.models.RealmModel;
@@ -56,7 +54,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -98,7 +95,7 @@ public class ClientsResource {
     public List<ClientRepresentation> getClients(@QueryParam("clientId") String clientId, @QueryParam("viewableOnly") @DefaultValue("false") boolean viewableOnly) {
         List<ClientRepresentation> rep = new ArrayList<>();
 
-        if (clientId == null || clientId.trim().equals("")) {
+        if (clientId == null || clientId.trim().isEmpty()) {
             List<ClientModel> clientModels = realm.getClients();
             auth.clients().requireList();
             boolean view = auth.clients().canView();

@@ -72,6 +72,7 @@ public class SkeletonKeyTokenTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testSerialization() throws Exception {
         AccessToken token = createSimpleToken();
         IDToken idToken = new IDToken();
@@ -88,7 +89,7 @@ public class SkeletonKeyTokenTest {
                 .rsa256(keyPair.getPrivate());
 
         KeycloakSecurityContext ctx = new KeycloakSecurityContext(encoded, token, encodedIdToken, idToken);
-        KeycloakPrincipal principal = new KeycloakPrincipal("joe", ctx);
+        KeycloakPrincipal<KeycloakSecurityContext> principal = new KeycloakPrincipal<>("joe", ctx);
 
         // Serialize
         ByteArrayOutputStream bso = new ByteArrayOutputStream();
@@ -100,7 +101,7 @@ public class SkeletonKeyTokenTest {
         byte[] bytes = bso.toByteArray();
         ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
         ObjectInputStream ois = new ObjectInputStream(bis);
-        principal = (KeycloakPrincipal)ois.readObject();
+        principal = (KeycloakPrincipal<KeycloakSecurityContext>)ois.readObject();
         ctx = principal.getKeycloakSecurityContext();
         token = ctx.getToken();
         idToken = ctx.getIdToken();

@@ -57,7 +57,7 @@ public class PolicyResource {
             throw new IllegalArgumentException("Permission must not be null");
         }
 
-        Callable<UmaPermissionRepresentation> callable = new Callable<UmaPermissionRepresentation>() {
+        Callable<UmaPermissionRepresentation> callable = new Callable<>() {
             @Override
             public UmaPermissionRepresentation call() throws Exception {
                 return http.<UmaPermissionRepresentation>post(serverConfiguration.getPolicyEndpoint() + "/" + resourceId)
@@ -87,7 +87,7 @@ public class PolicyResource {
             throw new IllegalArgumentException("Permission id must not be null");
         }
 
-        Callable<Void> callable = new Callable<Void>() {
+        Callable<Void> callable = new Callable<>() {
             @Override
             public Void call() throws Exception {
                 http.<Void>put(serverConfiguration.getPolicyEndpoint() + "/"+ permission.getId())
@@ -109,7 +109,7 @@ public class PolicyResource {
      * @param id the permission id
      */
     public void delete(final String id) {
-        Callable<Void> callable = new Callable<Void>() {
+        Callable<Void> callable = new Callable<>() {
             @Override
             public Void call() {
                 http.<UmaPermissionRepresentation>delete(serverConfiguration.getPolicyEndpoint() + "/" + id)
@@ -139,7 +139,7 @@ public class PolicyResource {
                                                   final String scope,
                                                   final Integer firstResult,
                                                   final Integer maxResult) {
-        Callable<List<UmaPermissionRepresentation>> callable = new Callable<List<UmaPermissionRepresentation>>() {
+        Callable<List<UmaPermissionRepresentation>> callable = new Callable<>() {
             @Override
             public List<UmaPermissionRepresentation> call() {
                 return http.<List<UmaPermissionRepresentation>>get(serverConfiguration.getPolicyEndpoint())
@@ -170,7 +170,7 @@ public class PolicyResource {
             throw new IllegalArgumentException("Permission id must not be null");
         }
 
-        Callable<UmaPermissionRepresentation> callable = new Callable<UmaPermissionRepresentation>() {
+        Callable<UmaPermissionRepresentation> callable = new Callable<>() {
             @Override
             public UmaPermissionRepresentation call() {
                 return http.<UmaPermissionRepresentation>get(serverConfiguration.getPolicyEndpoint() + "/" + id)

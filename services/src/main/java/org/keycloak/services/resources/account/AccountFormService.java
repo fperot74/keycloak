@@ -24,8 +24,6 @@ import org.keycloak.authorization.model.Resource;
 import org.keycloak.authorization.model.Scope;
 import org.keycloak.authorization.store.PermissionTicketStore;
 import org.keycloak.authorization.store.PolicyStore;
-import org.keycloak.common.Profile;
-import org.keycloak.common.Profile.Feature;
 import org.keycloak.common.util.Base64Url;
 import org.keycloak.common.util.Time;
 import org.keycloak.common.util.UriUtils;
@@ -43,7 +41,6 @@ import org.keycloak.models.AccountRoles;
 import org.keycloak.models.AuthenticatedClientSessionModel;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.FederatedIdentityModel;
-import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ModelDuplicateException;
 import org.keycloak.models.ModelException;
@@ -99,6 +96,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -109,7 +107,7 @@ public class AccountFormService extends AbstractSecuredLocalService {
 
     private static final Logger logger = Logger.getLogger(AccountFormService.class);
 
-    private static Set<String> VALID_PATHS = new HashSet<String>();
+    private static Set<String> VALID_PATHS = new HashSet<>();
     static {
         for (Method m : AccountFormService.class.getMethods()) {
             Path p = m.getAnnotation(Path.class);
@@ -176,8 +174,7 @@ public class AccountFormService extends AbstractSecuredLocalService {
     }
 
     public static UriBuilder accountServiceBaseUrl(UriInfo uriInfo) {
-        UriBuilder base = uriInfo.getBaseUriBuilder().path(RealmsResource.class).path(RealmsResource.class, "getAccountService");
-        return base;
+        return uriInfo.getBaseUriBuilder().path(RealmsResource.class).path(RealmsResource.class, "getAccountService");
     }
 
     public static UriBuilder accountServiceApplicationPage(UriInfo uriInfo) {
@@ -189,38 +186,38 @@ public class AccountFormService extends AbstractSecuredLocalService {
     }
 
     private Response forwardToPage(String path, AccountPages page) {
-        if (auth != null) {
-            try {
-                auth.require(AccountRoles.MANAGE_ACCOUNT);
-            } catch (ForbiddenException e) {
-                return session.getProvider(LoginFormsProvider.class).setError(Messages.NO_ACCESS).createErrorPage(Response.Status.FORBIDDEN);
-            }
+        if (auth == null) {
+            return login(path);
+        }
 
-            setReferrerOnPage();
+        try {
+            auth.require(AccountRoles.MANAGE_ACCOUNT);
+        } catch (ForbiddenException e) {
+            return session.getProvider(LoginFormsProvider.class).setError(Messages.NO_ACCESS).createErrorPage(Response.Status.FORBIDDEN);
+        }
 
-            UserSessionModel userSession = auth.getSession();
+        setReferrerOnPage();
 
-            String tabId = request.getUri().getQueryParameters().getFirst(org.keycloak.models.Constants.TAB_ID);
-            if (tabId != null) {
-                AuthenticationSessionModel authSession = new AuthenticationSessionManager(session).getAuthenticationSessionByIdAndClient(realm, userSession.getId(), client, tabId);
-                if (authSession != null) {
-                    String forwardedError = authSession.getAuthNote(ACCOUNT_MGMT_FORWARDED_ERROR_NOTE);
-                    if (forwardedError != null) {
-                        try {
-                            FormMessage errorMessage = JsonSerialization.readValue(forwardedError, FormMessage.class);
-                            account.setError(Response.Status.INTERNAL_SERVER_ERROR, errorMessage.getMessage(), errorMessage.getParameters());
-                            authSession.removeAuthNote(ACCOUNT_MGMT_FORWARDED_ERROR_NOTE);
-                        } catch (IOException ioe) {
-                            throw new RuntimeException(ioe);
-                        }
+        UserSessionModel userSession = auth.getSession();
+
+        String tabId = request.getUri().getQueryParameters().getFirst(org.keycloak.models.Constants.TAB_ID);
+        if (tabId != null) {
+            AuthenticationSessionModel authSession = new AuthenticationSessionManager(session).getAuthenticationSessionByIdAndClient(realm, userSession.getId(), client, tabId);
+            if (authSession != null) {
+                String forwardedError = authSession.getAuthNote(ACCOUNT_MGMT_FORWARDED_ERROR_NOTE);
+                if (forwardedError != null) {
+                    try {
+                        FormMessage errorMessage = JsonSerialization.readValue(forwardedError, FormMessage.class);
+                        account.setError(Response.Status.INTERNAL_SERVER_ERROR, errorMessage.getMessage(), errorMessage.getParameters());
+                        authSession.removeAuthNote(ACCOUNT_MGMT_FORWARDED_ERROR_NOTE);
+                    } catch (IOException ioe) {
+                        throw new RuntimeException(ioe);
                     }
                 }
             }
-
-            return account.createResponse(page);
-        } else {
-            return login(path);
         }
+
+        return account.createResponse(page);
     }
 
     private void setReferrerOnPage() {
@@ -631,14 +628,7 @@ public class AccountFormService extends AbstractSecuredLocalService {
             return account.setError(Response.Status.BAD_REQUEST, Messages.INVALID_FEDERATED_IDENTITY_ACTION).createResponse(AccountPages.FEDERATED_IDENTITY);
         }
 
-        boolean hasProvider = false;
-
-        for (IdentityProviderModel model : realm.getIdentityProviders()) {
-            if (model.getAlias().equals(providerId)) {
-                hasProvider = true;
-            }
-        }
-
+        boolean hasProvider = realm.getIdentityProviders().stream().anyMatch(m -> m.getAlias().equals(providerId));
         if (!hasProvider) {
             setReferrerOnPage();
             return account.setError(Response.Status.BAD_REQUEST, Messages.IDENTITY_PROVIDER_NOT_FOUND).createResponse(AccountPages.FEDERATED_IDENTITY);
@@ -751,7 +741,7 @@ public class AccountFormService extends AbstractSecuredLocalService {
         boolean isRevokePolicyAll = "revokePolicyAll".equals(action);
 
         if (isRevokePolicy || isRevokePolicyAll) {
-            List<String> ids = new ArrayList(Arrays.asList(permissionId));
+            List<String> ids = new ArrayList<>(Arrays.asList(permissionId));
             Iterator<String> iterator = ids.iterator();
             PolicyStore policyStore = authorization.getStoreFactory().getPolicyStore();
             Policy policy = null;
@@ -785,10 +775,7 @@ public class AccountFormService extends AbstractSecuredLocalService {
             }
 
             if (policy.getScopes().isEmpty()) {
-                for (Policy associated : policy.getAssociatedPolicies()) {
-                    policyStore.delete(associated.getId());
-                }
-
+                policy.getAssociatedPolicies().forEach(ap -> policyStore.delete(ap.getId()));
                 policyStore.delete(policy.getId());
             }
         } else {
@@ -809,25 +796,19 @@ public class AccountFormService extends AbstractSecuredLocalService {
             while (iterator.hasNext()) {
                 PermissionTicket ticket = iterator.next();
 
-                if (isGrant) {
-                    if (permissionId != null && permissionId.length > 0 && !Arrays.asList(permissionId).contains(ticket.getId())) {
-                        continue;
-                    }
+                if (isGrant && permissionId != null && permissionId.length > 0 && !Arrays.asList(permissionId).contains(ticket.getId())) {
+                    continue;
                 }
 
                 if (isGrant && !ticket.isGranted()) {
                     ticket.setGrantedTimestamp(System.currentTimeMillis());
                     iterator.remove();
-                } else if (isDeny || isRevoke) {
-                    if (permissionId != null && permissionId.length > 0 && Arrays.asList(permissionId).contains(ticket.getId())) {
-                        iterator.remove();
-                    }
+                } else if ((isDeny || isRevoke) && permissionId != null && permissionId.length > 0 && Arrays.asList(permissionId).contains(ticket.getId())) {
+                    iterator.remove();
                 }
             }
 
-            for (PermissionTicket ticket : tickets) {
-                ticketStore.delete(ticket.getId());
-            }
+            tickets.forEach(t -> ticketStore.delete(t.getId()));
         }
 
         if (isRevoke || isRevokePolicy || isRevokePolicyAll) {
@@ -851,9 +832,9 @@ public class AccountFormService extends AbstractSecuredLocalService {
         }
 
         auth.require(AccountRoles.MANAGE_ACCOUNT);
-        
+
         csrfCheck(formData);
-        
+
         AuthorizationProvider authorization = session.getProvider(AuthorizationProvider.class);
         PermissionTicketStore ticketStore = authorization.getStoreFactory().getPermissionTicketStore();
         Resource resource = authorization.getStoreFactory().getResourceStore().findById(resourceId, null);
@@ -910,14 +891,7 @@ public class AccountFormService extends AbstractSecuredLocalService {
                 }
             } else if (scopes != null && scopes.length > 0) {
                 List<String> grantScopes = new ArrayList<>(Arrays.asList(scopes));
-
-                for (PermissionTicket ticket : tickets) {
-                    Scope scope = ticket.getScope();
-
-                    if (scope != null) {
-                        grantScopes.remove(scope.getId());
-                    }
-                }
+                tickets.stream().map(PermissionTicket::getScope).filter(Objects::nonNull).forEach(s -> grantScopes.remove(s.getId()));
 
                 for (String grantScope : grantScopes) {
                     PermissionTicket ticket = ticketStore.create(resourceId, grantScope, user.getId(), resource.getResourceServer());
@@ -1008,13 +982,11 @@ public class AccountFormService extends AbstractSecuredLocalService {
                 }
                 return new String[]{referrerName, referrerUri};
             }
-        } else if (referrerUri != null) {
-            if (client != null) {
-                referrerUri = RedirectUtils.verifyRedirectUri(session.getContext().getUri(), referrerUri, realm, client);
+        } else if (referrerUri != null && client != null) {
+            referrerUri = RedirectUtils.verifyRedirectUri(session.getContext().getUri(), referrerUri, realm, client);
 
-                if (referrerUri != null) {
-                    return new String[]{referrer, referrerUri};
-                }
+            if (referrerUri != null) {
+                return new String[]{referrer, referrerUri};
             }
         }
 

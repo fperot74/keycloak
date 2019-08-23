@@ -16,7 +16,6 @@
  */
 package org.keycloak.services;
 
-import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakTransaction;
 import org.keycloak.models.KeycloakTransactionManager;
@@ -31,12 +30,9 @@ import java.util.List;
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public class DefaultKeycloakTransactionManager implements KeycloakTransactionManager {
-
-    private static final Logger logger = Logger.getLogger(DefaultKeycloakTransactionManager.class);
-
-    private List<KeycloakTransaction> prepare = new LinkedList<KeycloakTransaction>();
-    private List<KeycloakTransaction> transactions = new LinkedList<KeycloakTransaction>();
-    private List<KeycloakTransaction> afterCompletion = new LinkedList<KeycloakTransaction>();
+    private List<KeycloakTransaction> prepare = new LinkedList<>();
+    private List<KeycloakTransaction> transactions = new LinkedList<>();
+    private List<KeycloakTransaction> afterCompletion = new LinkedList<>();
     private boolean active;
     private boolean rollback;
     private KeycloakSession session;

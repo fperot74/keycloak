@@ -18,8 +18,6 @@ package org.keycloak.services.resources.admin;
 
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import org.jboss.resteasy.spi.BadRequestException;
-import org.jboss.resteasy.spi.NotFoundException;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.authentication.RequiredActionProvider;
 import org.keycloak.authentication.actiontoken.execactions.ExecuteActionsActionToken;
@@ -40,7 +38,6 @@ import org.keycloak.models.Constants;
 import org.keycloak.models.FederatedIdentityModel;
 import org.keycloak.models.GroupModel;
 import org.keycloak.models.IdentityProviderModel;
-import org.keycloak.models.ImpersonationSessionNote;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ModelDuplicateException;
 import org.keycloak.models.ModelException;
@@ -76,9 +73,11 @@ import org.keycloak.services.validation.Validation;
 import org.keycloak.storage.ReadOnlyException;
 import org.keycloak.utils.ProfileHelper;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -105,6 +104,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static org.keycloak.models.ImpersonationSessionNote.IMPERSONATOR_ID;
 import static org.keycloak.models.ImpersonationSessionNote.IMPERSONATOR_USERNAME;
@@ -319,12 +319,7 @@ public class UserResource {
     public List<UserSessionRepresentation> getSessions() {
         auth.users().requireView(user);
         List<UserSessionModel> sessions = session.sessions().getUserSessions(realm, user);
-        List<UserSessionRepresentation> reps = new ArrayList<UserSessionRepresentation>();
-        for (UserSessionModel session : sessions) {
-            UserSessionRepresentation rep = ModelToRepresentation.toRepresentation(session);
-            reps.add(rep);
-        }
-        return reps;
+        return sessions.stream().map(ModelToRepresentation::toRepresentation).collect(Collectors.toList());
     }
 
     /**
@@ -343,7 +338,7 @@ public class UserResource {
             throw new NotFoundException("Client not found");
         }
         List<UserSessionModel> sessions = new UserSessionManager(session).findOfflineSessions(realm, user);
-        List<UserSessionRepresentation> reps = new ArrayList<UserSessionRepresentation>();
+        List<UserSessionRepresentation> reps = new ArrayList<>();
         for (UserSessionModel session : sessions) {
             UserSessionRepresentation rep = ModelToRepresentation.toRepresentation(session);
 
@@ -379,7 +374,7 @@ public class UserResource {
 
     private List<FederatedIdentityRepresentation> getFederatedIdentities(UserModel user) {
         Set<FederatedIdentityModel> identities = session.users().getFederatedIdentities(user, realm);
-        List<FederatedIdentityRepresentation> result = new ArrayList<FederatedIdentityRepresentation>();
+        List<FederatedIdentityRepresentation> result = new ArrayList<>();
 
         for (FederatedIdentityModel identity : identities) {
             for (IdentityProviderModel identityProviderModel : realm.getIdentityProviders()) {

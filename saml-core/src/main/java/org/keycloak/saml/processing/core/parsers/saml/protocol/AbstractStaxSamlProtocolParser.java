@@ -26,7 +26,7 @@ import javax.xml.namespace.QName;
  */
 public abstract class AbstractStaxSamlProtocolParser<T> extends AbstractStaxParser<T, SAMLProtocolQNames> {
 
-    protected static final QNameEnumLookup<SAMLProtocolQNames> LOOKUP = new QNameEnumLookup(SAMLProtocolQNames.values());
+    protected static final QNameEnumLookup<SAMLProtocolQNames> LOOKUP = new QNameEnumLookup<>(SAMLProtocolQNames.values());
 
     public AbstractStaxSamlProtocolParser(SAMLProtocolQNames expectedStartElement) {
         super(expectedStartElement.getQName(), SAMLProtocolQNames.UNKNOWN_ELEMENT);

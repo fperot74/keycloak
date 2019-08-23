@@ -44,7 +44,7 @@ public class FileSystemProviderLoaderFactory implements ProviderLoaderFactory {
 
     private static URLClassLoader createClassLoader(ClassLoader parent, String... files) {
         try {
-            List<URL> urls = new LinkedList<URL>();
+            List<URL> urls = new LinkedList<>();
 
             for (String f : files) {
                 if (f.endsWith("*")) {

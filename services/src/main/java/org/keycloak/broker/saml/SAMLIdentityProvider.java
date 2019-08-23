@@ -186,13 +186,12 @@ public class SAMLIdentityProvider extends AbstractIdentityProvider<SAMLIdentityP
     }
 
     protected SAML2LogoutRequestBuilder buildLogoutRequest(UserSessionModel userSession, UriInfo uriInfo, RealmModel realm, String singleLogoutServiceUrl) {
-        SAML2LogoutRequestBuilder logoutBuilder = new SAML2LogoutRequestBuilder()
+        return new SAML2LogoutRequestBuilder()
                 .assertionExpiration(realm.getAccessCodeLifespan())
                 .issuer(getEntityId(uriInfo, realm))
                 .sessionIndex(userSession.getNote(SAMLEndpoint.SAML_FEDERATED_SESSION_INDEX))
                 .nameId(NameIDType.deserializeFromString(userSession.getNote(SAMLEndpoint.SAML_FEDERATED_SUBJECT_NAMEID)))
                 .destination(singleLogoutServiceUrl);
-        return logoutBuilder;
     }
 
     private JaxrsSAML2BindingBuilder buildLogoutBinding(KeycloakSession session, UserSessionModel userSession, RealmModel realm) {

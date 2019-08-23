@@ -27,7 +27,6 @@ import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.UserModelDelegate;
 import org.keycloak.models.utils.reflection.Property;
-import org.keycloak.models.utils.reflection.PropertyCriteria;
 import org.keycloak.models.utils.reflection.PropertyQueries;
 import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.ldap.LDAPStorageProvider;
@@ -35,7 +34,6 @@ import org.keycloak.storage.ldap.idm.model.LDAPObject;
 import org.keycloak.storage.ldap.idm.query.Condition;
 import org.keycloak.storage.ldap.idm.query.internal.LDAPQuery;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -56,18 +54,9 @@ public class UserAttributeLDAPStorageMapper extends AbstractLDAPStorageMapper {
     private static final Map<String, Property<Object>> userModelProperties;
 
     static {
-        Map<String, Property<Object>> userModelProps = PropertyQueries.createQuery(UserModel.class).addCriteria(new PropertyCriteria() {
-
-            @Override
-            public boolean methodMatches(Method m) {
-                if ((m.getName().startsWith("get") || m.getName().startsWith("is")) && m.getParameterTypes().length > 0) {
-                    return false;
-                }
-
-                return true;
-            }
-
-        }).getResultList();
+        Map<String, Property<Object>> userModelProps = PropertyQueries.createQuery(UserModel.class).addCriteria(m ->
+            !((m.getName().startsWith("get") || m.getName().startsWith("is")) && m.getParameterTypes().length > 0)
+        ).getResultList();
 
         // Convert to be keyed by lower-cased attribute names
         userModelProperties = new HashMap<>();
@@ -136,7 +125,7 @@ public class UserAttributeLDAPStorageMapper extends AbstractLDAPStorageMapper {
                 if (isMandatoryInLdap) {
                     ldapUser.setSingleAttribute(ldapAttrName, LDAPConstants.EMPTY_ATTRIBUTE_VALUE);
                 } else {
-                    ldapUser.setAttribute(ldapAttrName, new LinkedHashSet<String>());
+                    ldapUser.setAttribute(ldapAttrName, new LinkedHashSet<>());
                 }
             } else {
                 ldapUser.setSingleAttribute(ldapAttrName, attrValue.toString());
@@ -146,7 +135,7 @@ public class UserAttributeLDAPStorageMapper extends AbstractLDAPStorageMapper {
             // we don't have java property. Let's set attribute
             List<String> attrValues = localUser.getAttribute(userModelAttrName);
 
-            if (attrValues.size() == 0) {
+            if (attrValues.isEmpty()) {
                 if (isMandatoryInLdap) {
                     ldapUser.setSingleAttribute(ldapAttrName, LDAPConstants.EMPTY_ATTRIBUTE_VALUE);
                 } else {
@@ -276,6 +265,7 @@ public class UserAttributeLDAPStorageMapper extends AbstractLDAPStorageMapper {
                         } else if (value instanceof String) {
                             ldapUser.setSingleAttribute(ldapAttrName, (String) value);
                         } else {
+                            @SuppressWarnings("unchecked")
                             List<String> asList = (List<String>) value;
                             if (asList.isEmpty() && isMandatoryInLdap) {
                                 ldapUser.setSingleAttribute(ldapAttrName, LDAPConstants.EMPTY_ATTRIBUTE_VALUE);

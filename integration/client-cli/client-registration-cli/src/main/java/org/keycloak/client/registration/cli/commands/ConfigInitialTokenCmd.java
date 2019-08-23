@@ -72,18 +72,15 @@ public class ConfigInitialTokenCmd extends AbstractAuthOptionsCmd implements Com
             String arg = it.next();
             switch (arg) {
                 case "-d":
-                case "--delete": {
+                case "--delete":
                     delete = true;
                     break;
-                }
                 case "-k":
-                case "--keep-domain": {
+                case "--keep-domain":
                     keepDomain = true;
                     break;
-                }
-                default: {
+                default:
                     args.add(arg);
-                }
             }
         }
 
@@ -146,6 +143,7 @@ public class ConfigInitialTokenCmd extends AbstractAuthOptionsCmd implements Com
         return EOL + "Try '" + CMD + " help config initial-token' for more information";
     }
 
+    @Override
     protected String help() {
         return usage();
     }

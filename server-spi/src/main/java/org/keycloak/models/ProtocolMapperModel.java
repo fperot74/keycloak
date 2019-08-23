@@ -84,9 +84,7 @@ public class ProtocolMapperModel implements Serializable {
 
         ProtocolMapperModel that = (ProtocolMapperModel) o;
 
-        if (!id.equals(that.id)) return false;
-
-        return true;
+        return id.equals(that.id);
     }
 
     @Override

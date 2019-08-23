@@ -71,7 +71,7 @@ public class AuthorizationResource {
             throw new IllegalArgumentException("Authorization request must not be null");
         }
 
-        Callable<AuthorizationResponse> callable = new Callable<AuthorizationResponse>() {
+        Callable<AuthorizationResponse> callable = new Callable<>() {
             @Override
             public AuthorizationResponse call() throws Exception {
                 request.setAudience(configuration.getResource());

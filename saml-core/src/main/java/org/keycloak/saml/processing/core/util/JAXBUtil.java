@@ -49,7 +49,7 @@ public class JAXBUtil {
 
     public static final String W3C_XML_SCHEMA_NS_URI = "http://www.w3.org/2001/XMLSchema";
 
-    private static final HashMap<String, JAXBContext> jaxbContextHash = new HashMap<String, JAXBContext>();
+    private static final HashMap<String, JAXBContext> jaxbContextHash = new HashMap<>();
 
     static {
         // Useful on Sun VMs. Harmless on other VMs.
@@ -192,8 +192,7 @@ public class JAXBUtil {
         if (schemaURL == null)
             throw logger.nullValueError("Schema URL :" + schemaLocation);
         SchemaFactory scFact = getSchemaFactory();
-        Schema schema = scFact.newSchema(schemaURL);
-        return schema;
+        return scFact.newSchema(schemaURL);
     }
 
     private static SchemaFactory getSchemaFactory() {

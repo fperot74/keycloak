@@ -60,8 +60,7 @@ public class HardcodedRoleMapper extends AbstractIdentityProviderMapper {
         return "Hardcoded Role";
     }
 
-    public static final String[] COMPATIBLE_PROVIDERS = {ANY_PROVIDER};
-
+    private static final String[] COMPATIBLE_PROVIDERS = {ANY_PROVIDER};
 
     public static final String PROVIDER_ID = "oidc-hardcoded-role-idp-mapper";
 

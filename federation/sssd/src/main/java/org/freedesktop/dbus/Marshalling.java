@@ -37,7 +37,7 @@ import static org.freedesktop.dbus.Gettext.getString;
  * Contains static methods for marshalling values.
  */
 public class Marshalling {
-    private static Map<Type, String[]> typeCache = new HashMap<Type, String[]>();
+    private static Map<Type, String[]> typeCache = new HashMap<>();
 
     /**
      * Will return the DBus type corresponding to the given Java type.
@@ -166,7 +166,7 @@ public class Marshalling {
                 out[level].append((char) Message.ArgumentType.OBJECT_PATH);
             } else if (Tuple.class.isAssignableFrom((Class<? extends Object>) p.getRawType())) {
                 Type[] ts = p.getActualTypeArguments();
-                Vector<String> vs = new Vector<String>();
+                Vector<String> vs = new Vector<>();
                 for (Type t : ts)
                     for (String s : recursiveGetDBusType(t, false, level + 1))
                         vs.add(s);
@@ -266,7 +266,7 @@ public class Marshalling {
                             else if (Message.ArgumentType.STRUCT1 == dbus.charAt(j)) c++;
                         }
 
-                        Vector<Type> contained = new Vector<Type>();
+                        Vector<Type> contained = new Vector<>();
                         int c = getJavaType(dbus.substring(i + 1, j - 1), contained, -1);
                         rv.add(new DBusStructType(contained.toArray(new Type[0])));
                         i = j;
@@ -419,7 +419,7 @@ public class Marshalling {
                 && ((Class) type).isArray()
                 && ((Class) type).getComponentType().equals(Type.class)
                 && parameter instanceof String) {
-            Vector<Type> rv = new Vector<Type>();
+            Vector<Type> rv = new Vector<>();
             getJavaType((String) parameter, rv, -1);
             parameter = rv.toArray(new Type[0]);
         }

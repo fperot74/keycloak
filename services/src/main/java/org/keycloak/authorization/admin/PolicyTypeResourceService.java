@@ -21,8 +21,6 @@ import java.io.IOException;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.model.Policy;
 import org.keycloak.authorization.model.ResourceServer;
-import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
-import org.keycloak.common.util.reflections.Types;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentation;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
@@ -41,6 +39,7 @@ public class PolicyTypeResourceService extends PolicyResourceService {
     @Override
     protected AbstractPolicyRepresentation doCreateRepresentation(String payload) {
         String type = getPolicy().getType();
+        @SuppressWarnings("unchecked")
         Class<? extends AbstractPolicyRepresentation> representationType = authorization.getProviderFactory(type).getRepresentationType();
 
         if (representationType == null) {

@@ -146,7 +146,7 @@ public class KerberosFederationProvider implements UserStorageProvider,
 
     @Override
     public Set<String> getDisableableCredentialTypes(RealmModel realm, UserModel user) {
-        return Collections.EMPTY_SET;
+        return Collections.emptySet();
     }
 
     @Override
@@ -193,7 +193,7 @@ public class KerberosFederationProvider implements UserStorageProvider,
 
             spnegoAuthenticator.authenticate();
 
-            Map<String, String> state = new HashMap<String, String>();
+            Map<String, String> state = new HashMap<>();
             if (spnegoAuthenticator.isAuthenticated()) {
                 String username = spnegoAuthenticator.getAuthenticatedUsername();
                 UserModel user = findOrCreateAuthenticatedUser(realm, username);

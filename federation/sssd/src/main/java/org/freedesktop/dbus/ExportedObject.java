@@ -50,8 +50,8 @@ class ExportedObject {
 
     @SuppressWarnings("unchecked")
     private Map<MethodTuple, Method> getExportedMethods(Class c) throws DBusException {
-        if (DBusInterface.class.equals(c)) return new HashMap<MethodTuple, Method>();
-        Map<MethodTuple, Method> m = new HashMap<MethodTuple, Method>();
+        if (DBusInterface.class.equals(c)) return new HashMap<>();
+        Map<MethodTuple, Method> m = new HashMap<>();
         for (Class i : c.getInterfaces())
             if (DBusInterface.class.equals(i)) {
                 // add this class's public methods

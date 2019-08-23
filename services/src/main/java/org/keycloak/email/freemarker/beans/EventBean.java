@@ -51,7 +51,7 @@ public class EventBean {
     }
 
     public List<DetailBean> getDetails() {
-        List<DetailBean> details = new LinkedList<DetailBean>();
+        List<DetailBean> details = new LinkedList<>();
         for (Map.Entry<String, String> e : event.getDetails().entrySet()) {
             details.add(new DetailBean(e));
         }

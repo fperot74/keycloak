@@ -46,7 +46,7 @@ public class KeycloakSpringBootProperties extends AdapterConfig {
     /**
      * To provide Java EE security constraints
      */
-    private List<SecurityConstraint> securityConstraints = new ArrayList<SecurityConstraint>();
+    private List<SecurityConstraint> securityConstraints = new ArrayList<>();
 
     public boolean isEnabled() {
         return enabled;
@@ -64,8 +64,8 @@ public class KeycloakSpringBootProperties extends AdapterConfig {
         /**
          * A list of security collections
          */
-        private List<SecurityCollection> securityCollections = new ArrayList<SecurityCollection>();
-        private List<String> authRoles = new ArrayList<String>();
+        private List<SecurityCollection> securityCollections = new ArrayList<>();
+        private List<String> authRoles = new ArrayList<>();
 
         public List<String> getAuthRoles() {
             return authRoles;
@@ -101,15 +101,15 @@ public class KeycloakSpringBootProperties extends AdapterConfig {
         /**
          * A list of URL patterns that should match to apply the security collection
          */
-        private List<String> patterns = new ArrayList<String>();
+        private List<String> patterns = new ArrayList<>();
         /**
          * A list of HTTP methods that applies for this security collection
          */
-        private List<String> methods = new ArrayList<String>();
+        private List<String> methods = new ArrayList<>();
         /**
          * A list of HTTP methods that will be omitted for this security collection
          */
-        private List<String> omittedMethods = new ArrayList<String>();
+        private List<String> omittedMethods = new ArrayList<>();
 
         public List<String> getPatterns() {
             return patterns;

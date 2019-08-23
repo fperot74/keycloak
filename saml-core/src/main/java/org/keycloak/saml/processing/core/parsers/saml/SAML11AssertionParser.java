@@ -26,7 +26,6 @@ import org.keycloak.dom.saml.v1.assertion.SAML11SubjectType;
 import org.keycloak.saml.common.PicketLinkLogger;
 import org.keycloak.saml.common.PicketLinkLoggerFactory;
 import org.keycloak.saml.common.constants.JBossSAMLConstants;
-import org.keycloak.saml.common.constants.JBossSAMLURIConstants;
 import org.keycloak.saml.common.exceptions.ConfigurationException;
 import org.keycloak.saml.common.exceptions.ParsingException;
 import org.keycloak.saml.common.exceptions.ProcessingException;
@@ -57,7 +56,7 @@ public class SAML11AssertionParser implements StaxParser {
 
     private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
 
-    private final String ASSERTION = JBossSAMLConstants.ASSERTION.get();
+    private final QName ASSERTION = new QName(JBossSAMLConstants.ASSERTION.get());
 
     public SAML11AssertionType fromElement(Element element) throws ConfigurationException, ProcessingException,
             ParsingException {

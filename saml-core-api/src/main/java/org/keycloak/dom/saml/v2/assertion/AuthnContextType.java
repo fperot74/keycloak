@@ -59,11 +59,11 @@ import java.util.Set;
  */
 public class AuthnContextType implements Serializable {
 
-    private final Set<URI> authenticatingAuthority = new LinkedHashSet<URI>();
+    private final Set<URI> authenticatingAuthority = new LinkedHashSet<>();
 
     private AuthnContextTypeSequence sequence;
 
-    private final Set<URIType> URITypes = new HashSet<URIType>();
+    private final Set<URIType> URITypes = new HashSet<>();
 
     /**
      * Add an authenticating authority
@@ -166,7 +166,7 @@ public class AuthnContextType implements Serializable {
 
         private AuthnContextDeclType authnContextDecl;
 
-        private final Set<URIType> URITypes = new HashSet<URIType>();
+        private final Set<URIType> URITypes = new HashSet<>();
 
         public AuthnContextClassRefType getClassRef() {
             return classRef;

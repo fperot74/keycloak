@@ -36,7 +36,7 @@ import java.util.Map;
  */
 public class HardcodedClaim extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper, UserInfoTokenMapper {
 
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
     public static final String CLAIM_VALUE = "claim.value";
 
@@ -54,7 +54,7 @@ public class HardcodedClaim extends AbstractOIDCProtocolMapper implements OIDCAc
         OIDCAttributeMapperHelper.addIncludeInTokensConfig(configProperties, HardcodedClaim.class);
     }
 
-    public static final String PROVIDER_ID = "oidc-hardcoded-claim-mapper";
+    private static final String PROVIDER_ID = "oidc-hardcoded-claim-mapper";
 
 
     public List<ProviderConfigProperty> getConfigProperties() {
@@ -96,7 +96,7 @@ public class HardcodedClaim extends AbstractOIDCProtocolMapper implements OIDCAc
         mapper.setName(name);
         mapper.setProtocolMapper(PROVIDER_ID);
         mapper.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
-        Map<String, String> config = new HashMap<String, String>();
+        Map<String, String> config = new HashMap<>();
         config.put(OIDCAttributeMapperHelper.TOKEN_CLAIM_NAME, hardcodedName);
         config.put(CLAIM_VALUE, hardcodedValue);
         config.put(OIDCAttributeMapperHelper.JSON_TYPE, claimType);

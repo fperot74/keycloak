@@ -320,7 +320,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
         event.success();
 
         try {
-            IdentityProvider identityProvider = getIdentityProvider(session, realmModel, providerId);
+            IdentityProvider<?> identityProvider = getIdentityProvider(session, realmModel, providerId);
             Response response = identityProvider.performLogin(createAuthenticationRequest(providerId, clientSessionCode));
 
             if (response != null) {
@@ -592,11 +592,9 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
             event.error(Errors.USER_DISABLED);
             return ErrorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.ACCOUNT_DISABLED);
         }
-        if (realm.isBruteForceProtected()) {
-            if (session.getProvider(BruteForceProtector.class).isTemporarilyDisabled(session, realm, user)) {
-                event.error(Errors.USER_TEMPORARILY_DISABLED);
-                return ErrorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.ACCOUNT_DISABLED);
-            }
+        if (realm.isBruteForceProtected() && session.getProvider(BruteForceProtector.class).isTemporarilyDisabled(session, realm, user)) {
+            event.error(Errors.USER_TEMPORARILY_DISABLED);
+            return ErrorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.ACCOUNT_DISABLED);
         }
         return null;
     }
@@ -1146,7 +1144,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
 
         fireErrorEvent(message, throwable);
 
-        if (throwable != null && throwable instanceof WebApplicationException) {
+        if (throwable instanceof WebApplicationException) {
             WebApplicationException webEx = (WebApplicationException) throwable;
             return webEx.getResponse();
         }

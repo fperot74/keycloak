@@ -427,7 +427,7 @@ public class SamlProtocol implements LoginProtocol {
                 loginResponseMappers.add(new ProtocolMapperProcessor<SAMLLoginResponseMapper>((SAMLLoginResponseMapper) mapper, mapping));
             }
             if (mapper instanceof SAMLRoleListMapper) {
-                roleListMapper = new ProtocolMapperProcessor<SAMLRoleListMapper>((SAMLRoleListMapper) mapper, mapping);
+                roleListMapper = new ProtocolMapperProcessor<>((SAMLRoleListMapper) mapper, mapping);
             }
         }
 
@@ -447,7 +447,7 @@ public class SamlProtocol implements LoginProtocol {
             populateRoles(roleListMapper, session, userSession, clientSessionCtx, attributeStatement);
 
             // SAML Spec 2.7.3 AttributeStatement must contain one or more Attribute or EncryptedAttribute
-            if (attributeStatement.getAttributes().size() > 0) {
+            if (!attributeStatement.getAttributes().isEmpty()) {
                 AssertionType assertion = samlModel.getAssertions().get(0).getAssertion();
                 assertion.addStatement(attributeStatement);
             }
@@ -503,8 +503,8 @@ public class SamlProtocol implements LoginProtocol {
     }
 
     public static class ProtocolMapperProcessor<T> {
-        final public T mapper;
-        final public ProtocolMapperModel model;
+    	public final T mapper;
+    	public final ProtocolMapperModel model;
 
         public ProtocolMapperProcessor(T mapper, ProtocolMapperModel model) {
             this.mapper = mapper;
@@ -579,13 +579,7 @@ public class SamlProtocol implements LoginProtocol {
                 JaxrsSAML2BindingBuilder binding = createBindingBuilder(samlClient);
                 return binding.redirectBinding(logoutBuilder.buildDocument()).request(bindingUri);
             }
-        } catch (ConfigurationException e) {
-            throw new RuntimeException(e);
-        } catch (ProcessingException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (ParsingException e) {
+        } catch (ConfigurationException | ProcessingException| IOException | ParsingException e) {
             throw new RuntimeException(e);
         }
 
@@ -632,9 +626,7 @@ public class SamlProtocol implements LoginProtocol {
         } catch (ConfigurationException | ProcessingException  | IOException e) {
             throw new RuntimeException(e);
         }
-        if (logoutBindingUri != null) {
-            event.detail(Details.REDIRECT_URI, logoutBindingUri);
-        }
+        event.detail(Details.REDIRECT_URI, logoutBindingUri);
         event.event(EventType.LOGOUT)
                 .detail(Details.AUTH_METHOD, userSession.getAuthMethod())
                 .client(session.getContext().getClient())
@@ -679,7 +671,7 @@ public class SamlProtocol implements LoginProtocol {
         HttpClient httpClient = session.getProvider(HttpClientProvider.class).getHttpClient();
         for (int i = 0; i < 2; i++) { // follow redirects once
             try {
-                List<NameValuePair> formparams = new ArrayList<NameValuePair>();
+                List<NameValuePair> formparams = new ArrayList<>();
                 formparams.add(new BasicNameValuePair(GeneralConstants.SAML_REQUEST_KEY, logoutRequestString));
                 formparams.add(new BasicNameValuePair("BACK_CHANNEL_LOGOUT", "BACK_CHANNEL_LOGOUT")); // for Picketlink
                                                                                                       // todo remove

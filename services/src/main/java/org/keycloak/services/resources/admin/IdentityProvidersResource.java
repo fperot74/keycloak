@@ -114,8 +114,7 @@ public class IdentityProvidersResource {
         InputPart file = formDataMap.get("file").get(0);
         InputStream inputStream = file.getBody(InputStream.class, null);
         IdentityProviderFactory providerFactory = getProviderFactorytById(providerId);
-        Map<String, String> config = providerFactory.parseConfig(session, inputStream);
-        return config;
+        return providerFactory.parseConfig(session, inputStream);
     }
 
     /**
@@ -139,9 +138,7 @@ public class IdentityProvidersResource {
         InputStream inputStream = session.getProvider(HttpClientProvider.class).get(from);
         try {
             IdentityProviderFactory providerFactory = getProviderFactorytById(providerId);
-            Map<String, String> config;
-            config = providerFactory.parseConfig(session, inputStream);
-            return config;
+            return providerFactory.parseConfig(session, inputStream);
         } finally {
             try {
                 inputStream.close();
@@ -162,7 +159,7 @@ public class IdentityProvidersResource {
     public List<IdentityProviderRepresentation> getIdentityProviders() {
         this.auth.realm().requireViewIdentityProviders();
 
-        List<IdentityProviderRepresentation> representations = new ArrayList<IdentityProviderRepresentation>();
+        List<IdentityProviderRepresentation> representations = new ArrayList<>();
 
         for (IdentityProviderModel identityProviderModel : realm.getIdentityProviders()) {
             representations.add(StripSecretsUtils.strip(ModelToRepresentation.toRepresentation(realm, identityProviderModel)));
@@ -214,20 +211,15 @@ public class IdentityProvidersResource {
         return identityProviderResource;
     }
 
-    private IdentityProviderFactory getProviderFactorytById(String providerId) {
+    @SuppressWarnings("rawtypes")
+	private IdentityProviderFactory getProviderFactorytById(String providerId) {
         List<ProviderFactory> allProviders = getProviderFactories();
-
-        for (ProviderFactory providerFactory : allProviders) {
-            if (providerFactory.getId().equals(providerId)) {
-                return (IdentityProviderFactory) providerFactory;
-            }
-        }
-
-        return null;
+        return (IdentityProviderFactory) allProviders.stream().filter(p -> p.getId().equals(providerId)).findFirst().orElse(null);
     }
 
-    private List<ProviderFactory> getProviderFactories() {
-        List<ProviderFactory> allProviders = new ArrayList<ProviderFactory>();
+    @SuppressWarnings("rawtypes")
+	private List<ProviderFactory> getProviderFactories() {
+        List<ProviderFactory> allProviders = new ArrayList<>();
 
         allProviders.addAll(this.session.getKeycloakSessionFactory().getProviderFactories(IdentityProvider.class));
         allProviders.addAll(this.session.getKeycloakSessionFactory().getProviderFactories(SocialIdentityProvider.class));

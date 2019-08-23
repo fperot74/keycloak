@@ -34,7 +34,7 @@ public class UriUtils {
     }
 
     public static String getOrigin(String uri) {
-        String u = uri.toString();
+        String u = uri;
         int e = u.indexOf('/', 8);
         return e != -1 ? u.substring(0, u.indexOf('/', 8)) : u;
     }
@@ -44,7 +44,7 @@ public class UriUtils {
     }
 
     public static MultivaluedHashMap<String, String> decodeQueryString(String queryString) {
-        MultivaluedHashMap<String, String> map = new MultivaluedHashMap<String, String>();
+        MultivaluedHashMap<String, String> map = new MultivaluedHashMap<>();
         if (queryString == null || queryString.equals("")) return map;
 
         String[] params = queryString.split("&");

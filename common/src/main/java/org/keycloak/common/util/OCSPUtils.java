@@ -73,7 +73,7 @@ public final class OCSPUtils {
         BouncyIntegration.init();
     }
 
-    private final static Logger logger = Logger.getLogger(""+OCSPUtils.class);
+    private static final Logger logger = Logger.getLogger(""+OCSPUtils.class);
 
     private static int OCSP_CONNECT_TIMEOUT = 10000; // 10 sec
     private static final int TIME_SKEW = 900000;
@@ -125,7 +125,7 @@ public final class OCSPUtils {
             logger.log(Level.FINE, "CertificateEncodingException: {0}", e.getMessage());
             throw new CertPathValidatorException(e.getMessage(), e);
         }
-        if (responderURIs.size() == 0) {
+        if (responderURIs.isEmpty()) {
             logger.log(Level.INFO, "No OCSP responders in the specified certificate");
             throw new CertPathValidatorException("No OCSP Responder URI in certificate");
         }
@@ -179,7 +179,7 @@ public final class OCSPUtils {
                 throw new IOException(errorMessage);
             }
             //Get Response
-            in = (InputStream) con.getInputStream();
+            in = con.getInputStream();
             int contentLen = con.getContentLength();
             if (contentLen == -1) {
                 contentLen = Integer.MAX_VALUE;
@@ -214,7 +214,7 @@ public final class OCSPUtils {
      * @throws CertPathValidatorException
      */
     private static OCSPRevocationStatus check(X509Certificate cert, X509Certificate issuerCertificate, List<URI> responderURIs, X509Certificate responderCert, Date date) throws CertPathValidatorException {
-        if (responderURIs == null || responderURIs.size() == 0)
+        if (responderURIs == null || responderURIs.isEmpty())
             throw new IllegalArgumentException("Need at least one responder");
         try {
             DigestCalculator digCalc = new BcDigestCalculatorProvider()
@@ -315,13 +315,13 @@ public final class OCSPUtils {
         } catch (CertificateEncodingException e) {
             e.printStackTrace();
         }
-        if (certs.size() > 0) {
+        if (!certs.isEmpty()) {
 
             X500Name responderName = basicOcspResponse.getResponderId().toASN1Primitive().getName();
             byte[] responderKey = basicOcspResponse.getResponderId().toASN1Primitive().getKeyHash();
 
             if (responderName != null) {
-                logger.log(Level.INFO, "Responder Name: {0}", responderName.toString());
+                logger.log(Level.INFO, "Responder Name: {0}", responderName);
                 for (X509CertificateHolder certHolder : certs) {
                     try {
                         X509Certificate tempCert = new JcaX509CertificateConverter()
@@ -330,7 +330,7 @@ public final class OCSPUtils {
                         if (responderName.equals(respName)) {
                             signingCert = tempCert;
                             logger.log(Level.INFO, "Found a certificate whose principal \"{0}\" matches the responder name \"{1}\"",
-                                    new Object[] {tempCert.getSubjectDN().getName(), responderName.toString()});
+                                    new Object[] {tempCert.getSubjectDN().getName(), responderName});
                             break;
                         }
                     } catch (CertificateException e) {

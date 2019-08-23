@@ -27,7 +27,6 @@ import org.keycloak.connections.jpa.updater.JpaUpdaterProvider;
 import org.keycloak.connections.jpa.util.JpaUtils;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.models.KeycloakSessionTask;
 import org.keycloak.models.dblock.DBLockManager;
 import org.keycloak.models.dblock.DBLockProvider;
 import org.keycloak.models.utils.KeycloakModelUtils;
@@ -119,10 +118,8 @@ public class DefaultJpaConnectionProviderFactory implements JpaConnectionProvide
 
     protected void checkJtaEnabled(KeycloakSessionFactory factory) {
         jtaLookup = (JtaTransactionManagerLookup) factory.getProviderFactory(JtaTransactionManagerLookup.class);
-        if (jtaLookup != null) {
-            if (jtaLookup.getTransactionManager() != null) {
-                jtaEnabled = true;
-            }
+        if (jtaLookup != null && jtaLookup.getTransactionManager() != null) {
+            jtaEnabled = true;
         }
     }
 
@@ -287,7 +284,7 @@ public class DefaultJpaConnectionProviderFactory implements JpaConnectionProvide
     protected void startGlobalStats(KeycloakSession session, int globalStatsIntervalSecs) {
         logger.debugf("Started Hibernate statistics with the interval %s seconds", globalStatsIntervalSecs);
         TimerProvider timer = session.getProvider(TimerProvider.class);
-        timer.scheduleTask(new HibernateStatsReporter(emf), globalStatsIntervalSecs * 1000, "ReportHibernateGlobalStats");
+        timer.scheduleTask(new HibernateStatsReporter(emf), globalStatsIntervalSecs * 1000L, "ReportHibernateGlobalStats");
     }
 
     void migration(MigrationStrategy strategy, boolean initializeEmpty, String schema, File databaseUpdateFile, Connection connection, KeycloakSession session) {
@@ -326,33 +323,27 @@ public class DefaultJpaConnectionProviderFactory implements JpaConnectionProvide
     }
 
     protected void update(Connection connection, String schema, KeycloakSession session, JpaUpdaterProvider updater) {
-        KeycloakModelUtils.runJobInTransaction(session.getKeycloakSessionFactory(), new KeycloakSessionTask() {
-            @Override
-            public void run(KeycloakSession lockSession) {
-                DBLockManager dbLockManager = new DBLockManager(lockSession);
-                DBLockProvider dbLock2 = dbLockManager.getDBLock();
-                dbLock2.waitForLock(DBLockProvider.Namespace.DATABASE);
-                try {
-                    updater.update(connection, schema);
-                } finally {
-                    dbLock2.releaseLock();
-                }
+        KeycloakModelUtils.runJobInTransaction(session.getKeycloakSessionFactory(), lockSession -> {
+            DBLockManager dbLockManager = new DBLockManager(lockSession);
+            DBLockProvider dbLock2 = dbLockManager.getDBLock();
+            dbLock2.waitForLock(DBLockProvider.Namespace.DATABASE);
+            try {
+                updater.update(connection, schema);
+            } finally {
+                dbLock2.releaseLock();
             }
         });
     }
 
     protected void export(Connection connection, String schema, File databaseUpdateFile, KeycloakSession session, JpaUpdaterProvider updater) {
-        KeycloakModelUtils.runJobInTransaction(session.getKeycloakSessionFactory(), new KeycloakSessionTask() {
-            @Override
-            public void run(KeycloakSession lockSession) {
-                DBLockManager dbLockManager = new DBLockManager(lockSession);
-                DBLockProvider dbLock2 = dbLockManager.getDBLock();
-                dbLock2.waitForLock(DBLockProvider.Namespace.DATABASE);
-                try {
-                    updater.export(connection, schema, databaseUpdateFile);
-                } finally {
-                    dbLock2.releaseLock();
-                }
+        KeycloakModelUtils.runJobInTransaction(session.getKeycloakSessionFactory(), lockSession -> {
+            DBLockManager dbLockManager = new DBLockManager(lockSession);
+            DBLockProvider dbLock2 = dbLockManager.getDBLock();
+            dbLock2.waitForLock(DBLockProvider.Namespace.DATABASE);
+            try {
+                updater.export(connection, schema, databaseUpdateFile);
+            } finally {
+                dbLock2.releaseLock();
             }
         });
     }

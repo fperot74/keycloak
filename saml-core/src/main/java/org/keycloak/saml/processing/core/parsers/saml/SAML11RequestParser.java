@@ -23,7 +23,6 @@ import org.keycloak.dom.saml.v1.protocol.SAML11RequestType;
 import org.keycloak.saml.common.PicketLinkLogger;
 import org.keycloak.saml.common.PicketLinkLoggerFactory;
 import org.keycloak.saml.common.constants.JBossSAMLConstants;
-import org.keycloak.saml.common.constants.JBossSAMLURIConstants;
 import org.keycloak.saml.common.exceptions.ParsingException;
 import org.keycloak.saml.common.util.StaxParserUtil;
 import org.keycloak.saml.processing.core.parsers.util.SAML11ParserUtil;
@@ -67,7 +66,7 @@ public class SAML11RequestParser implements StaxParser {
     public Object parse(XMLEventReader xmlEventReader) throws ParsingException {
         // Get the startelement
         StartElement startElement = StaxParserUtil.getNextStartElement(xmlEventReader);
-        StaxParserUtil.validate(startElement, SAML11Constants.REQUEST);
+        StaxParserUtil.validate(startElement, new QName(SAML11Constants.REQUEST));
 
         SAML11RequestType request = parseRequiredAttributes(startElement);
 

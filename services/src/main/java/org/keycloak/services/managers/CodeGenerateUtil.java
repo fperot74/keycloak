@@ -20,27 +20,17 @@ package org.keycloak.services.managers;
 import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.function.Supplier;
-
-import javax.crypto.SecretKey;
 
 import org.jboss.logging.Logger;
 import org.keycloak.common.util.Base64Url;
-import org.keycloak.common.util.Time;
-import org.keycloak.events.Details;
 import org.keycloak.events.EventBuilder;
-import org.keycloak.jose.jwe.JWEException;
-import org.keycloak.models.AuthenticatedClientSessionModel;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.CodeToTokenStoreProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserSessionModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.sessions.CommonClientSessionModel;
 import org.keycloak.sessions.AuthenticationSessionModel;
-import org.keycloak.util.TokenUtil;
 
 /**
  * TODO: Remove this and probably also ClientSessionParser. It's uneccessary genericity and abstraction, which is not needed anymore when clientSessionModel was fully removed.
@@ -56,20 +46,12 @@ class CodeGenerateUtil {
     private static final Map<Class<? extends CommonClientSessionModel>, Supplier<ClientSessionParser>> PARSERS = new HashMap<>();
 
     static {
-        PARSERS.put(AuthenticationSessionModel.class, () -> {
-            return new AuthenticationSessionModelParser();
-        });
+        PARSERS.put(AuthenticationSessionModel.class, AuthenticationSessionModelParser::new);
     }
 
-
-
+    @SuppressWarnings("unchecked")
     static <CS extends CommonClientSessionModel> ClientSessionParser<CS> getParser(Class<CS> clientSessionClass) {
-        for (Class<?> c : PARSERS.keySet()) {
-            if (c.isAssignableFrom(clientSessionClass)) {
-                return PARSERS.get(c).get();
-            }
-        }
-        return null;
+        return PARSERS.entrySet().stream().filter(e -> e.getKey().isAssignableFrom(clientSessionClass)).map(e -> e.getValue().get()).findFirst().orElse(null);
     }
 
 

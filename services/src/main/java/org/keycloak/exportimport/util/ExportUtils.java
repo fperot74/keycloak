@@ -30,6 +30,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.keycloak.authorization.AuthorizationProvider;
@@ -48,7 +50,6 @@ import org.keycloak.credential.CredentialModel;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.ClientScopeModel;
 import org.keycloak.models.FederatedIdentityModel;
-import org.keycloak.models.GroupModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RoleContainerModel;
@@ -93,6 +94,22 @@ public class ExportUtils {
         return exportRealm(session, realm, opts, internal);
     }
 
+    private static <T,R> List<R> mapList(Collection<T> source, Function<T, R> mapper) {
+        return source.stream().map(mapper).collect(Collectors.toList());
+    }
+
+    private static <T,R> LinkedList<R> mapLinkedList(Collection<T> source, Function<T, R> mapper) {
+        LinkedList<R> res = new LinkedList<>();
+        res.addAll(source.stream().map(mapper).collect(Collectors.toList()));
+        return res;
+    }
+
+    private static <T> void whenNotEmpty(List<T> list, Consumer<List<T>> consumer) {
+        if (!list.isEmpty()) {
+            consumer.accept(list);
+        }
+    }
+
     public static RealmRepresentation exportRealm(KeycloakSession session, RealmModel realm, ExportOptions options, boolean internal) {
         RealmRepresentation rep = ModelToRepresentation.toRepresentation(realm, internal);
         ModelToRepresentation.exportAuthenticationFlows(realm, rep);
@@ -103,21 +120,13 @@ public class ExportUtils {
 
         // Client Scopes
         List<ClientScopeModel> clientScopeModels = realm.getClientScopes();
-        List<ClientScopeRepresentation> clientScopesReps = new ArrayList<>();
-        for (ClientScopeModel app : clientScopeModels) {
-            ClientScopeRepresentation clientRep = ModelToRepresentation.toRepresentation(app);
-            clientScopesReps.add(clientRep);
-        }
+        List<ClientScopeRepresentation> clientScopesReps = mapList(clientScopeModels, ModelToRepresentation::toRepresentation);
         rep.setClientScopes(clientScopesReps);
 
-        List<String> defaultClientScopeNames = realm.getDefaultClientScopes(true).stream().map((ClientScopeModel clientScope) -> {
-            return clientScope.getName();
-        }).collect(Collectors.toList());
+        List<String> defaultClientScopeNames = mapList(realm.getDefaultClientScopes(true), ClientScopeModel::getName);
         rep.setDefaultDefaultClientScopes(defaultClientScopeNames);
 
-        List<String> optionalClientScopeNames = realm.getDefaultClientScopes(false).stream().map((ClientScopeModel clientScope) -> {
-            return clientScope.getName();
-        }).collect(Collectors.toList());
+        List<String> optionalClientScopeNames = mapList(realm.getDefaultClientScopes(false), ClientScopeModel::getName);
         rep.setDefaultOptionalClientScopes(optionalClientScopeNames);
 
         // Clients
@@ -125,11 +134,7 @@ public class ExportUtils {
 
         if (options.isClientsIncluded()) {
             clients = realm.getClients();
-            List<ClientRepresentation> clientReps = new ArrayList<>();
-            for (ClientModel app : clients) {
-                ClientRepresentation clientRep = exportClient(session, app);
-                clientReps.add(clientRep);
-            }
+            List<ClientRepresentation> clientReps = mapList(clients, app -> exportClient(session, app));
             rep.setClients(clientReps);
         }
 
@@ -138,10 +143,9 @@ public class ExportUtils {
             ModelToRepresentation.exportGroups(realm, rep);
 
             List<RoleRepresentation> realmRoleReps = null;
-            Map<String, List<RoleRepresentation>> clientRolesReps = new HashMap<>();
 
             Set<RoleModel> realmRoles = realm.getRoles();
-            if (realmRoles != null && realmRoles.size() > 0) {
+            if (realmRoles != null && !realmRoles.isEmpty()) {
                 realmRoleReps = exportRoles(realmRoles);
             }
 
@@ -151,12 +155,8 @@ public class ExportUtils {
             }
 
             if (options.isClientsIncluded()) {
-                for (ClientModel client : clients) {
-                    Set<RoleModel> currentAppRoles = client.getRoles();
-                    List<RoleRepresentation> currentAppRoleReps = exportRoles(currentAppRoles);
-                    clientRolesReps.put(client.getClientId(), currentAppRoleReps);
-                }
-                if (clientRolesReps.size() > 0) {
+                Map<String, List<RoleRepresentation>> clientRolesReps = clients.stream().collect(Collectors.toMap(ClientModel::getId, c -> exportRoles(c.getRoles())));
+                if (!clientRolesReps.isEmpty()) {
                     rolesRep.setClient(clientRolesReps);
                 }
             }
@@ -182,24 +182,16 @@ public class ExportUtils {
                     } else {
                         ClientModel app = (ClientModel) scope.getContainer();
                         String appName = app.getClientId();
-                        List<ScopeMappingRepresentation> currentAppScopes = clientScopeReps.get(appName);
-                        if (currentAppScopes == null) {
-                            currentAppScopes = new ArrayList<>();
-                            clientScopeReps.put(appName, currentAppScopes);
-                        }
+                        List<ScopeMappingRepresentation> currentAppScopes = clientScopeReps.computeIfAbsent(appName, k -> new ArrayList<>());
 
-                        ScopeMappingRepresentation currentClientScope = null;
-                        for (ScopeMappingRepresentation scopeMapping : currentAppScopes) {
-                            if (client.getClientId().equals(scopeMapping.getClient())) {
-                                currentClientScope = scopeMapping;
-                                break;
-                            }
-                        }
-                        if (currentClientScope == null) {
-                            currentClientScope = new ScopeMappingRepresentation();
-                            currentClientScope.setClient(client.getClientId());
-                            currentAppScopes.add(currentClientScope);
-                        }
+                        ScopeMappingRepresentation currentClientScope = currentAppScopes.stream()
+                            .filter(s -> client.getClientId().equals(s.getClient()))
+                            .findAny().orElseGet(() -> {
+                                ScopeMappingRepresentation newScope = new ScopeMappingRepresentation();
+                                newScope.setClient(client.getClientId());
+                                currentAppScopes.add(newScope);
+                                return newScope;
+                            });
                         currentClientScope.role(scope.getName());
                     }
                 }
@@ -219,55 +211,35 @@ public class ExportUtils {
                 } else {
                     ClientModel app = (ClientModel)scope.getContainer();
                     String appName = app.getClientId();
-                    List<ScopeMappingRepresentation> currentAppScopes = clientScopeReps.get(appName);
-                    if (currentAppScopes == null) {
-                        currentAppScopes = new ArrayList<>();
-                        clientScopeReps.put(appName, currentAppScopes);
-                    }
+                    List<ScopeMappingRepresentation> currentAppScopes = clientScopeReps.computeIfAbsent(appName, k -> new ArrayList<>());
 
-                    ScopeMappingRepresentation currentClientTemplateScope = null;
-                    for (ScopeMappingRepresentation scopeMapping : currentAppScopes) {
-                        if (clientScope.getName().equals(scopeMapping.getClientScope())) {
-                            currentClientTemplateScope = scopeMapping;
-                            break;
-                        }
-                    }
-                    if (currentClientTemplateScope == null) {
-                        currentClientTemplateScope = new ScopeMappingRepresentation();
-                        currentClientTemplateScope.setClientScope(clientScope.getName());
-                        currentAppScopes.add(currentClientTemplateScope);
-                    }
+                    ScopeMappingRepresentation currentClientTemplateScope = currentAppScopes.stream()
+                        .filter(s -> clientScope.getName().equals(s.getClientScope()))
+                        .findAny().orElseGet(() -> {
+                            ScopeMappingRepresentation newScope = new ScopeMappingRepresentation();
+                            newScope.setClientScope(clientScope.getName());
+                            currentAppScopes.add(newScope);
+                            return newScope;
+                    });
                     currentClientTemplateScope.role(scope.getName());
                 }
             }
         }
 
-        if (clientScopeReps.size() > 0) {
+        if (!clientScopeReps.isEmpty()) {
             rep.setClientScopeMappings(clientScopeReps);
         }
 
         // Finally users if needed
         if (options.isUsersIncluded()) {
             List<UserModel> allUsers = session.users().getUsers(realm, true);
-            List<UserRepresentation> users = new LinkedList<>();
-            for (UserModel user : allUsers) {
-                UserRepresentation userRep = exportUser(session, realm, user, options);
-                users.add(userRep);
-            }
-
-            if (users.size() > 0) {
-                rep.setUsers(users);
-            }
+            List<UserRepresentation> users = mapLinkedList(allUsers, u -> exportUser(session, realm, u, options));
+            whenNotEmpty(users, rep::setUsers);
 
             List<UserRepresentation> federatedUsers = new LinkedList<>();
-            for (String userId : session.userFederatedStorage().getStoredUsers(realm, 0, -1)) {
-                UserRepresentation userRep = exportFederatedUser(session, realm, userId, options);
-                federatedUsers.add(userRep);
-            }
-            if (federatedUsers.size() > 0) {
-                rep.setFederatedUsers(federatedUsers);
-            }
-
+            federatedUsers.addAll(session.userFederatedStorage().getStoredUsers(realm, 0, -1).stream()
+                .map(uid -> exportFederatedUser(session, realm, uid, options)).collect(Collectors.toList()));
+            whenNotEmpty(federatedUsers, rep::setFederatedUsers);
         }
 
         // components
@@ -375,23 +347,21 @@ public class ExportUtils {
             rep.setConfig(config);
 
             Set<Scope> scopes = policy.getScopes();
-
             if (!scopes.isEmpty()) {
-                List<String> scopeNames = scopes.stream().map(Scope::getName).collect(Collectors.toList());
+                List<String> scopeNames = mapList(scopes, Scope::getName);
                 config.put("scopes", JsonSerialization.writeValueAsString(scopeNames));
             }
 
             Set<Resource> policyResources = policy.getResources();
 
             if (!policyResources.isEmpty()) {
-                List<String> resourceNames = policyResources.stream().map(Resource::getName).collect(Collectors.toList());
+                List<String> resourceNames = mapList(policyResources, Resource::getName);
                 config.put("resources", JsonSerialization.writeValueAsString(resourceNames));
             }
 
             Set<Policy> associatedPolicies = policy.getAssociatedPolicies();
-
             if (!associatedPolicies.isEmpty()) {
-                config.put("applyPolicies", JsonSerialization.writeValueAsString(associatedPolicies.stream().map(associated -> associated.getName()).collect(Collectors.toList())));
+                config.put("applyPolicies", JsonSerialization.writeValueAsString(associatedPolicies.stream().map(Policy::getName).collect(Collectors.toList())));
             }
 
             return rep;
@@ -401,21 +371,11 @@ public class ExportUtils {
     }
 
     public static List<RoleRepresentation> exportRoles(Collection<RoleModel> roles) {
-        List<RoleRepresentation> roleReps = new ArrayList<RoleRepresentation>();
-
-        for (RoleModel role : roles) {
-            RoleRepresentation roleRep = exportRole(role);
-            roleReps.add(roleRep);
-        }
-        return roleReps;
+        return mapList(roles, ExportUtils::exportRole);
     }
 
     public static List<String> getRoleNames(Collection<RoleModel> roles) {
-        List<String> roleNames = new ArrayList<String>();
-        for (RoleModel role : roles) {
-            roleNames.add(role.getName());
-        }
-        return roleNames;
+        return mapList(roles, RoleModel::getName);
     }
 
     /**
@@ -427,39 +387,27 @@ public class ExportUtils {
         RoleRepresentation roleRep = ModelToRepresentation.toRepresentation(role);
 
         Set<RoleModel> composites = role.getComposites();
-        if (composites != null && composites.size() > 0) {
-            Set<String> compositeRealmRoles = null;
-            Map<String, List<String>> compositeClientRoles = null;
+        if (composites != null && !composites.isEmpty()) {
+            Set<String> compositeRealmRoles = new HashSet<>();
+            Map<String, List<String>> compositeClientRoles = new HashMap<>();
 
             for (RoleModel composite : composites) {
                 RoleContainerModel crContainer = composite.getContainer();
                 if (crContainer instanceof RealmModel) {
-
-                    if (compositeRealmRoles == null) {
-                        compositeRealmRoles = new HashSet<>();
-                    }
                     compositeRealmRoles.add(composite.getName());
                 } else {
-                    if (compositeClientRoles == null) {
-                        compositeClientRoles = new HashMap<>();
-                    }
-
                     ClientModel app = (ClientModel)crContainer;
                     String appName = app.getClientId();
-                    List<String> currentAppComposites = compositeClientRoles.get(appName);
-                    if (currentAppComposites == null) {
-                        currentAppComposites = new ArrayList<>();
-                        compositeClientRoles.put(appName, currentAppComposites);
-                    }
-                    currentAppComposites.add(composite.getName());
+                    compositeClientRoles.computeIfAbsent(appName, k -> new ArrayList<>())
+                        .add(composite.getName());
                 }
             }
 
             RoleRepresentation.Composites compRep = new RoleRepresentation.Composites();
-            if (compositeRealmRoles != null) {
+            if (!compositeRealmRoles.isEmpty()) {
                 compRep.setRealm(compositeRealmRoles);
             }
-            if (compositeClientRoles != null) {
+            if (!compositeClientRoles.isEmpty()) {
                 compRep.setClient(compositeClientRoles);
             }
 
@@ -480,14 +428,8 @@ public class ExportUtils {
 
         // Social links
         Set<FederatedIdentityModel> socialLinks = session.users().getFederatedIdentities(user, realm);
-        List<FederatedIdentityRepresentation> socialLinkReps = new ArrayList<FederatedIdentityRepresentation>();
-        for (FederatedIdentityModel socialLink : socialLinks) {
-            FederatedIdentityRepresentation socialLinkRep = exportSocialLink(socialLink);
-            socialLinkReps.add(socialLinkRep);
-        }
-        if (socialLinkReps.size() > 0) {
-            userRep.setFederatedIdentities(socialLinkReps);
-        }
+        List<FederatedIdentityRepresentation> socialLinkReps = mapList(socialLinks, ExportUtils::exportSocialLink);
+        whenNotEmpty(socialLinkReps, userRep::setFederatedIdentities);
 
         // Role mappings
         Set<RoleModel> roles = user.getRoleMappings();
@@ -499,43 +441,26 @@ public class ExportUtils {
             } else {
                 ClientModel client = (ClientModel)role.getContainer();
                 String clientId = client.getClientId();
-                List<String> currentClientRoles = clientRoleNames.get(clientId);
-                if (currentClientRoles == null) {
-                    currentClientRoles = new ArrayList<>();
-                    clientRoleNames.put(clientId, currentClientRoles);
-                }
-
+                List<String> currentClientRoles = clientRoleNames.computeIfAbsent(clientId, k -> new ArrayList<>());
                 currentClientRoles.add(role.getName());
             }
         }
 
-        if (realmRoleNames.size() > 0) {
-            userRep.setRealmRoles(realmRoleNames);
-        }
-        if (clientRoleNames.size() > 0) {
+        whenNotEmpty(realmRoleNames, userRep::setRealmRoles);
+        if (!clientRoleNames.isEmpty()) {
             userRep.setClientRoles(clientRoleNames);
         }
 
         // Credentials
         List<CredentialModel> creds = session.userCredentialManager().getStoredCredentials(realm, user);
-        List<CredentialRepresentation> credReps = new ArrayList<CredentialRepresentation>();
-        for (CredentialModel cred : creds) {
-            CredentialRepresentation credRep = exportCredential(cred);
-            credReps.add(credRep);
-        }
+        List<CredentialRepresentation> credReps = mapList(creds, ExportUtils::exportCredential);
         userRep.setCredentials(credReps);
         userRep.setFederationLink(user.getFederationLink());
 
         // Grants
         List<UserConsentModel> consents = session.users().getConsents(realm, user.getId());
-        LinkedList<UserConsentRepresentation> consentReps = new LinkedList<UserConsentRepresentation>();
-        for (UserConsentModel consent : consents) {
-            UserConsentRepresentation consentRep = ModelToRepresentation.toRepresentation(consent);
-            consentReps.add(consentRep);
-        }
-        if (consentReps.size() > 0) {
-            userRep.setClientConsents(consentReps);
-        }
+        LinkedList<UserConsentRepresentation> consentReps = mapLinkedList(consents, ModelToRepresentation::toRepresentation);
+        whenNotEmpty(consentReps, userRep::setClientConsents);
 
         // Not Before
         int notBefore = session.users().getNotBeforeOfUser(realm, user);
@@ -551,10 +476,7 @@ public class ExportUtils {
         }
 
         if (options.isGroupsAndRolesIncluded()) {
-            List<String> groups = new LinkedList<>();
-            for (GroupModel group : user.getGroups()) {
-                groups.add(ModelToRepresentation.buildGroupPath(group));
-            }
+            List<String> groups = mapLinkedList(user.getGroups(), ModelToRepresentation::buildGroupPath);
             userRep.setGroups(groups);
         }
         return userRep;
@@ -654,30 +576,23 @@ public class ExportUtils {
         UserRepresentation userRep = new UserRepresentation();
         userRep.setId(id);
         MultivaluedHashMap<String, String> attributes = session.userFederatedStorage().getAttributes(realm, id);
-        if (attributes.size() > 0) {
+        if (!attributes.isEmpty()) {
             Map<String, List<String>> attrs = new HashMap<>();
             attrs.putAll(attributes);
             userRep.setAttributes(attrs);
         }
 
         Set<String> requiredActions = session.userFederatedStorage().getRequiredActions(realm, id);
-        if (requiredActions.size() > 0) {
+        if (!requiredActions.isEmpty()) {
             List<String> actions = new LinkedList<>();
             actions.addAll(requiredActions);
             userRep.setRequiredActions(actions);
         }
 
-
         // Social links
         Set<FederatedIdentityModel> socialLinks = session.userFederatedStorage().getFederatedIdentities(id, realm);
-        List<FederatedIdentityRepresentation> socialLinkReps = new ArrayList<FederatedIdentityRepresentation>();
-        for (FederatedIdentityModel socialLink : socialLinks) {
-            FederatedIdentityRepresentation socialLinkRep = exportSocialLink(socialLink);
-            socialLinkReps.add(socialLinkRep);
-        }
-        if (socialLinkReps.size() > 0) {
-            userRep.setFederatedIdentities(socialLinkReps);
-        }
+        List<FederatedIdentityRepresentation> socialLinkReps = mapList(socialLinks, ExportUtils::exportSocialLink);
+        whenNotEmpty(socialLinkReps, userRep::setFederatedIdentities);
 
         // Role mappings
         if (options.isGroupsAndRolesIncluded()) {
@@ -690,56 +605,37 @@ public class ExportUtils {
                 } else {
                     ClientModel client = (ClientModel) role.getContainer();
                     String clientId = client.getClientId();
-                    List<String> currentClientRoles = clientRoleNames.get(clientId);
-                    if (currentClientRoles == null) {
-                        currentClientRoles = new ArrayList<>();
-                        clientRoleNames.put(clientId, currentClientRoles);
-                    }
-
+                    List<String> currentClientRoles = clientRoleNames.computeIfAbsent(clientId, key -> new ArrayList<>());
                     currentClientRoles.add(role.getName());
                 }
             }
 
-            if (realmRoleNames.size() > 0) {
+            if (!realmRoleNames.isEmpty()) {
                 userRep.setRealmRoles(realmRoleNames);
             }
-            if (clientRoleNames.size() > 0) {
+            if (!clientRoleNames.isEmpty()) {
                 userRep.setClientRoles(clientRoleNames);
             }
         }
 
         // Credentials
         List<CredentialModel> creds = session.userFederatedStorage().getStoredCredentials(realm, id);
-        List<CredentialRepresentation> credReps = new ArrayList<CredentialRepresentation>();
-        for (CredentialModel cred : creds) {
-            CredentialRepresentation credRep = exportCredential(cred);
-            credReps.add(credRep);
-        }
+        List<CredentialRepresentation> credReps = mapList(creds, ExportUtils::exportCredential);
         userRep.setCredentials(credReps);
 
         // Grants
         List<UserConsentModel> consents = session.users().getConsents(realm, id);
-        LinkedList<UserConsentRepresentation> consentReps = new LinkedList<UserConsentRepresentation>();
-        for (UserConsentModel consent : consents) {
-            UserConsentRepresentation consentRep = ModelToRepresentation.toRepresentation(consent);
-            consentReps.add(consentRep);
-        }
-        if (consentReps.size() > 0) {
-            userRep.setClientConsents(consentReps);
-        }
+        LinkedList<UserConsentRepresentation> consentReps = mapLinkedList(consents, ModelToRepresentation::toRepresentation);
+        whenNotEmpty(consentReps, userRep::setClientConsents);
 
         // Not Before
         int notBefore = session.userFederatedStorage().getNotBeforeOfUser(realm, userRep.getId());
         userRep.setNotBefore(notBefore);
 
         if (options.isGroupsAndRolesIncluded()) {
-            List<String> groups = new LinkedList<>();
-            for (GroupModel group : session.userFederatedStorage().getGroups(realm, id)) {
-                groups.add(ModelToRepresentation.buildGroupPath(group));
-            }
+            List<String> groups = mapLinkedList(session.userFederatedStorage().getGroups(realm, id), ModelToRepresentation::buildGroupPath);
             userRep.setGroups(groups);
         }
         return userRep;
     }
-
 }

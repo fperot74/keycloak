@@ -47,8 +47,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -131,6 +129,7 @@ public class InfinispanClusterProviderFactory implements ClusterProviderFactory 
 
     // Will retry few times for the case when backup site not available in cross-dc environment.
     // The site might be taken offline automatically if "take-offline" properly configured
+    @SuppressWarnings("unchecked")
     static <V extends Serializable> V putIfAbsentWithRetries(CrossDCAwareCacheFactory crossDCAwareCacheFactory, String key, V value, int taskTimeoutInSeconds) {
         AtomicReference<V> resultRef = new AtomicReference<>();
 
@@ -202,26 +201,14 @@ public class InfinispanClusterProviderFactory implements ClusterProviderFactory 
 
                 Cache<String, Serializable> cache = cacheManager.getCache(InfinispanConnectionProvider.WORK_CACHE_NAME);
 
-                Iterator<String> toRemove = cache.entrySet().stream().filter(new Predicate<Map.Entry<String, Serializable>>() {
-
-                    @Override
-                    public boolean test(Map.Entry<String, Serializable> entry) {
-                        if (!(entry.getValue() instanceof LockEntry)) {
-                            return false;
-                        }
-
-                        LockEntry lock = (LockEntry) entry.getValue();
-                        return removedNodesAddresses.contains(lock.getNode());
+                Iterator<String> toRemove = cache.entrySet().stream().filter(entry -> {
+                    if (!(entry.getValue() instanceof LockEntry)) {
+                        return false;
                     }
 
-                }).map(new Function<Map.Entry<String, Serializable>, String>() {
-
-                    @Override
-                    public String apply(Map.Entry<String, Serializable> entry) {
-                        return entry.getKey();
-                    }
-
-                }).iterator();
+                    LockEntry lock = (LockEntry) entry.getValue();
+                    return removedNodesAddresses.contains(lock.getNode());
+                }).map(Map.Entry::getKey).iterator();
 
                 while (toRemove.hasNext()) {
                     String rem = toRemove.next();
@@ -238,17 +225,7 @@ public class InfinispanClusterProviderFactory implements ClusterProviderFactory 
         }
 
         private Set<String> convertAddresses(Collection<Address> addresses) {
-            return addresses.stream().map(new Function<Address, String>() {
-
-                @Override
-                public String apply(Address address) {
-                    return address.toString();
-                }
-
-            }).collect(Collectors.toSet());
+            return addresses.stream().map(Address::toString).collect(Collectors.toSet());
         }
-
     }
-
-
 }

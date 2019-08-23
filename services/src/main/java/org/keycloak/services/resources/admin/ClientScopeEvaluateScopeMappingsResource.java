@@ -74,11 +74,7 @@ public class ClientScopeEvaluateScopeMappingsResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public List<RoleRepresentation> getGrantedScopeMappings() {
-        return getGrantedRoles().stream().map((RoleModel role) -> {
-
-            return ModelToRepresentation.toBriefRepresentation(role);
-
-        }).collect(Collectors.toList());
+        return getGrantedRoles().stream().map(ModelToRepresentation::toBriefRepresentation).collect(Collectors.toList());
     }
 
 
@@ -95,19 +91,8 @@ public class ClientScopeEvaluateScopeMappingsResource {
     public List<RoleRepresentation> getNotGrantedScopeMappings() {
         List<RoleModel> grantedRoles = getGrantedRoles();
 
-        return roleContainer.getRoles().stream().filter((RoleModel role) -> {
-
-            return !grantedRoles.contains(role);
-
-        }).map((RoleModel role) -> {
-
-            return ModelToRepresentation.toBriefRepresentation(role);
-
-        }).collect(Collectors.toList());
+        return roleContainer.getRoles().stream().filter(role -> !grantedRoles.contains(role)).map(ModelToRepresentation::toBriefRepresentation).collect(Collectors.toList());
     }
-
-
-
 
     private List<RoleModel> getGrantedRoles() {
         if (client.isFullScopeAllowed()) {

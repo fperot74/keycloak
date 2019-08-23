@@ -17,11 +17,9 @@
 
 package org.keycloak.services.managers;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 import java.util.Objects;
 
-import org.jboss.logging.Logger;
 import org.keycloak.models.AuthenticatedClientSessionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
@@ -31,8 +29,6 @@ import org.keycloak.models.UserSessionModel;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
 public class UserSessionCrossDCManager {
-
-    private static final Logger logger = Logger.getLogger(UserSessionCrossDCManager.class);
 
     private final KeycloakSession kcSession;
 
@@ -69,7 +65,7 @@ public class UserSessionCrossDCManager {
             String sessionId = authSessionId.getDecodedId();
 
             // This will remove userSession "locally" if it doesn't exists on remoteCache
-            kcSession.sessions().getUserSessionWithPredicate(realm, sessionId, false, (UserSessionModel userSession2) -> userSession2 == null);
+            kcSession.sessions().getUserSessionWithPredicate(realm, sessionId, false, Objects::isNull);
 
             UserSessionModel userSession = kcSession.sessions().getUserSession(realm, sessionId);
 
@@ -79,6 +75,6 @@ public class UserSessionCrossDCManager {
             }
 
             return null;
-        }).filter(userSession -> Objects.nonNull(userSession)).findFirst().orElse(null);
+        }).filter(Objects::nonNull).findFirst().orElse(null);
     }
 }

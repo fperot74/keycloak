@@ -26,7 +26,6 @@ import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.constants.AdapterConstants;
 import org.keycloak.models.AuthenticatedClientSessionModel;
 import org.keycloak.models.ClientModel;
-import org.keycloak.models.TokenManager;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
@@ -97,7 +96,7 @@ public class ResourceAdminManager {
             return Arrays.asList(baseMgmtUrl);
         }
 
-        List<String> result = new LinkedList<String>();
+        List<String> result = new LinkedList<>();
         KeycloakUriBuilder uriBuilder = KeycloakUriBuilder.fromUri(baseMgmtUrl);
         for (String nodeHost : registeredNodesHosts) {
             String currentNodeUri = uriBuilder.clone().host(nodeHost).build().toString();
@@ -125,10 +124,9 @@ public class ResourceAdminManager {
         //logger.infov("logging out resources: {0}", clientSessions);
 
         for (Map.Entry<String, List<AuthenticatedClientSessionModel>> entry : clientSessions.entrySet()) {
-            if (entry.getValue().size() == 0) {
-                continue;
+            if (!entry.getValue().isEmpty()) {
+                logoutClientSessions(requestUri, realm, entry.getValue().get(0).getClient(), entry.getValue());
             }
-            logoutClientSessions(requestUri, realm, entry.getValue().get(0).getClient(), entry.getValue());
         }
     }
 
@@ -145,52 +143,48 @@ public class ResourceAdminManager {
 
     protected boolean logoutClientSessions(URI requestUri, RealmModel realm, ClientModel resource, List<AuthenticatedClientSessionModel> clientSessions) {
         String managementUrl = getManagementUrl(requestUri, resource);
-        if (managementUrl != null) {
-
-            // Key is host, value is list of http sessions for this host
-            MultivaluedHashMap<String, String> adapterSessionIds = null;
-            List<String> userSessions = new LinkedList<>();
-            if (clientSessions != null && clientSessions.size() > 0) {
-                adapterSessionIds = new MultivaluedHashMap<String, String>();
-                for (AuthenticatedClientSessionModel clientSession : clientSessions) {
-                    String adapterSessionId = clientSession.getNote(AdapterConstants.CLIENT_SESSION_STATE);
-                    if (adapterSessionId != null) {
-                        String host = clientSession.getNote(AdapterConstants.CLIENT_SESSION_HOST);
-                        adapterSessionIds.add(host, adapterSessionId);
-                    }
-                    if (clientSession.getUserSession() != null) userSessions.add(clientSession.getUserSession().getId());
-                }
-            }
-
-            if (adapterSessionIds == null || adapterSessionIds.isEmpty()) {
-                logger.debugv("Can't logout {0}: no logged adapter sessions", resource.getClientId());
-                return false;
-            }
-
-            if (managementUrl.contains(CLIENT_SESSION_HOST_PROPERTY)) {
-                boolean allPassed = true;
-                // Send logout separately to each host (needed for single-sign-out in cluster for non-distributable apps - KEYCLOAK-748)
-                for (Map.Entry<String, List<String>> entry : adapterSessionIds.entrySet()) {
-                    String host = entry.getKey();
-                    List<String> sessionIds = entry.getValue();
-                    String currentHostMgmtUrl = managementUrl.replace(CLIENT_SESSION_HOST_PROPERTY, host);
-                    allPassed = sendLogoutRequest(realm, resource, sessionIds, userSessions, 0, currentHostMgmtUrl) && allPassed;
-                }
-
-                return allPassed;
-            } else {
-                // Send single logout request
-                List<String> allSessionIds = new ArrayList<String>();
-                for (List<String> currentIds : adapterSessionIds.values()) {
-                    allSessionIds.addAll(currentIds);
-                }
-
-                return sendLogoutRequest(realm, resource, allSessionIds, userSessions, 0, managementUrl);
-            }
-        } else {
+        if (managementUrl == null) {
             logger.debugv("Can't logout {0}: no management url", resource.getClientId());
             return false;
         }
+
+        // Key is host, value is list of http sessions for this host
+        MultivaluedHashMap<String, String> adapterSessionIds = null;
+        List<String> userSessions = new LinkedList<>();
+        if (clientSessions != null && !clientSessions.isEmpty()) {
+            adapterSessionIds = new MultivaluedHashMap<>();
+            for (AuthenticatedClientSessionModel clientSession : clientSessions) {
+                String adapterSessionId = clientSession.getNote(AdapterConstants.CLIENT_SESSION_STATE);
+                if (adapterSessionId != null) {
+                    String host = clientSession.getNote(AdapterConstants.CLIENT_SESSION_HOST);
+                    adapterSessionIds.add(host, adapterSessionId);
+                }
+                if (clientSession.getUserSession() != null) userSessions.add(clientSession.getUserSession().getId());
+            }
+        }
+
+        if (adapterSessionIds == null || adapterSessionIds.isEmpty()) {
+            logger.debugv("Can't logout {0}: no logged adapter sessions", resource.getClientId());
+            return false;
+        }
+
+        if (managementUrl.contains(CLIENT_SESSION_HOST_PROPERTY)) {
+            boolean allPassed = true;
+            // Send logout separately to each host (needed for single-sign-out in cluster for non-distributable apps - KEYCLOAK-748)
+            for (Map.Entry<String, List<String>> entry : adapterSessionIds.entrySet()) {
+                String host = entry.getKey();
+                List<String> sessionIds = entry.getValue();
+                String currentHostMgmtUrl = managementUrl.replace(CLIENT_SESSION_HOST_PROPERTY, host);
+                allPassed = sendLogoutRequest(realm, resource, sessionIds, userSessions, 0, currentHostMgmtUrl) && allPassed;
+            }
+
+            return allPassed;
+        }
+        // Send single logout request
+        List<String> allSessionIds = new ArrayList<>();
+        adapterSessionIds.values().forEach(allSessionIds::addAll);
+
+        return sendLogoutRequest(realm, resource, allSessionIds, userSessions, 0, managementUrl);
     }
 
     // Methods for logout all
@@ -291,10 +285,8 @@ public class ResourceAdminManager {
         if (protocol == null) {
             protocol = OIDCLoginProtocol.LOGIN_PROTOCOL;
         }
-        LoginProtocol loginProtocol = (LoginProtocol) session.getProvider(LoginProtocol.class, protocol);
-        return loginProtocol == null
-          ? false
-          : loginProtocol.sendPushRevocationPolicyRequest(realm, resource, notBefore, managementUrl);
+        LoginProtocol loginProtocol = session.getProvider(LoginProtocol.class, protocol);
+        return loginProtocol != null && loginProtocol.sendPushRevocationPolicyRequest(realm, resource, notBefore, managementUrl);
     }
 
     public GlobalRequestResult testNodesAvailability(URI requestUri, RealmModel realm, ClientModel client) {

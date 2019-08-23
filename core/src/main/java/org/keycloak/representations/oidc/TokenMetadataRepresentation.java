@@ -33,6 +33,7 @@ public class TokenMetadataRepresentation extends AccessToken {
     @JsonProperty("client_id")
     private String clientId;
 
+    @Override
     public boolean isActive() {
         return this.active;
     }

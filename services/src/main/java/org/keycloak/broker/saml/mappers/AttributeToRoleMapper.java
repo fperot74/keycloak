@@ -43,9 +43,9 @@ import java.util.List;
  */
 public class AttributeToRoleMapper extends AbstractIdentityProviderMapper {
 
-    public static final String[] COMPATIBLE_PROVIDERS = {SAMLIdentityProviderFactory.PROVIDER_ID};
+    private static final String[] COMPATIBLE_PROVIDERS = {SAMLIdentityProviderFactory.PROVIDER_ID};
 
-    private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
+    private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
     public static final String ATTRIBUTE_NAME = "attribute.name";
     public static final String ATTRIBUTE_FRIENDLY_NAME = "attribute.friendly.name";

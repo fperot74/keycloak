@@ -18,7 +18,6 @@ package org.keycloak.services.resources.admin;
 
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
-import org.jboss.resteasy.spi.NotFoundException;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.events.admin.OperationType;
@@ -36,10 +35,10 @@ import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.ForbiddenException;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.services.resources.admin.permissions.UserPermissionEvaluator;
-import org.keycloak.util.JsonSerialization;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -49,7 +48,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -57,7 +55,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 /**
  * Base resource for managing users
@@ -250,23 +248,22 @@ public class UsersResource {
     }
 
     private List<UserRepresentation> toRepresentation(RealmModel realm, UserPermissionEvaluator usersEvaluator, Boolean briefRepresentation, List<UserModel> userModels) {
-        boolean briefRepresentationB = briefRepresentation != null && briefRepresentation;
         List<UserRepresentation> results = new ArrayList<>();
-        boolean canViewGlobal = usersEvaluator.canView();
 
         usersEvaluator.grantIfNoPermission(session.getAttribute(UserModel.GROUPS) != null);
 
-        for (UserModel user : userModels) {
-            if (!canViewGlobal) {
-                if (!usersEvaluator.canView(user)) {
-                    continue;
+        boolean canViewGlobal = usersEvaluator.canView();
+        if (canViewGlobal) {
+            Function<UserModel, UserRepresentation> userMapper = briefRepresentation != null && briefRepresentation
+                ? ModelToRepresentation::toBriefRepresentation
+                : u -> ModelToRepresentation.toRepresentation(session, realm, u);
+            for (UserModel user : userModels) {
+                if (usersEvaluator.canView(user)) {
+                    UserRepresentation userRep = userMapper.apply(user);
+                    userRep.setAccess(usersEvaluator.getAccess(user));
+                    results.add(userRep);
                 }
             }
-            UserRepresentation userRep = briefRepresentationB
-                    ? ModelToRepresentation.toBriefRepresentation(user)
-                    : ModelToRepresentation.toRepresentation(session, realm, user);
-            userRep.setAccess(usersEvaluator.getAccess(user));
-            results.add(userRep);
         }
         return results;
     }

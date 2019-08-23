@@ -93,7 +93,8 @@ public class ClientSessionCode<CLIENT_SESSION extends CommonClientSessionModel> 
         }
     }
 
-    public static <CLIENT_SESSION extends CommonClientSessionModel> ParseResult<CLIENT_SESSION> parseResult(String code, String tabId,
+    @SuppressWarnings("unchecked")
+	public static <CLIENT_SESSION extends CommonClientSessionModel> ParseResult<CLIENT_SESSION> parseResult(String code, String tabId,
                                                                                                             KeycloakSession session, RealmModel realm, ClientModel client,
                                                                                                             EventBuilder event, CLIENT_SESSION clientSession) {
         ParseResult<CLIENT_SESSION> result = new ParseResult<>();
@@ -154,7 +155,8 @@ public class ClientSessionCode<CLIENT_SESSION extends CommonClientSessionModel> 
         return isActionActive(actionType);
     }
 
-    public boolean isActionActive(ActionType actionType) {
+    @SuppressWarnings("unchecked")
+	public boolean isActionActive(ActionType actionType) {
         CodeGenerateUtil.ClientSessionParser<CLIENT_SESSION> clientSessionParser = (CodeGenerateUtil.ClientSessionParser<CLIENT_SESSION>) CodeGenerateUtil.getParser(commonLoginSession.getClass());
         int timestamp = clientSessionParser.getTimestamp(commonLoginSession);
 
@@ -193,7 +195,8 @@ public class ClientSessionCode<CLIENT_SESSION extends CommonClientSessionModel> 
     }
 
 
-    public void setAction(String action) {
+    @SuppressWarnings("unchecked")
+	public void setAction(String action) {
         commonLoginSession.setAction(action);
 
         CodeGenerateUtil.ClientSessionParser<CLIENT_SESSION> clientSessionParser = (CodeGenerateUtil.ClientSessionParser<CLIENT_SESSION>) CodeGenerateUtil.getParser(commonLoginSession.getClass());
