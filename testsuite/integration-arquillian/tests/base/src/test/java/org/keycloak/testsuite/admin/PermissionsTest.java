@@ -242,12 +242,8 @@ public class PermissionsTest extends AbstractKeycloakTest {
     @Test
     public void realms() throws Exception {
         // Check returned realms
-        invoke((RealmResource realm) -> {
-            clients.get("master-none").realms().findAll();
-        }, clients.get("none"), false);
-        invoke((RealmResource realm) -> {
-            clients.get("none").realms().findAll();
-        }, clients.get("none"), false);
+        invoke(realm -> clients.get("master-none").realms().findAll(), clients.get("none"), false);
+        invoke(realm -> clients.get("none").realms().findAll(), clients.get("none"), false);
         Assert.assertNames(clients.get("master-admin").realms().findAll(), "master", REALM_NAME, "realm2");
         Assert.assertNames(clients.get(AdminRoles.REALM_ADMIN).realms().findAll(), REALM_NAME);
         Assert.assertNames(clients.get("REALM2").realms().findAll(), "realm2");
@@ -271,28 +267,12 @@ public class PermissionsTest extends AbstractKeycloakTest {
         assertNotNull(realms.get(0).getAccessTokenLifespan());
 
         // Create realm
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                clients.get("master-admin").realms().create(RealmBuilder.create().name("master").build());
-            }
-        }, adminClient, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                clients.get("master-" + AdminRoles.MANAGE_USERS).realms().create(RealmBuilder.create().name("master").build());
-            }
-        }, adminClient, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                clients.get(AdminRoles.REALM_ADMIN).realms().create(RealmBuilder.create().name("master").build());
-            }
-        }, adminClient, false);
+        invoke(realm -> clients.get("master-admin").realms().create(RealmBuilder.create().name("master").build()), adminClient, true);
+        invoke(realm -> clients.get("master-" + AdminRoles.MANAGE_USERS).realms().create(RealmBuilder.create().name("master").build()), adminClient, false);
+        invoke(realm -> clients.get(AdminRoles.REALM_ADMIN).realms().create(RealmBuilder.create().name("master").build()), adminClient, false);
 
         // Get realm
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.toRepresentation();
-            }
-        }, Resource.REALM, false, true);
+        invoke(realm -> realm.toRepresentation(), Resource.REALM, false, true);
         assertGettersEmpty(clients.get(AdminRoles.QUERY_REALMS).realm(REALM_NAME).toRepresentation());
 
         // this should pass given that users granted with "query" roles are allowed to access the realm with limited access
@@ -300,98 +280,34 @@ public class PermissionsTest extends AbstractKeycloakTest {
             invoke(realm -> clients.get(role).realms().realm(REALM_NAME).toRepresentation(), clients.get(role), true);
         }
 
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.update(new RealmRepresentation());
-            }
-        }, Resource.REALM, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.pushRevocation();
-            }
-        }, Resource.REALM, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.deleteSession("nosuch");
-            }
-        }, Resource.USER, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.getClientSessionStats();
-            }
-        }, Resource.REALM, false);
+        invoke(realm -> realm.update(new RealmRepresentation()), Resource.REALM, true);
+        invoke(realm -> realm.pushRevocation(), Resource.REALM, true);
+        invoke(realm -> realm.deleteSession("nosuch"), Resource.USER, true);
+        invoke(realm -> realm.getClientSessionStats(), Resource.REALM, false);
 
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.getDefaultGroups();
-            }
-        }, Resource.REALM, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.addDefaultGroup("nosuch");
-            }
-        }, Resource.REALM, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.removeDefaultGroup("nosuch");
-            }
-        }, Resource.REALM, true);
+        invoke(realm -> realm.getDefaultGroups(), Resource.REALM, false);
+        invoke(realm -> realm.addDefaultGroup("nosuch"), Resource.REALM, true);
+        invoke(realm -> realm.removeDefaultGroup("nosuch"), Resource.REALM, true);
         GroupRepresentation newGroup = new GroupRepresentation();
         newGroup.setName("sample");
         adminClient.realm(REALM_NAME).groups().add(newGroup);
         GroupRepresentation group = adminClient.realms().realm(REALM_NAME).getGroupByPath("sample");
 
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.getGroupByPath("sample");
-            }
-        }, Resource.USER, false);
+        invoke(realm -> realm.getGroupByPath("sample"), Resource.USER, false);
 
         adminClient.realms().realm(REALM_NAME).groups().group(group.getId()).remove();
 
-        invoke(new InvocationWithResponse() {
-            public void invoke(RealmResource realm, AtomicReference<Response> response) {
-                response.set(realm.testLDAPConnection("nosuch", "nosuch", "nosuch", "nosuch", "nosuch", "nosuch"));
-            }
-        }, Resource.REALM, true);
+        invoke((realm, response) -> response.set(realm.testLDAPConnection("nosuch", "nosuch", "nosuch", "nosuch", "nosuch", "nosuch")), Resource.REALM, true);
 
-        invoke(new InvocationWithResponse() {
-            public void invoke(RealmResource realm, AtomicReference<Response> response) {
-                response.set(realm.partialImport(new PartialImportRepresentation()));
-            }
-        }, Resource.REALM, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clearRealmCache();
-            }
-        }, Resource.REALM, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clearUserCache();
-            }
-        }, Resource.REALM, true);
+        invoke((realm, response) -> response.set(realm.partialImport(new PartialImportRepresentation())), Resource.REALM, true);
+        invoke(realm -> realm.clearRealmCache(), Resource.REALM, true);
+        invoke(realm -> realm.clearUserCache(), Resource.REALM, true);
 
         // Delete realm
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                clients.get("master-admin").realms().realm("nosuch").remove();
-            }
-        }, adminClient, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                clients.get("REALM2").realms().realm(REALM_NAME).remove();
-            }
-        }, adminClient, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                clients.get(AdminRoles.MANAGE_USERS).realms().realm(REALM_NAME).remove();
-            }
-        }, adminClient, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                clients.get(AdminRoles.REALM_ADMIN).realms().realm(REALM_NAME).remove();
-            }
-        }, adminClient, true);
+        invoke(realm -> clients.get("master-admin").realms().realm("nosuch").remove(), adminClient, true);
+        invoke(realm -> clients.get("REALM2").realms().realm(REALM_NAME).remove(), adminClient, false);
+        invoke(realm -> clients.get(AdminRoles.MANAGE_USERS).realms().realm(REALM_NAME).remove(), adminClient, false);
+        invoke(realm -> clients.get(AdminRoles.REALM_ADMIN).realms().realm(REALM_NAME).remove(), adminClient, true);
 
         // Revert realm removal
         recreatePermissionRealm();
@@ -399,11 +315,7 @@ public class PermissionsTest extends AbstractKeycloakTest {
 
     @Test
     public void realmLogoutAll() {
-        Invocation invocation = new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.logoutAll();
-            }
-        };
+        Invocation invocation = RealmResource::logoutAll;
 
         invoke(invocation, clients.get("master-none"), false);
         invoke(invocation, clients.get("master-view-realm"), false);
@@ -421,36 +333,12 @@ public class PermissionsTest extends AbstractKeycloakTest {
 
     @Test
     public void events() {
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.getRealmEventsConfig();
-            }
-        }, Resource.EVENTS, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.updateRealmEventsConfig(new RealmEventsConfigRepresentation());
-            }
-        }, Resource.EVENTS, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.getEvents();
-            }
-        }, Resource.EVENTS, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.getAdminEvents();
-            }
-        }, Resource.EVENTS, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clearEvents();
-            }
-        }, Resource.EVENTS, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clearAdminEvents();
-            }
-        }, Resource.EVENTS, true);
+        invoke(RealmResource::getRealmEventsConfig, Resource.EVENTS, false);
+        invoke(realm -> realm.updateRealmEventsConfig(new RealmEventsConfigRepresentation()), Resource.EVENTS, true);
+        invoke(RealmResource::getEvents, Resource.EVENTS, false);
+        invoke(RealmResource::getAdminEvents, Resource.EVENTS, false);
+        invoke(RealmResource::clearEvents, Resource.EVENTS, true);
+        invoke(RealmResource::clearAdminEvents, Resource.EVENTS, true);
     }
 
     @Test
@@ -460,31 +348,15 @@ public class PermissionsTest extends AbstractKeycloakTest {
         newUser.setEnabled(true);
         adminClient.realms().realm(REALM_NAME).users().create(newUser);
         UserRepresentation user = adminClient.realms().realm(REALM_NAME).users().search("attacked").get(0);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.attackDetection().bruteForceUserStatus(user.getId());
-            }
-        }, Resource.USER, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.attackDetection().clearBruteForceForUser(user.getId());
-            }
-        }, Resource.USER, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.attackDetection().clearAllBruteForce();
-            }
-        }, Resource.USER, true);
+        invoke(realm -> realm.attackDetection().bruteForceUserStatus(user.getId()), Resource.USER, false);
+        invoke(realm -> realm.attackDetection().clearBruteForceForUser(user.getId()), Resource.USER, true);
+        invoke(realm -> realm.attackDetection().clearAllBruteForce(), Resource.USER, true);
         adminClient.realms().realm(REALM_NAME).users().get(user.getId()).remove();
     }
 
     @Test
     public void clients() {
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().findAll();
-            }
-        }, Resource.CLIENT, false, true);
+        invoke(realm -> realm.clients().findAll(), Resource.CLIENT, false, true);
         List<ClientRepresentation> l = clients.get(AdminRoles.QUERY_CLIENTS).realm(REALM_NAME).clients().findAll();
         Assert.assertThat(l, Matchers.empty());
 
@@ -492,411 +364,126 @@ public class PermissionsTest extends AbstractKeycloakTest {
         Assert.assertThat(l, Matchers.not(Matchers.empty()));
 
         ClientRepresentation client = l.get(0);
-        invoke(new InvocationWithResponse() {
-            @Override
-            public void invoke(RealmResource realm, AtomicReference<Response> response) {
-                response.set(clients.get(AdminRoles.QUERY_USERS).realm(REALM_NAME).clients().create(client));
-            }
-        }, clients.get(AdminRoles.QUERY_USERS), false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                clients.get(AdminRoles.QUERY_USERS).realm(REALM_NAME).clients().get(client.getId()).toRepresentation();
-            }
-        }, clients.get(AdminRoles.QUERY_USERS), false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                clients.get(AdminRoles.QUERY_USERS).realm(REALM_NAME).clients().get(client.getId()).update(client);
-            }
-        }, clients.get(AdminRoles.QUERY_USERS), false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                clients.get(AdminRoles.QUERY_USERS).realm(REALM_NAME).clients().get(client.getId()).remove();
-            }
-        }, clients.get(AdminRoles.QUERY_USERS), false);
+        invoke((realm, response) -> response.set(clients.get(AdminRoles.QUERY_USERS).realm(REALM_NAME).clients().create(client)), clients.get(AdminRoles.QUERY_USERS), false);
+        invoke(realm -> clients.get(AdminRoles.QUERY_USERS).realm(REALM_NAME).clients().get(client.getId()).toRepresentation(), clients.get(AdminRoles.QUERY_USERS), false);
+        invoke(realm -> clients.get(AdminRoles.QUERY_USERS).realm(REALM_NAME).clients().get(client.getId()).update(client), clients.get(AdminRoles.QUERY_USERS), false);
+        invoke(realm -> clients.get(AdminRoles.QUERY_USERS).realm(REALM_NAME).clients().get(client.getId()).remove(), clients.get(AdminRoles.QUERY_USERS), false);
 
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.convertClientDescription("blahblah");
-            }
-        }, Resource.CLIENT, true);
-        invoke(new InvocationWithResponse() {
-            public void invoke(RealmResource realm, AtomicReference<Response> response) {
-                response.set(realm.clients().create(ClientBuilder.create().clientId("foo").build()));
-            }
-        }, Resource.CLIENT, true);
+        invoke(realm -> realm.convertClientDescription("blahblah"), Resource.CLIENT, true);
+        invoke((realm, response) -> response.set(realm.clients().create(ClientBuilder.create().clientId("foo").build())), Resource.CLIENT, true);
         ClientRepresentation foo = adminClient.realms().realm(REALM_NAME).clients().findByClientId("foo").get(0);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).toRepresentation();
-            }
-        }, Resource.CLIENT, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).getInstallationProvider("nosuch");
-            }
-        }, Resource.CLIENT, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).update(foo);
-            }
+        invoke(realm -> realm.clients().get(foo.getId()).toRepresentation(), Resource.CLIENT, false);
+        invoke(realm -> realm.clients().get(foo.getId()).getInstallationProvider("nosuch"), Resource.CLIENT, false);
+        invoke(realm -> realm.clients().get(foo.getId()).update(foo), Resource.CLIENT, true);
+        invoke(realm -> {
+            realm.clients().get(foo.getId()).remove();
+            realm.clients().create(foo);
+            ClientRepresentation temp = realm.clients().findByClientId("foo").get(0);
+            foo.setId(temp.getId());
         }, Resource.CLIENT, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).remove();
-                realm.clients().create(foo);
-                ClientRepresentation temp = realm.clients().findByClientId("foo").get(0);
-                foo.setId(temp.getId());
-            }
-        }, Resource.CLIENT, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).generateNewSecret();
-            }
-        }, Resource.CLIENT, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).regenerateRegistrationAccessToken();
-            }
-        }, Resource.CLIENT, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).getSecret();
-            }
-        }, Resource.CLIENT, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).getServiceAccountUser();
-            }
-        }, Resource.CLIENT, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).pushRevocation();
-            }
-        }, Resource.CLIENT, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).getApplicationSessionCount();
-            }
-        }, Resource.CLIENT, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).getUserSessions(0, 100);
-            }
-        }, Resource.CLIENT, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).getOfflineSessionCount();
-            }
-        }, Resource.CLIENT, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).getOfflineUserSessions(0, 100);
-            }
-        }, Resource.CLIENT, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).registerNode(Collections.<String, String>emptyMap());
-            }
-        }, Resource.CLIENT, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).unregisterNode("nosuch");
-            }
-        }, Resource.CLIENT, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).testNodesAvailable();
-            }
-        }, Resource.CLIENT, true);
+        invoke(realm -> realm.clients().get(foo.getId()).generateNewSecret(), Resource.CLIENT, true);
+        invoke(realm -> realm.clients().get(foo.getId()).regenerateRegistrationAccessToken(), Resource.CLIENT, true);
+        invoke(realm -> realm.clients().get(foo.getId()).getSecret(), Resource.CLIENT, false);
+        invoke(realm -> realm.clients().get(foo.getId()).getServiceAccountUser(), Resource.CLIENT, false);
+        invoke(realm -> realm.clients().get(foo.getId()).pushRevocation(), Resource.CLIENT, true);
+        invoke(realm -> realm.clients().get(foo.getId()).getApplicationSessionCount(), Resource.CLIENT, false);
+        invoke(realm -> realm.clients().get(foo.getId()).getUserSessions(0, 100), Resource.CLIENT, false);
+        invoke(realm -> realm.clients().get(foo.getId()).getOfflineSessionCount(), Resource.CLIENT, false);
+        invoke(realm -> realm.clients().get(foo.getId()).getOfflineUserSessions(0, 100), Resource.CLIENT, false);
+        invoke(realm -> realm.clients().get(foo.getId()).registerNode(Collections.emptyMap()), Resource.CLIENT, true);
+        invoke(realm -> realm.clients().get(foo.getId()).unregisterNode("nosuch"), Resource.CLIENT, true);
+        invoke(realm -> realm.clients().get(foo.getId()).testNodesAvailable(), Resource.CLIENT, true);
 
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).getCertficateResource("nosuch").generate();
-            }
-        }, Resource.CLIENT, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).getCertficateResource("nosuch").generateAndGetKeystore(new KeyStoreConfig());
-            }
-        }, Resource.CLIENT, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).getCertficateResource("nosuch").getKeyInfo();
-            }
-        }, Resource.CLIENT, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).getCertficateResource("nosuch").getKeystore(new KeyStoreConfig());
-            }
-        }, Resource.CLIENT, false);
+        invoke(realm -> realm.clients().get(foo.getId()).getCertficateResource("nosuch").generate(), Resource.CLIENT, true);
+        invoke(realm -> realm.clients().get(foo.getId()).getCertficateResource("nosuch").generateAndGetKeystore(new KeyStoreConfig()), Resource.CLIENT, true);
+        invoke(realm -> realm.clients().get(foo.getId()).getCertficateResource("nosuch").getKeyInfo(), Resource.CLIENT, false);
+        invoke(realm -> realm.clients().get(foo.getId()).getCertficateResource("nosuch").getKeystore(new KeyStoreConfig()), Resource.CLIENT, false);
 
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).getCertficateResource("nosuch").uploadJks(new MultipartFormDataOutput());
-            }
-        }, Resource.CLIENT, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).getCertficateResource("nosuch").uploadJksCertificate(new MultipartFormDataOutput());
-            }
-        }, Resource.CLIENT, true);
+        invoke(realm -> realm.clients().get(foo.getId()).getCertficateResource("nosuch").uploadJks(new MultipartFormDataOutput()), Resource.CLIENT, true);
+        invoke(realm -> realm.clients().get(foo.getId()).getCertficateResource("nosuch").uploadJksCertificate(new MultipartFormDataOutput()), Resource.CLIENT, true);
 
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).getProtocolMappers().createMapper(Collections.EMPTY_LIST);
-            }
-        }, Resource.CLIENT, true);
-        invoke(new InvocationWithResponse() {
-            public void invoke(RealmResource realm, AtomicReference<Response> response) {
-                response.set(realm.clients().get(foo.getId()).getProtocolMappers().createMapper(new ProtocolMapperRepresentation()));
-            }
-        }, Resource.CLIENT, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).getProtocolMappers().getMapperById("nosuch");
-            }
-        }, Resource.CLIENT, false, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).getProtocolMappers().getMappers();
-            }
-        }, Resource.CLIENT, false, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).getProtocolMappers().getMappersPerProtocol("nosuch");
-            }
-        }, Resource.CLIENT, false, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).getProtocolMappers().update("nosuch", new ProtocolMapperRepresentation());
-            }
-        }, Resource.CLIENT, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).getProtocolMappers().delete("nosuch");
-            }
-        }, Resource.CLIENT, true);
+        invoke(realm -> realm.clients().get(foo.getId()).getProtocolMappers().createMapper(Collections.emptyList()), Resource.CLIENT, true);
+        invoke((realm, response) -> response.set(realm.clients().get(foo.getId()).getProtocolMappers().createMapper(new ProtocolMapperRepresentation())), Resource.CLIENT, true);
+        invoke(realm -> realm.clients().get(foo.getId()).getProtocolMappers().getMapperById("nosuch"), Resource.CLIENT, false, true);
+        invoke(realm -> realm.clients().get(foo.getId()).getProtocolMappers().getMappers(), Resource.CLIENT, false, true);
+        invoke(realm -> realm.clients().get(foo.getId()).getProtocolMappers().getMappersPerProtocol("nosuch"), Resource.CLIENT, false, true);
+        invoke(realm -> realm.clients().get(foo.getId()).getProtocolMappers().update("nosuch", new ProtocolMapperRepresentation()), Resource.CLIENT, true);
+        invoke(realm -> realm.clients().get(foo.getId()).getProtocolMappers().delete("nosuch"), Resource.CLIENT, true);
 
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).getScopeMappings().getAll();
-            }
-        }, Resource.CLIENT, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).getScopeMappings().realmLevel().listAll();
-            }
-        }, Resource.CLIENT, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).getScopeMappings().realmLevel().listEffective();
-            }
-        }, Resource.CLIENT, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).getScopeMappings().realmLevel().listAvailable();
-            }
-        }, Resource.CLIENT, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).getScopeMappings().realmLevel().add(Collections.<RoleRepresentation>emptyList());
-            }
-        }, Resource.CLIENT, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).getScopeMappings().realmLevel().remove(Collections.<RoleRepresentation>emptyList());
-            }
-        }, Resource.CLIENT, true);
+        invoke(realm -> realm.clients().get(foo.getId()).getScopeMappings().getAll(), Resource.CLIENT, false);
+        invoke(realm -> realm.clients().get(foo.getId()).getScopeMappings().realmLevel().listAll(), Resource.CLIENT, false);
+        invoke(realm -> realm.clients().get(foo.getId()).getScopeMappings().realmLevel().listEffective(), Resource.CLIENT, false);
+        invoke(realm -> realm.clients().get(foo.getId()).getScopeMappings().realmLevel().listAvailable(), Resource.CLIENT, false);
+        invoke(realm -> realm.clients().get(foo.getId()).getScopeMappings().realmLevel().add(Collections.emptyList()), Resource.CLIENT, true);
+        invoke(realm -> realm.clients().get(foo.getId()).getScopeMappings().realmLevel().remove(Collections.emptyList()), Resource.CLIENT, true);
 
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get("nosuch").roles().list();
-            }
-        }, Resource.CLIENT, false, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).roles().create(new RoleRepresentation());
-            }
-        }, Resource.CLIENT, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).roles().get("nosuch").toRepresentation();
-            }
-        }, Resource.CLIENT, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).roles().deleteRole("nosuch");
-            }
-        }, Resource.CLIENT, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).roles().get("nosuch").update(new RoleRepresentation());
-            }
-        }, Resource.CLIENT, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).roles().get("nosuch").addComposites(Collections.<RoleRepresentation>emptyList());
-            }
-        }, Resource.CLIENT, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).roles().get("nosuch").deleteComposites(Collections.<RoleRepresentation>emptyList());
-            }
-        }, Resource.CLIENT, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).roles().get("nosuch").getRoleComposites();
-            }
-        }, Resource.CLIENT, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).roles().get("nosuch").getRealmRoleComposites();
-            }
-        }, Resource.CLIENT, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).roles().get("nosuch").getClientRoleComposites("nosuch");
-            }
-        }, Resource.CLIENT, false);
+        invoke(realm -> realm.clients().get("nosuch").roles().list(), Resource.CLIENT, false, true);
+        invoke(realm -> realm.clients().get(foo.getId()).roles().create(new RoleRepresentation()), Resource.CLIENT, true);
+        invoke(realm -> realm.clients().get(foo.getId()).roles().get("nosuch").toRepresentation(), Resource.CLIENT, false);
+        invoke(realm -> realm.clients().get(foo.getId()).roles().deleteRole("nosuch"), Resource.CLIENT, true);
+        invoke(realm -> realm.clients().get(foo.getId()).roles().get("nosuch").update(new RoleRepresentation()), Resource.CLIENT, true);
+        invoke(realm -> realm.clients().get(foo.getId()).roles().get("nosuch").addComposites(Collections.emptyList()), Resource.CLIENT, true);
+        invoke(realm -> realm.clients().get(foo.getId()).roles().get("nosuch").deleteComposites(Collections.emptyList()), Resource.CLIENT, true);
+        invoke(realm -> realm.clients().get(foo.getId()).roles().get("nosuch").getRoleComposites(), Resource.CLIENT, false);
+        invoke(realm -> realm.clients().get(foo.getId()).roles().get("nosuch").getRealmRoleComposites(), Resource.CLIENT, false);
+        invoke(realm -> realm.clients().get(foo.getId()).roles().get("nosuch").getClientRoleComposites("nosuch"), Resource.CLIENT, false);
         // users with query-client role should be able to query flows so the client detail page can be rendered successfully when fine-grained permissions are enabled.
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().getFlows();
-            }
-        }, clients.get(AdminRoles.QUERY_CLIENTS), true);
+        invoke(realm -> realm.flows().getFlows(), clients.get(AdminRoles.QUERY_CLIENTS), true);
         // the same for ClientAuthenticatorProviders and PerClientConfigDescription
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().getClientAuthenticatorProviders();
-            }
-        }, clients.get(AdminRoles.QUERY_CLIENTS), true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().getClientAuthenticatorProviders();
-            }
-        }, clients.get(AdminRoles.VIEW_CLIENTS), true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().getClientAuthenticatorProviders();
-            }
-        }, clients.get(AdminRoles.MANAGE_CLIENTS), true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().getClientAuthenticatorProviders();
-            }
-        }, clients.get(AdminRoles.QUERY_USERS), false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().getPerClientConfigDescription();
-            }
-        }, clients.get(AdminRoles.QUERY_CLIENTS), true);
+        invoke(realm -> realm.flows().getClientAuthenticatorProviders(), clients.get(AdminRoles.QUERY_CLIENTS), true);
+        invoke(realm -> realm.flows().getClientAuthenticatorProviders(), clients.get(AdminRoles.VIEW_CLIENTS), true);
+        invoke(realm -> realm.flows().getClientAuthenticatorProviders(), clients.get(AdminRoles.MANAGE_CLIENTS), true);
+        invoke(realm -> realm.flows().getClientAuthenticatorProviders(), clients.get(AdminRoles.QUERY_USERS), false);
+        invoke(realm -> realm.flows().getPerClientConfigDescription(), clients.get(AdminRoles.QUERY_CLIENTS), true);
     }
 
     @Test
     public void clientScopes() {
-        invoke((RealmResource realm) -> {
-            realm.clientScopes().findAll();
-        }, Resource.CLIENT, false, true);
-        invoke((RealmResource realm, AtomicReference<Response> response) -> {
+        invoke(realm -> realm.clientScopes().findAll(), Resource.CLIENT, false, true);
+        invoke((realm, response) -> {
             ClientScopeRepresentation scope = new ClientScopeRepresentation();
             scope.setName("scope");
             response.set(realm.clientScopes().create(scope));
         }, Resource.CLIENT, true);
 
         ClientScopeRepresentation scope = adminClient.realms().realm(REALM_NAME).clientScopes().findAll().get(0);
-        invoke((RealmResource realm) -> {
-            realm.clientScopes().get(scope.getId()).toRepresentation();
-        }, Resource.CLIENT, false);
-        invoke((RealmResource realm) -> {
-            realm.clientScopes().get(scope.getId()).update(scope);
-        }, Resource.CLIENT, true);
-        invoke((RealmResource realm) -> {
+        invoke(realm -> realm.clientScopes().get(scope.getId()).toRepresentation(), Resource.CLIENT, false);
+        invoke(realm -> realm.clientScopes().get(scope.getId()).update(scope), Resource.CLIENT, true);
+        invoke(realm -> {
             realm.clientScopes().get(scope.getId()).remove();
             realm.clientScopes().create(scope);
         }, Resource.CLIENT, true);
 
-        invoke((RealmResource realm) -> {
-            realm.clientScopes().get(scope.getId()).getProtocolMappers().getMappers();
-        }, Resource.CLIENT, false, true);
-        invoke((RealmResource realm) -> {
-            realm.clientScopes().get(scope.getId()).getProtocolMappers().getMappersPerProtocol("nosuch");
-        }, Resource.CLIENT, false, true);
-        invoke((RealmResource realm) -> {
-            realm.clientScopes().get(scope.getId()).getProtocolMappers().getMapperById("nosuch");
-        }, Resource.CLIENT, false, true);
-        invoke((RealmResource realm) -> {
-            realm.clientScopes().get(scope.getId()).getProtocolMappers().update("nosuch", new ProtocolMapperRepresentation());
-        }, Resource.CLIENT, true);
-        invoke((RealmResource realm, AtomicReference<Response> response) -> {
-            response.set(realm.clientScopes().get(scope.getId()).getProtocolMappers().createMapper(new ProtocolMapperRepresentation()));
-        }, Resource.CLIENT, true);
-        invoke((RealmResource realm) -> {
-            realm.clientScopes().get(scope.getId()).getProtocolMappers().createMapper(Collections.<ProtocolMapperRepresentation>emptyList());
-        }, Resource.CLIENT, true);
-        invoke((RealmResource realm) -> {
-            realm.clientScopes().get(scope.getId()).getProtocolMappers().delete("nosuch");
-        }, Resource.CLIENT, true);
+        invoke(realm -> realm.clientScopes().get(scope.getId()).getProtocolMappers().getMappers(), Resource.CLIENT, false, true);
+        invoke(realm -> realm.clientScopes().get(scope.getId()).getProtocolMappers().getMappersPerProtocol("nosuch"), Resource.CLIENT, false, true);
+        invoke(realm -> realm.clientScopes().get(scope.getId()).getProtocolMappers().getMapperById("nosuch"), Resource.CLIENT, false, true);
+        invoke(realm -> realm.clientScopes().get(scope.getId()).getProtocolMappers().update("nosuch", new ProtocolMapperRepresentation()), Resource.CLIENT, true);
+        invoke((realm, response) -> response.set(realm.clientScopes().get(scope.getId()).getProtocolMappers().createMapper(new ProtocolMapperRepresentation())), Resource.CLIENT, true);
+        invoke(realm -> realm.clientScopes().get(scope.getId()).getProtocolMappers().createMapper(Collections.<ProtocolMapperRepresentation>emptyList()), Resource.CLIENT, true);
+        invoke(realm -> realm.clientScopes().get(scope.getId()).getProtocolMappers().delete("nosuch"), Resource.CLIENT, true);
 
-        invoke((RealmResource realm) -> {
-            realm.clientScopes().get(scope.getId()).getScopeMappings().getAll();
-        }, Resource.CLIENT, false);
-        invoke((RealmResource realm) -> {
-            realm.clientScopes().get(scope.getId()).getScopeMappings().realmLevel().listAll();
-        }, Resource.CLIENT, false);
-        invoke((RealmResource realm) -> {
-            realm.clientScopes().get(scope.getId()).getScopeMappings().realmLevel().listAvailable();
-        }, Resource.CLIENT, false);
-        invoke((RealmResource realm) -> {
-            realm.clientScopes().get(scope.getId()).getScopeMappings().realmLevel().listEffective();
-        }, Resource.CLIENT, false);
-        invoke((RealmResource realm) -> {
-            realm.clientScopes().get(scope.getId()).getScopeMappings().realmLevel().add(Collections.<RoleRepresentation>emptyList());
-        }, Resource.CLIENT, true);
-        invoke((RealmResource realm) -> {
-            realm.clientScopes().get(scope.getId()).getScopeMappings().realmLevel().remove(Collections.<RoleRepresentation>emptyList());
-        }, Resource.CLIENT, true);
+        invoke(realm -> realm.clientScopes().get(scope.getId()).getScopeMappings().getAll(), Resource.CLIENT, false);
+        invoke(realm -> realm.clientScopes().get(scope.getId()).getScopeMappings().realmLevel().listAll(), Resource.CLIENT, false);
+        invoke(realm -> realm.clientScopes().get(scope.getId()).getScopeMappings().realmLevel().listAvailable(), Resource.CLIENT, false);
+        invoke(realm -> realm.clientScopes().get(scope.getId()).getScopeMappings().realmLevel().listEffective(), Resource.CLIENT, false);
+        invoke(realm -> realm.clientScopes().get(scope.getId()).getScopeMappings().realmLevel().add(Collections.<RoleRepresentation>emptyList()), Resource.CLIENT, true);
+        invoke(realm -> realm.clientScopes().get(scope.getId()).getScopeMappings().realmLevel().remove(Collections.<RoleRepresentation>emptyList()), Resource.CLIENT, true);
         ClientRepresentation realmAccessClient = adminClient.realms().realm(REALM_NAME).clients().findByClientId(Constants.REALM_MANAGEMENT_CLIENT_ID).get(0);
-        invoke((RealmResource realm) -> {
-            realm.clientScopes().get(scope.getId()).getScopeMappings().clientLevel(realmAccessClient.getId()).listAll();
-        }, Resource.CLIENT, false);
-        invoke((RealmResource realm) -> {
-            realm.clientScopes().get(scope.getId()).getScopeMappings().clientLevel(realmAccessClient.getId()).listAvailable();
-        }, Resource.CLIENT, false);
-        invoke((RealmResource realm) -> {
-            realm.clientScopes().get(scope.getId()).getScopeMappings().clientLevel(realmAccessClient.getId()).listEffective();
-        }, Resource.CLIENT, false);
-        invoke((RealmResource realm) -> {
-            realm.clientScopes().get(scope.getId()).getScopeMappings().clientLevel(realmAccessClient.getId()).add(Collections.<RoleRepresentation>emptyList());
-        }, Resource.CLIENT, true);
-        invoke((RealmResource realm) -> {
-            realm.clientScopes().get(scope.getId()).getScopeMappings().clientLevel(realmAccessClient.getId()).remove(Collections.<RoleRepresentation>emptyList());
-        }, Resource.CLIENT, true);
+        invoke(realm -> realm.clientScopes().get(scope.getId()).getScopeMappings().clientLevel(realmAccessClient.getId()).listAll(), Resource.CLIENT, false);
+        invoke(realm -> realm.clientScopes().get(scope.getId()).getScopeMappings().clientLevel(realmAccessClient.getId()).listAvailable(), Resource.CLIENT, false);
+        invoke(realm -> realm.clientScopes().get(scope.getId()).getScopeMappings().clientLevel(realmAccessClient.getId()).listEffective(), Resource.CLIENT, false);
+        invoke(realm -> realm.clientScopes().get(scope.getId()).getScopeMappings().clientLevel(realmAccessClient.getId()).add(Collections.emptyList()), Resource.CLIENT, true);
+        invoke(realm -> realm.clientScopes().get(scope.getId()).getScopeMappings().clientLevel(realmAccessClient.getId()).remove(Collections.emptyList()), Resource.CLIENT, true);
 
         // this should throw forbidden as "query-users" role isn't enough
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                clients.get(AdminRoles.QUERY_USERS).realm(REALM_NAME).clientScopes().findAll();
-            }
-        }, clients.get(AdminRoles.QUERY_USERS), false);
+        invoke(realm -> clients.get(AdminRoles.QUERY_USERS).realm(REALM_NAME).clientScopes().findAll(), clients.get(AdminRoles.QUERY_USERS), false);
     }
 
     @Test
     public void clientInitialAccess() {
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clientInitialAccess().list();
-            }
-        }, Resource.CLIENT, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clientInitialAccess().create(new ClientInitialAccessCreatePresentation());
-            }
-        }, Resource.CLIENT, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clientInitialAccess().delete("nosuch");
-            }
-        }, Resource.CLIENT, true);
+        invoke(realm -> realm.clientInitialAccess().list(), Resource.CLIENT, false);
+        invoke(realm -> realm.clientInitialAccess().create(new ClientInitialAccessCreatePresentation()), Resource.CLIENT, true);
+        invoke(realm -> realm.clientInitialAccess().delete("nosuch"), Resource.CLIENT, true);
     }
 
     @Test
@@ -905,102 +492,70 @@ public class PermissionsTest extends AbstractKeycloakTest {
         newClient.setClientId("foo-authz");
         adminClient.realms().realm(REALM_NAME).clients().create(newClient);
         ClientRepresentation foo = adminClient.realms().realm(REALM_NAME).clients().findByClientId("foo-authz").get(0);
-        invoke(new InvocationWithResponse() {
-            public void invoke(RealmResource realm, AtomicReference<Response> response) {
-                foo.setServiceAccountsEnabled(true);
-                foo.setAuthorizationServicesEnabled(true);
-                realm.clients().get(foo.getId()).update(foo);
-            }
+        invoke((realm, response) -> {
+            foo.setServiceAccountsEnabled(true);
+            foo.setAuthorizationServicesEnabled(true);
+            realm.clients().get(foo.getId()).update(foo);
         }, CLIENT, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.clients().get(foo.getId()).authorization().getSettings();
-            }
+        invoke(realm -> realm.clients().get(foo.getId()).authorization().getSettings(), AUTHORIZATION, false);
+        invoke(realm -> {
+            AuthorizationResource authorization = realm.clients().get(foo.getId()).authorization();
+            ResourceServerRepresentation settings = authorization.getSettings();
+            authorization.update(settings);
+        }, AUTHORIZATION, true);
+        invoke(realm -> {
+            AuthorizationResource authorization = realm.clients().get(foo.getId()).authorization();
+            authorization.resources().resources();
         }, AUTHORIZATION, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                AuthorizationResource authorization = realm.clients().get(foo.getId()).authorization();
-                ResourceServerRepresentation settings = authorization.getSettings();
-                authorization.update(settings);
-            }
-        }, AUTHORIZATION, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                AuthorizationResource authorization = realm.clients().get(foo.getId()).authorization();
-                authorization.resources().resources();
-            }
+        invoke(realm -> {
+            AuthorizationResource authorization = realm.clients().get(foo.getId()).authorization();
+            authorization.scopes().scopes();
         }, AUTHORIZATION, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                AuthorizationResource authorization = realm.clients().get(foo.getId()).authorization();
-                authorization.scopes().scopes();
-            }
+        invoke(realm -> {
+            AuthorizationResource authorization = realm.clients().get(foo.getId()).authorization();
+            authorization.policies().policies();
         }, AUTHORIZATION, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                AuthorizationResource authorization = realm.clients().get(foo.getId()).authorization();
-                authorization.policies().policies();
-            }
-        }, AUTHORIZATION, false);
-        invoke(new InvocationWithResponse() {
-            public void invoke(RealmResource realm, AtomicReference<Response> response) {
-                AuthorizationResource authorization = realm.clients().get(foo.getId()).authorization();
-                response.set(authorization.resources().create(new ResourceRepresentation("Test", Collections.emptySet())));
-            }
+        invoke((realm, response) -> {
+            AuthorizationResource authorization = realm.clients().get(foo.getId()).authorization();
+            response.set(authorization.resources().create(new ResourceRepresentation("Test", Collections.emptySet())));
         }, AUTHORIZATION, true);
-        invoke(new InvocationWithResponse() {
-            public void invoke(RealmResource realm, AtomicReference<Response> response) {
-                AuthorizationResource authorization = realm.clients().get(foo.getId()).authorization();
-                response.set(authorization.scopes().create(new ScopeRepresentation("Test")));
-            }
+        invoke((realm, response) -> {
+            AuthorizationResource authorization = realm.clients().get(foo.getId()).authorization();
+            response.set(authorization.scopes().create(new ScopeRepresentation("Test")));
         }, AUTHORIZATION, true);
-        invoke(new InvocationWithResponse() {
-            public void invoke(RealmResource realm, AtomicReference<Response> response) {
-                AuthorizationResource authorization = realm.clients().get(foo.getId()).authorization();
-                PolicyRepresentation representation = new PolicyRepresentation();
-                representation.setName("Test PermissionsTest");
-                representation.setType("js");
-                HashMap<String, String> config = new HashMap<>();
-                config.put("code", "");
-                representation.setConfig(config);
-                response.set(authorization.policies().create(representation));
-            }
+        invoke((realm, response) -> {
+            AuthorizationResource authorization = realm.clients().get(foo.getId()).authorization();
+            PolicyRepresentation representation = new PolicyRepresentation();
+            representation.setName("Test PermissionsTest");
+            representation.setType("js");
+            HashMap<String, String> config = new HashMap<>();
+            config.put("code", "");
+            representation.setConfig(config);
+            response.set(authorization.policies().create(representation));
         }, AUTHORIZATION, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                AuthorizationResource authorization = realm.clients().get(foo.getId()).authorization();
-                authorization.resources().resource("nosuch").update(new ResourceRepresentation());
-            }
+        invoke(realm -> {
+            AuthorizationResource authorization = realm.clients().get(foo.getId()).authorization();
+            authorization.resources().resource("nosuch").update(new ResourceRepresentation());
         }, AUTHORIZATION, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                AuthorizationResource authorization = realm.clients().get(foo.getId()).authorization();
-                authorization.scopes().scope("nosuch").update(new ScopeRepresentation());
-            }
+        invoke(realm -> {
+            AuthorizationResource authorization = realm.clients().get(foo.getId()).authorization();
+            authorization.scopes().scope("nosuch").update(new ScopeRepresentation());
         }, AUTHORIZATION, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                AuthorizationResource authorization = realm.clients().get(foo.getId()).authorization();
-                authorization.policies().policy("nosuch").update(new PolicyRepresentation());
-            }
+        invoke(realm -> {
+            AuthorizationResource authorization = realm.clients().get(foo.getId()).authorization();
+            authorization.policies().policy("nosuch").update(new PolicyRepresentation());
         }, AUTHORIZATION, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                AuthorizationResource authorization = realm.clients().get(foo.getId()).authorization();
-                authorization.resources().resource("nosuch").remove();
-            }
+        invoke(realm -> {
+            AuthorizationResource authorization = realm.clients().get(foo.getId()).authorization();
+            authorization.resources().resource("nosuch").remove();
         }, AUTHORIZATION, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                AuthorizationResource authorization = realm.clients().get(foo.getId()).authorization();
-                authorization.scopes().scope("nosuch").remove();
-            }
+        invoke(realm -> {
+            AuthorizationResource authorization = realm.clients().get(foo.getId()).authorization();
+            authorization.scopes().scope("nosuch").remove();
         }, AUTHORIZATION, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                AuthorizationResource authorization = realm.clients().get(foo.getId()).authorization();
-                authorization.policies().policy("nosuch").remove();
-            }
+        invoke(realm -> {
+            AuthorizationResource authorization = realm.clients().get(foo.getId()).authorization();
+            authorization.policies().policy("nosuch").remove();
         }, AUTHORIZATION, true);
     }
 
@@ -1010,234 +565,68 @@ public class PermissionsTest extends AbstractKeycloakTest {
         newRole.setName("sample-role");
         adminClient.realm(REALM_NAME).roles().create(newRole);
 
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.roles().list();
-            }
-        }, Resource.REALM, false, true);
+        invoke(realm -> realm.roles().list(), Resource.REALM, false, true);
 
         // this should throw forbidden as "create-client" role isn't enough
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                clients.get(AdminRoles.CREATE_CLIENT).realm(REALM_NAME).roles().list();
-            }
-        }, clients.get(AdminRoles.CREATE_CLIENT), false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.roles().get("sample-role").toRepresentation();
-            }
-        }, Resource.REALM, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.roles().get("sample-role").update(newRole);
-            }
+        invoke(realm -> clients.get(AdminRoles.CREATE_CLIENT).realm(REALM_NAME).roles().list(), clients.get(AdminRoles.CREATE_CLIENT), false);
+        invoke(realm -> realm.roles().get("sample-role").toRepresentation(), Resource.REALM, false);
+        invoke(realm -> realm.roles().get("sample-role").update(newRole), Resource.REALM, true);
+        invoke(realm -> realm.roles().create(new RoleRepresentation()), Resource.REALM, true);
+        invoke(realm -> {
+            realm.roles().deleteRole("sample-role");
+            // need to recreate for other tests
+            realm.roles().create(newRole);
         }, Resource.REALM, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.roles().create(new RoleRepresentation());
-            }
-        }, Resource.REALM, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.roles().deleteRole("sample-role");
-                // need to recreate for other tests
-                realm.roles().create(newRole);
-            }
-        }, Resource.REALM, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.roles().get("sample-role").getRoleComposites();
-            }
-        }, Resource.REALM, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.roles().get("sample-role").addComposites(Collections.<RoleRepresentation>emptyList());
-            }
-        }, Resource.REALM, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.roles().get("sample-role").deleteComposites(Collections.<RoleRepresentation>emptyList());
-            }
-        }, Resource.REALM, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.roles().get("sample-role").getRoleComposites();
-            }
-        }, Resource.REALM, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.roles().get("sample-role").getRealmRoleComposites();
-            }
-        }, Resource.REALM, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.roles().get("sample-role").getClientRoleComposites("nosuch");
-            }
-        }, Resource.REALM, false);
+        invoke(realm -> realm.roles().get("sample-role").getRoleComposites(), Resource.REALM, false);
+        invoke(realm -> realm.roles().get("sample-role").addComposites(Collections.emptyList()), Resource.REALM, true);
+        invoke(realm -> realm.roles().get("sample-role").deleteComposites(Collections.emptyList()), Resource.REALM, true);
+        invoke(realm -> realm.roles().get("sample-role").getRoleComposites(), Resource.REALM, false);
+        invoke(realm -> realm.roles().get("sample-role").getRealmRoleComposites(), Resource.REALM, false);
+        invoke(realm -> realm.roles().get("sample-role").getClientRoleComposites("nosuch"), Resource.REALM, false);
         adminClient.realms().realm(REALM_NAME).roles().deleteRole("sample-role");
     }
 
     @Test
     public void flows() throws Exception {
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().getFormProviders();
-            }
-        }, Resource.REALM, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().getAuthenticatorProviders();
-            }
-        }, Resource.REALM, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().getClientAuthenticatorProviders();
-            }
-        }, Resource.REALM, false, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().getFormActionProviders();
-            }
-        }, Resource.REALM, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().getFlows();
-            }
-        }, Resource.REALM, false, true);
-        invoke(new InvocationWithResponse() {
-            public void invoke(RealmResource realm, AtomicReference<Response> response) {
-                response.set(realm.flows().createFlow(new AuthenticationFlowRepresentation()));
-            }
+        invoke(realm -> realm.flows().getFormProviders(), Resource.REALM, false);
+        invoke(realm -> realm.flows().getAuthenticatorProviders(), Resource.REALM, false);
+        invoke(realm -> realm.flows().getClientAuthenticatorProviders(), Resource.REALM, false, true);
+        invoke(realm -> realm.flows().getFormActionProviders(), Resource.REALM, false);
+        invoke(realm -> realm.flows().getFlows(), Resource.REALM, false, true);
+        invoke((realm, response) -> response.set(realm.flows().createFlow(new AuthenticationFlowRepresentation())), Resource.REALM, true);
+        invoke(realm -> realm.flows().getFlow("nosuch"), Resource.REALM, false);
+        invoke(realm -> realm.flows().deleteFlow("nosuch"), Resource.REALM, true);
+        invoke((realm, response) -> response.set(realm.flows().copy("nosuch", Collections.emptyMap())), Resource.REALM, true);
+        invoke(realm -> realm.flows().addExecutionFlow("nosuch", Collections.emptyMap()), Resource.REALM, true);
+        invoke(realm -> realm.flows().addExecution("nosuch", Collections.emptyMap()), Resource.REALM, true);
+        invoke(realm -> realm.flows().getExecutions("nosuch"), Resource.REALM, false);
+        invoke(realm -> realm.flows().updateExecutions("nosuch", new AuthenticationExecutionInfoRepresentation()), Resource.REALM, true);
+        invoke((realm, response) -> {
+            AuthenticationExecutionRepresentation rep = new AuthenticationExecutionRepresentation();
+            rep.setAuthenticator("auth-cookie");
+            rep.setRequirement("OPTIONAL");
+            response.set(realm.flows().addExecution(rep));
         }, Resource.REALM, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().getFlow("nosuch");
-            }
-        }, Resource.REALM, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().deleteFlow("nosuch");
-            }
-        }, Resource.REALM, true);
-        invoke(new InvocationWithResponse() {
-            public void invoke(RealmResource realm, AtomicReference<Response> response) {
-                response.set(realm.flows().copy("nosuch", Collections.<String, String>emptyMap()));
-            }
-        }, Resource.REALM, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().addExecutionFlow("nosuch", Collections.<String, String>emptyMap());
-            }
-        }, Resource.REALM, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().addExecution("nosuch", Collections.<String, String>emptyMap());
-            }
-        }, Resource.REALM, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().getExecutions("nosuch");
-            }
-        }, Resource.REALM, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().updateExecutions("nosuch", new AuthenticationExecutionInfoRepresentation());
-            }
-        }, Resource.REALM, true);
-        invoke(new InvocationWithResponse() {
-            public void invoke(RealmResource realm, AtomicReference<Response> response) {
-                AuthenticationExecutionRepresentation rep = new AuthenticationExecutionRepresentation();
-                rep.setAuthenticator("auth-cookie");
-                rep.setRequirement("OPTIONAL");
-                response.set(realm.flows().addExecution(rep));
-            }
-        }, Resource.REALM, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().raisePriority("nosuch");
-            }
-        }, Resource.REALM, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().lowerPriority("nosuch");
-            }
-        }, Resource.REALM, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().removeExecution("nosuch");
-            }
-        }, Resource.REALM, true);
-        invoke(new InvocationWithResponse() {
-            public void invoke(RealmResource realm, AtomicReference<Response> response) {
-                response.set(realm.flows().newExecutionConfig("nosuch", new AuthenticatorConfigRepresentation()));
-            }
-        }, Resource.REALM, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().getAuthenticatorConfig("nosuch");
-            }
-        }, Resource.REALM, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().getUnregisteredRequiredActions();
-            }
-        }, Resource.REALM, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().registerRequiredAction(new RequiredActionProviderSimpleRepresentation());
-            }
-        }, Resource.REALM, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().getRequiredActions();
-            }
-        }, Resource.REALM, false, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().getRequiredAction("nosuch");
-            }
-        }, Resource.REALM, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().removeRequiredAction("nosuch");
-            }
-        }, Resource.REALM, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().updateRequiredAction("nosuch", new RequiredActionProviderRepresentation());
-            }
-        }, Resource.REALM, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().getAuthenticatorConfigDescription("nosuch");
-            }
-        }, Resource.REALM, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().getPerClientConfigDescription();
-            }
-        }, Resource.REALM, false, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().getAuthenticatorConfig("nosuch");
-            }
-        }, Resource.REALM, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().removeAuthenticatorConfig("nosuch");
-            }
-        }, Resource.REALM, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().updateAuthenticatorConfig("nosuch", new AuthenticatorConfigRepresentation());
-            }
-        }, Resource.REALM, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                clients.get(AdminRoles.VIEW_REALM).realm(REALM_NAME).flows().getPerClientConfigDescription();
-                clients.get(AdminRoles.VIEW_REALM).realm(REALM_NAME).flows().getClientAuthenticatorProviders();
-                clients.get(AdminRoles.VIEW_REALM).realm(REALM_NAME).flows().getRequiredActions();
-            }
+        invoke(realm -> realm.flows().raisePriority("nosuch"), Resource.REALM, true);
+        invoke(realm -> realm.flows().lowerPriority("nosuch"), Resource.REALM, true);
+        invoke(realm -> realm.flows().removeExecution("nosuch"), Resource.REALM, true);
+        invoke((realm, response) -> response.set(realm.flows().newExecutionConfig("nosuch", new AuthenticatorConfigRepresentation())), Resource.REALM, true);
+        invoke(realm -> realm.flows().getAuthenticatorConfig("nosuch"), Resource.REALM, false);
+        invoke(realm -> realm.flows().getUnregisteredRequiredActions(), Resource.REALM, false);
+        invoke(realm -> realm.flows().registerRequiredAction(new RequiredActionProviderSimpleRepresentation()), Resource.REALM, true);
+        invoke(realm -> realm.flows().getRequiredActions(), Resource.REALM, false, true);
+        invoke(realm -> realm.flows().getRequiredAction("nosuch"), Resource.REALM, false);
+        invoke(realm -> realm.flows().removeRequiredAction("nosuch"), Resource.REALM, true);
+        invoke(realm -> realm.flows().updateRequiredAction("nosuch", new RequiredActionProviderRepresentation()), Resource.REALM, true);
+        invoke(realm -> realm.flows().getAuthenticatorConfigDescription("nosuch"), Resource.REALM, false);
+        invoke(realm -> realm.flows().getPerClientConfigDescription(), Resource.REALM, false, true);
+        invoke(realm -> realm.flows().getAuthenticatorConfig("nosuch"), Resource.REALM, false);
+        invoke(realm -> realm.flows().removeAuthenticatorConfig("nosuch"), Resource.REALM, true);
+        invoke(realm -> realm.flows().updateAuthenticatorConfig("nosuch", new AuthenticatorConfigRepresentation()), Resource.REALM, true);
+        invoke(realm -> {
+            clients.get(AdminRoles.VIEW_REALM).realm(REALM_NAME).flows().getPerClientConfigDescription();
+            clients.get(AdminRoles.VIEW_REALM).realm(REALM_NAME).flows().getClientAuthenticatorProviders();
+            clients.get(AdminRoles.VIEW_REALM).realm(REALM_NAME).flows().getRequiredActions();
         }, adminClient, true);
 
         // Re-create realm
@@ -1252,548 +641,204 @@ public class PermissionsTest extends AbstractKeycloakTest {
         newRole.setName("role-by-id");
         adminClient.realm(REALM_NAME).roles().create(newRole);
         RoleRepresentation role = adminClient.realm(REALM_NAME).roles().get("role-by-id").toRepresentation();
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.rolesById().getRole(role.getId());
-            }
-        }, Resource.REALM, false, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.rolesById().updateRole(role.getId(), role);
-            }
+        invoke(realm -> realm.rolesById().getRole(role.getId()), Resource.REALM, false, true);
+        invoke(realm -> realm.rolesById().updateRole(role.getId(), role), Resource.REALM, true);
+        invoke(realm -> {
+            realm.rolesById().deleteRole(role.getId());
+            // need to recreate for other tests
+            realm.roles().create(newRole);
+            RoleRepresentation temp = realm.roles().get("role-by-id").toRepresentation();
+            role.setId(temp.getId());
         }, Resource.REALM, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.rolesById().deleteRole(role.getId());
-                // need to recreate for other tests
-                realm.roles().create(newRole);
-                RoleRepresentation temp = realm.roles().get("role-by-id").toRepresentation();
-                role.setId(temp.getId());
-            }
-        }, Resource.REALM, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.rolesById().getRoleComposites(role.getId());
-            }
-        }, Resource.REALM, false, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.rolesById().addComposites(role.getId(), Collections.<RoleRepresentation>emptyList());
-            }
-        }, Resource.REALM, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.rolesById().deleteComposites(role.getId(), Collections.<RoleRepresentation>emptyList());
-            }
-        }, Resource.REALM, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.rolesById().getRoleComposites(role.getId());
-            }
-        }, Resource.REALM, false, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.rolesById().getRealmRoleComposites(role.getId());
-            }
-        }, Resource.REALM, false, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.rolesById().getClientRoleComposites(role.getId(), "nosuch");
-            }
-        }, Resource.REALM, false, true);
+        invoke(realm -> realm.rolesById().getRoleComposites(role.getId()), Resource.REALM, false, true);
+        invoke(realm -> realm.rolesById().addComposites(role.getId(), Collections.<RoleRepresentation>emptyList()), Resource.REALM, true);
+        invoke(realm -> realm.rolesById().deleteComposites(role.getId(), Collections.<RoleRepresentation>emptyList()), Resource.REALM, true);
+        invoke(realm -> realm.rolesById().getRoleComposites(role.getId()), Resource.REALM, false, true);
+        invoke(realm -> realm.rolesById().getRealmRoleComposites(role.getId()), Resource.REALM, false, true);
+        invoke(realm -> realm.rolesById().getClientRoleComposites(role.getId(), "nosuch"), Resource.REALM, false, true);
 
         adminClient.realm(REALM_NAME).roles().deleteRole("role-by-id");
     }
 
     @Test
     public void groups() {
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.groups().groups();
-            }
-        }, Resource.USER, false);
-        invoke(new InvocationWithResponse() {
-            public void invoke(RealmResource realm, AtomicReference<Response> response) {
-                GroupRepresentation group = new GroupRepresentation();
-                group.setName("mygroup");
-                response.set(realm.groups().add(group));
-            }
+        invoke(realm -> realm.groups().groups(), Resource.USER, false);
+        invoke((realm, response) -> {
+            GroupRepresentation group = new GroupRepresentation();
+            group.setName("mygroup");
+            response.set(realm.groups().add(group));
         }, Resource.USER, true);
 
         GroupRepresentation group = adminClient.realms().realm(REALM_NAME).getGroupByPath("mygroup");
         ClientRepresentation realmAccessClient = adminClient.realms().realm(REALM_NAME).clients().findByClientId(Constants.REALM_MANAGEMENT_CLIENT_ID).get(0);
 
         // this should throw forbidden as "create-client" role isn't enough
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                clients.get(AdminRoles.CREATE_CLIENT).realm(REALM_NAME).groups().groups();
-            }
-        }, clients.get(AdminRoles.CREATE_CLIENT), false);
+        invoke(realm -> clients.get(AdminRoles.CREATE_CLIENT).realm(REALM_NAME).groups().groups(), clients.get(AdminRoles.CREATE_CLIENT), false);
 
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.groups().group(group.getId()).toRepresentation();
-            }
-        }, Resource.USER, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.groups().group(group.getId()).update(group);
-            }
-        }, Resource.USER, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.groups().group(group.getId()).members(0, 100);
-            }
-        }, Resource.USER, false);
-        invoke(new InvocationWithResponse() {
-            public void invoke(RealmResource realm, AtomicReference<Response> response) {
-                GroupRepresentation subgroup = new GroupRepresentation();
-                subgroup.setName("sub");
-                response.set(realm.groups().group(group.getId()).subGroup(subgroup));
-            }
+        invoke(realm -> realm.groups().group(group.getId()).toRepresentation(), Resource.USER, false);
+        invoke(realm -> realm.groups().group(group.getId()).update(group), Resource.USER, true);
+        invoke(realm -> realm.groups().group(group.getId()).members(0, 100), Resource.USER, false);
+        invoke((realm, response) -> {
+            GroupRepresentation subgroup = new GroupRepresentation();
+            subgroup.setName("sub");
+            response.set(realm.groups().group(group.getId()).subGroup(subgroup));
         }, Resource.USER, true);
 
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.groups().group(group.getId()).roles().getAll();
-            }
-        }, Resource.USER, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.groups().group(group.getId()).roles().realmLevel().listAll();
-            }
-        }, Resource.USER, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.groups().group(group.getId()).roles().realmLevel().listEffective();
-            }
-        }, Resource.USER, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.groups().group(group.getId()).roles().realmLevel().listAvailable();
-            }
-        }, Resource.USER, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.groups().group(group.getId()).roles().realmLevel().add(Collections.<RoleRepresentation>emptyList());
-            }
-        }, Resource.USER, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.groups().group(group.getId()).roles().realmLevel().remove(Collections.<RoleRepresentation>emptyList());
-            }
-        }, Resource.USER, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.groups().group(group.getId()).roles().clientLevel(realmAccessClient.getId()).listAll();
-            }
-        }, Resource.USER, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.groups().group(group.getId()).roles().clientLevel(realmAccessClient.getId()).listEffective();
-            }
-        }, Resource.USER, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.groups().group(group.getId()).roles().clientLevel(realmAccessClient.getId()).listAvailable();
-            }
-        }, Resource.USER, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.groups().group(group.getId()).roles().clientLevel(realmAccessClient.getId()).add(Collections.<RoleRepresentation>emptyList());
-            }
-        }, Resource.USER, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.groups().group(group.getId()).roles().clientLevel(realmAccessClient.getId()).remove(Collections.<RoleRepresentation>emptyList());
-            }
-        }, Resource.USER, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.groups().group(group.getId()).remove();
-                group.setId(null);
-                realm.groups().add(group);
-                GroupRepresentation temp = realm.getGroupByPath("mygroup");
-                group.setId(temp.getId());
-            }
+        invoke(realm -> realm.groups().group(group.getId()).roles().getAll(), Resource.USER, false);
+        invoke(realm -> realm.groups().group(group.getId()).roles().realmLevel().listAll(), Resource.USER, false);
+        invoke(realm -> realm.groups().group(group.getId()).roles().realmLevel().listEffective(), Resource.USER, false);
+        invoke(realm -> realm.groups().group(group.getId()).roles().realmLevel().listAvailable(), Resource.USER, false);
+        invoke(realm -> realm.groups().group(group.getId()).roles().realmLevel().add(Collections.emptyList()), Resource.USER, true);
+        invoke(realm -> realm.groups().group(group.getId()).roles().realmLevel().remove(Collections.emptyList()), Resource.USER, true);
+        invoke(realm -> realm.groups().group(group.getId()).roles().clientLevel(realmAccessClient.getId()).listAll(), Resource.USER, false);
+        invoke(realm -> realm.groups().group(group.getId()).roles().clientLevel(realmAccessClient.getId()).listEffective(), Resource.USER, false);
+        invoke(realm -> realm.groups().group(group.getId()).roles().clientLevel(realmAccessClient.getId()).listAvailable(), Resource.USER, false);
+        invoke(realm -> realm.groups().group(group.getId()).roles().clientLevel(realmAccessClient.getId()).add(Collections.emptyList()), Resource.USER, true);
+        invoke(realm -> realm.groups().group(group.getId()).roles().clientLevel(realmAccessClient.getId()).remove(Collections.emptyList()), Resource.USER, true);
+        invoke(realm -> {
+            realm.groups().group(group.getId()).remove();
+            group.setId(null);
+            realm.groups().add(group);
+            GroupRepresentation temp = realm.getGroupByPath("mygroup");
+            group.setId(temp.getId());
         }, Resource.USER, true);
     }
 
     // Permissions for impersonation tested in ImpersonationTest
     @Test
     public void users() {
-        invoke(new InvocationWithResponse() {
-            public void invoke(RealmResource realm, AtomicReference<Response> response) {
-                response.set(realm.users().create(UserBuilder.create().username("testuser").build()));
-            }
-        }, Resource.USER, true);
+        invoke((realm, response) -> response.set(realm.users().create(UserBuilder.create().username("testuser").build())), Resource.USER, true);
         UserRepresentation user = adminClient.realms().realm(REALM_NAME).users().search("testuser").get(0);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).remove();
-                realm.users().create(user);
-                UserRepresentation temp = realm.users().search("testuser").get(0);
-                user.setId(temp.getId());
-            }
+        invoke(realm -> {
+            realm.users().get(user.getId()).remove();
+            realm.users().create(user);
+            UserRepresentation temp = realm.users().search("testuser").get(0);
+            user.setId(temp.getId());
         }, Resource.USER, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).toRepresentation();
-            }
-        }, Resource.USER, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).update(user);
-            }
+        invoke(realm -> realm.users().get(user.getId()).toRepresentation(), Resource.USER, false);
+        invoke(realm -> realm.users().get(user.getId()).update(user), Resource.USER, true);
+        invoke(realm -> realm.users().count(), Resource.USER, false);
+        invoke(realm -> realm.users().get(user.getId()).getUserSessions(), Resource.USER, false);
+        invoke(realm -> realm.users().get(user.getId()).getOfflineSessions("nosuch"), Resource.USER, false);
+        invoke(realm -> realm.users().get(user.getId()).getFederatedIdentity(), Resource.USER, false);
+        invoke((realm, response) -> {
+            response.set(realm.users()
+                    .get(user.getId())
+                    .addFederatedIdentity("nosuch",
+                            FederatedIdentityBuilder.create().identityProvider("nosuch").userId("nosuch").userName("nosuch").build()));
         }, Resource.USER, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().count();
-            }
-        }, Resource.USER, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).getUserSessions();
-            }
-        }, Resource.USER, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).getOfflineSessions("nosuch");
-            }
-        }, Resource.USER, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).getFederatedIdentity();
-            }
-        }, Resource.USER, false);
-        invoke(new InvocationWithResponse() {
-            public void invoke(RealmResource realm, AtomicReference<Response> response) {
-                response.set(realm.users()
-                        .get(user.getId())
-                        .addFederatedIdentity("nosuch",
-                                FederatedIdentityBuilder.create().identityProvider("nosuch").userId("nosuch").userName("nosuch").build()));
-            }
+        invoke(realm -> realm.users().count(), Resource.USER, false);
+        invoke(realm -> realm.users().get(user.getId()).getUserSessions(), Resource.USER, false);
+        invoke(realm -> realm.users().get(user.getId()).getOfflineSessions("nosuch"), Resource.USER, false);
+        invoke(realm -> realm.users().get(user.getId()).getFederatedIdentity(), Resource.USER, false);
+        invoke((realm, response) -> {
+            response.set(realm.users()
+                    .get(user.getId())
+                    .addFederatedIdentity("nosuch",
+                            FederatedIdentityBuilder.create().identityProvider("nosuch").userId("nosuch").userName("nosuch").build()));
         }, Resource.USER, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).removeFederatedIdentity("nosuch");
-            }
-        }, Resource.USER, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).getConsents();
-            }
-        }, Resource.USER, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).revokeConsent("testclient");
-            }
-        }, Resource.USER, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).logout();
-            }
-        }, Resource.USER, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).resetPassword(CredentialBuilder.create().password("password").build());
-            }
-        }, Resource.USER, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).removeTotp();
-            }
-        }, Resource.USER, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).resetPasswordEmail();
-            }
-        }, Resource.USER, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).executeActionsEmail(Collections.<String>emptyList());
-            }
-        }, Resource.USER, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).sendVerifyEmail();
-            }
-        }, Resource.USER, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).groups();
-            }
-        }, Resource.USER, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).leaveGroup("nosuch");
-            }
-        }, Resource.USER, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).joinGroup("nosuch");
-            }
-        }, Resource.USER, true);
+        invoke(realm -> realm.users().get(user.getId()).removeFederatedIdentity("nosuch"), Resource.USER, true);
+        invoke(realm -> realm.users().get(user.getId()).getConsents(), Resource.USER, false);
+        invoke(realm -> realm.users().get(user.getId()).revokeConsent("testclient"), Resource.USER, true);
+        invoke(realm -> realm.users().get(user.getId()).logout(), Resource.USER, true);
+        invoke(realm -> realm.users().get(user.getId()).resetPassword(CredentialBuilder.create().password("password").build()), Resource.USER, true);
+        invoke(realm -> realm.users().get(user.getId()).removeTotp(), Resource.USER, true);
+        invoke(realm -> realm.users().get(user.getId()).executeActionsEmail(Arrays.asList("UPDATE_PASSWORD")), Resource.USER, true);
+        invoke(realm -> realm.users().get(user.getId()).executeActionsEmail(Collections.emptyList()), Resource.USER, true);
+        invoke(realm -> realm.users().get(user.getId()).sendVerifyEmail(), Resource.USER, true);
+        invoke(realm -> realm.users().get(user.getId()).groups(), Resource.USER, false);
+        invoke(realm -> realm.users().get(user.getId()).leaveGroup("nosuch"), Resource.USER, true);
+        invoke(realm -> realm.users().get(user.getId()).joinGroup("nosuch"), Resource.USER, true);
 
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).roles().getAll();
-            }
-        }, Resource.USER, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).roles().realmLevel().listAll();
-            }
-        }, Resource.USER, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).roles().realmLevel().listAvailable();
-            }
-        }, Resource.USER, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).roles().realmLevel().listEffective();
-            }
-        }, Resource.USER, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).roles().realmLevel().add(Collections.<RoleRepresentation>emptyList());
-            }
-        }, Resource.USER, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).roles().realmLevel().remove(Collections.<RoleRepresentation>emptyList());
-            }
-        }, Resource.USER, true);
+        invoke(realm -> realm.users().get(user.getId()).roles().getAll(), Resource.USER, false);
+        invoke(realm -> realm.users().get(user.getId()).roles().realmLevel().listAll(), Resource.USER, false);
+        invoke(realm -> realm.users().get(user.getId()).roles().realmLevel().listAvailable(), Resource.USER, false);
+        invoke(realm -> realm.users().get(user.getId()).roles().realmLevel().listEffective(), Resource.USER, false);
+        invoke(realm -> realm.users().get(user.getId()).roles().realmLevel().add(Collections.emptyList()), Resource.USER, true);
+        invoke(realm -> realm.users().get(user.getId()).roles().realmLevel().remove(Collections.<RoleRepresentation>emptyList()), Resource.USER, true);
+        invoke(realm -> realm.users().get(user.getId()).executeActionsEmail(Arrays.asList("UPDATE_PASSWORD")), Resource.USER, true);
+        invoke(realm -> realm.users().get(user.getId()).executeActionsEmail(Collections.emptyList()), Resource.USER, true);
+        invoke(realm -> realm.users().get(user.getId()).sendVerifyEmail(), Resource.USER, true);
+        invoke(realm -> realm.users().get(user.getId()).groups(), Resource.USER, false);
+        invoke(realm -> realm.users().get(user.getId()).leaveGroup("nosuch"), Resource.USER, true);
+        invoke(realm -> realm.users().get(user.getId()).joinGroup("nosuch"), Resource.USER, true);
+
+        invoke(realm -> realm.users().get(user.getId()).roles().getAll(), Resource.USER, false);
+        invoke(realm -> realm.users().get(user.getId()).roles().realmLevel().listAll(), Resource.USER, false);
+        invoke(realm -> realm.users().get(user.getId()).roles().realmLevel().listAvailable(), Resource.USER, false);
+        invoke(realm -> realm.users().get(user.getId()).roles().realmLevel().listEffective(), Resource.USER, false);
+        invoke(realm -> realm.users().get(user.getId()).roles().realmLevel().add(Collections.<RoleRepresentation>emptyList()), Resource.USER, true);
+        invoke(realm -> realm.users().get(user.getId()).roles().realmLevel().remove(Collections.<RoleRepresentation>emptyList()), Resource.USER, true);
 
         ClientRepresentation realmAccessClient = adminClient.realms().realm(REALM_NAME).clients().findByClientId(Constants.REALM_MANAGEMENT_CLIENT_ID).get(0);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).roles().clientLevel(realmAccessClient.getId()).listAll();
-            }
-        }, Resource.USER, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).roles().clientLevel(realmAccessClient.getId()).listAvailable();
-            }
-        }, Resource.USER, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).roles().clientLevel(realmAccessClient.getId()).listEffective();
-            }
-        }, Resource.USER, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).roles().clientLevel(realmAccessClient.getId()).add(Collections.<RoleRepresentation>emptyList());
-            }
-        }, Resource.USER, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).roles().clientLevel(realmAccessClient.getId()).remove(Collections.<RoleRepresentation>emptyList());
-            }
-        }, Resource.USER, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().search("foo", 0, 1);
-            }
-        }, Resource.USER, false);
+        invoke(realm -> realm.users().get(user.getId()).roles().clientLevel(realmAccessClient.getId()).listAll(), Resource.USER, false);
+        invoke(realm -> realm.users().get(user.getId()).roles().clientLevel(realmAccessClient.getId()).listAvailable(), Resource.USER, false);
+        invoke(realm -> realm.users().get(user.getId()).roles().clientLevel(realmAccessClient.getId()).listEffective(), Resource.USER, false);
+        invoke(realm -> realm.users().get(user.getId()).roles().clientLevel(realmAccessClient.getId()).add(Collections.emptyList()), Resource.USER, true);
+        invoke(realm -> realm.users().get(user.getId()).roles().clientLevel(realmAccessClient.getId()).remove(Collections.emptyList()), Resource.USER, true);
+        invoke(realm -> realm.users().search("foo", 0, 1), Resource.USER, false);
         // this should throw forbidden as "query-client" role isn't enough
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                clients.get(AdminRoles.QUERY_CLIENTS).realm(REALM_NAME).users().list();
-            }
-        }, clients.get(AdminRoles.QUERY_CLIENTS), false);
-        invoke(new InvocationWithResponse() {
-            @Override
-            public void invoke(RealmResource realm, AtomicReference<Response> response) {
-                response.set(clients.get(AdminRoles.QUERY_CLIENTS).realm(REALM_NAME).users().create(user));
-            }
-        }, clients.get(AdminRoles.QUERY_CLIENTS), false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                clients.get(AdminRoles.QUERY_CLIENTS).realm(REALM_NAME).users().search("test");
-            }
-        }, clients.get(AdminRoles.QUERY_CLIENTS), false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).toRepresentation();
-            }
-        }, clients.get(AdminRoles.QUERY_CLIENTS), false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).remove();
-            }
-        }, clients.get(AdminRoles.QUERY_CLIENTS), false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.users().get(user.getId()).update(user);
-            }
-        }, clients.get(AdminRoles.QUERY_CLIENTS), false);
+        invoke(realm -> clients.get(AdminRoles.QUERY_CLIENTS).realm(REALM_NAME).users().list(), clients.get(AdminRoles.QUERY_CLIENTS), false);
+        invoke((realm, response) -> response.set(clients.get(AdminRoles.QUERY_CLIENTS).realm(REALM_NAME).users().create(user)), clients.get(AdminRoles.QUERY_CLIENTS), false);
+        invoke(realm -> clients.get(AdminRoles.QUERY_CLIENTS).realm(REALM_NAME).users().search("test"), clients.get(AdminRoles.QUERY_CLIENTS), false);
+        invoke(realm -> realm.users().get(user.getId()).toRepresentation(), clients.get(AdminRoles.QUERY_CLIENTS), false);
+        invoke(realm -> realm.users().get(user.getId()).remove(), clients.get(AdminRoles.QUERY_CLIENTS), false);
+        invoke(realm -> realm.users().get(user.getId()).update(user), clients.get(AdminRoles.QUERY_CLIENTS), false);
         // users with query-user role should be able to query required actions so the user detail page can be rendered successfully when fine-grained permissions are enabled.
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.flows().getRequiredActions();
-            }
-        }, clients.get(AdminRoles.QUERY_USERS), true);
+        invoke(realm -> realm.flows().getRequiredActions(), clients.get(AdminRoles.QUERY_USERS), true);
         // users with query-user role should be able to query clients so the user detail page can be rendered successfully when fine-grained permissions are enabled.
         // if the admin wants to restrict the clients that an user can see he can define permissions for these clients
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                clients.get(AdminRoles.QUERY_USERS).realm(REALM_NAME).clients().findAll();
-            }
-        }, clients.get(AdminRoles.QUERY_USERS), true);
+        invoke(realm -> clients.get(AdminRoles.QUERY_USERS).realm(REALM_NAME).clients().findAll(), clients.get(AdminRoles.QUERY_USERS), true);
     }
 
     @Test
     public void identityProviders() {
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.identityProviders().findAll();
-            }
-        }, Resource.IDENTITY_PROVIDER, false);
-        invoke(new InvocationWithResponse() {
-            public void invoke(RealmResource realm, AtomicReference<Response> response) {
-                response.set(realm.identityProviders().create(IdentityProviderBuilder.create().providerId("nosuch")
-                        .displayName("nosuch-foo").alias("foo").build()));
-            }
+        invoke(realm -> realm.identityProviders().findAll(), Resource.IDENTITY_PROVIDER, false);
+        invoke((realm, response) -> {
+            response.set(realm.identityProviders().create(IdentityProviderBuilder.create().providerId("nosuch")
+                    .displayName("nosuch-foo").alias("foo").build()));
         }, Resource.IDENTITY_PROVIDER, true);
 
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.identityProviders().get("nosuch").toRepresentation();
-            }
-        }, Resource.IDENTITY_PROVIDER, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.identityProviders().get("nosuch").update(new IdentityProviderRepresentation());
-            }
-        }, Resource.IDENTITY_PROVIDER, true);
-        invoke(new InvocationWithResponse() {
-            public void invoke(RealmResource realm, AtomicReference<Response> response) {
-                response.set(realm.identityProviders().get("nosuch").export("saml"));
-            }
-        }, Resource.IDENTITY_PROVIDER, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.identityProviders().get("nosuch").remove();
-            }
-        }, Resource.IDENTITY_PROVIDER, true);
+        invoke(realm -> realm.identityProviders().get("nosuch").toRepresentation(), Resource.IDENTITY_PROVIDER, false);
+        invoke(realm -> realm.identityProviders().get("nosuch").update(new IdentityProviderRepresentation()), Resource.IDENTITY_PROVIDER, true);
+        invoke((realm, response) -> response.set(realm.identityProviders().get("nosuch").export("saml")), Resource.IDENTITY_PROVIDER, false);
+        invoke(realm -> realm.identityProviders().get("nosuch").remove(), Resource.IDENTITY_PROVIDER, true);
 
-        invoke(new InvocationWithResponse() {
-            public void invoke(RealmResource realm, AtomicReference<Response> response) {
-                response.set(realm.identityProviders().get("nosuch").addMapper(new IdentityProviderMapperRepresentation()));
-            }
-        }, Resource.IDENTITY_PROVIDER, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.identityProviders().get("nosuch").delete("nosuch");
-            }
-        }, Resource.IDENTITY_PROVIDER, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.identityProviders().get("nosuch").getMappers();
-            }
-        }, Resource.IDENTITY_PROVIDER, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.identityProviders().get("nosuch").getMapperById("nosuch");
-            }
-        }, Resource.IDENTITY_PROVIDER, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.identityProviders().get("nosuch").getMapperTypes();
-            }
-        }, Resource.IDENTITY_PROVIDER, false);
+        invoke((realm, response) -> response.set(realm.identityProviders().get("nosuch").addMapper(new IdentityProviderMapperRepresentation())), Resource.IDENTITY_PROVIDER, true);
+        invoke(realm -> realm.identityProviders().get("nosuch").delete("nosuch"), Resource.IDENTITY_PROVIDER, true);
+        invoke(realm -> realm.identityProviders().get("nosuch").getMappers(), Resource.IDENTITY_PROVIDER, false);
+        invoke(realm -> realm.identityProviders().get("nosuch").getMapperById("nosuch"), Resource.IDENTITY_PROVIDER, false);
+        invoke(realm -> realm.identityProviders().get("nosuch").getMapperTypes(), Resource.IDENTITY_PROVIDER, false);
 
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.identityProviders().importFrom(Collections.<String, Object>emptyMap());
-            }
-        }, Resource.IDENTITY_PROVIDER, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.identityProviders().importFrom(new MultipartFormDataOutput());
-            }
-        }, Resource.IDENTITY_PROVIDER, true);
+        invoke(realm -> realm.identityProviders().importFrom(Collections.emptyMap()), Resource.IDENTITY_PROVIDER, true);
+        invoke(realm -> realm.identityProviders().importFrom(new MultipartFormDataOutput()), Resource.IDENTITY_PROVIDER, true);
     }
 
     @Test
     public void components() {
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.components().query();
-            }
-        }, Resource.REALM, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.components().query("nosuch");
-            }
-        }, Resource.REALM, false);
-        invoke(new InvocationWithResponse() {
-            public void invoke(RealmResource realm, AtomicReference<Response> response) {
-                response.set(realm.components().add(new ComponentRepresentation()));
-            }
-        }, Resource.REALM, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.components().component("nosuch").toRepresentation();
-            }
-        }, Resource.REALM, false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.components().component("nosuch").update(new ComponentRepresentation());
-            }
-        }, Resource.REALM, true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.components().component("nosuch").remove();
-            }
-        }, Resource.REALM, true);
+        invoke(realm -> realm.components().query(), Resource.REALM, false);
+        invoke(realm -> realm.components().query("nosuch"), Resource.REALM, false);
+        invoke((realm, response) -> response.set(realm.components().add(new ComponentRepresentation())), Resource.REALM, true);
+        invoke(realm -> realm.components().component("nosuch").toRepresentation(), Resource.REALM, false);
+        invoke(realm -> realm.components().component("nosuch").update(new ComponentRepresentation()), Resource.REALM, true);
+        invoke(realm -> realm.components().component("nosuch").remove(), Resource.REALM, true);
     }
 
     @Test
     public void partialExport() {
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.partialExport(false, false);
-            }
-        }, clients.get("view-realm"), true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.partialExport(true, true);
-            }
-        }, clients.get("multi"), true);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.partialExport(true, false);
-            }
-        }, clients.get("view-realm"), false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.partialExport(false, true);
-            }
-        }, clients.get("view-realm"), false);
-        invoke(new Invocation() {
-            public void invoke(RealmResource realm) {
-                realm.partialExport(false, false);
-            }
-        }, clients.get("none"), false);
+        invoke(realm -> realm.partialExport(false, false), clients.get("view-realm"), true);
+        invoke(realm -> realm.partialExport(true, true), clients.get("multi"), true);
+        invoke(realm -> realm.partialExport(true, false), clients.get("view-realm"), false);
+        invoke(realm -> realm.partialExport(false, true), clients.get("view-realm"), false);
+        invoke(realm -> realm.partialExport(false, false), clients.get("none"), false);
     }
 
     private void invoke(final Invocation invocation, Resource resource, boolean manage) {
-        invoke(new InvocationWithResponse() {
-            public void invoke(RealmResource realm, AtomicReference<Response> response) {
-                invocation.invoke(realm);
-            }
-        }, resource, manage);
+        invoke((realm, response) -> invocation.invoke(realm), resource, manage);
     }
 
     private void invoke(final Invocation invocation, Resource resource, boolean manage, boolean skipDifferentRole) {
-        invoke(new InvocationWithResponse() {
-            public void invoke(RealmResource realm, AtomicReference<Response> response) {
-                invocation.invoke(realm);
-            }
-        }, resource, manage, skipDifferentRole);
+        invoke((realm, response) -> invocation.invoke(realm), resource, manage, skipDifferentRole);
     }
 
     private void invoke(InvocationWithResponse invocation, Resource resource, boolean manage) {
@@ -1828,11 +873,7 @@ public class PermissionsTest extends AbstractKeycloakTest {
     }
 
     private void invoke(final Invocation invocation, Keycloak client, boolean expectSuccess) {
-        invoke(new InvocationWithResponse() {
-            public void invoke(RealmResource realm, AtomicReference<Response> response) {
-                invocation.invoke(realm);
-            }
-        }, client, expectSuccess);
+        invoke((realm, response) -> invocation.invoke(realm), client, expectSuccess);
     }
 
     private void invoke(InvocationWithResponse invocation, Keycloak client, boolean expectSuccess) {
@@ -1954,10 +995,6 @@ public class PermissionsTest extends AbstractKeycloakTest {
         assertGettersEmpty(rep, "getRealm");
     }
 
-    private void assertGettersEmpty(ClientRepresentation rep) {
-        assertGettersEmpty(rep, "getId", "getClientId", "getDescription");
-    }
-
     private void assertGettersEmpty(Object rep, String... ignore) {
         List<String> ignoreList = Arrays.asList(ignore);
 
@@ -1972,5 +1009,4 @@ public class PermissionsTest extends AbstractKeycloakTest {
             }
         }
     }
-
 }
